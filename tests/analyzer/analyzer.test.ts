@@ -61,7 +61,7 @@ describe("TypeScript Analyzer and Evidence Inventory", () => {
     expect(factory?.returnsClient).toBe("RestClient");
   });
 
-  it("records unresolved symbols for circular types and unsupported callback signatures", async () => {
+  it("records unresolved symbols for circular types and unsupported callback signatures with structured diagnostic codes", async () => {
     const evidence = await analyzeSourceSnapshot(fixturePath);
 
     expect(evidence.unresolved.length).toBeGreaterThan(0);
@@ -70,12 +70,63 @@ describe("TypeScript Analyzer and Evidence Inventory", () => {
     );
     expect(circular).toBeDefined();
     expect(circular?.reason).toMatch(/circular/i);
+    expect(circular?.code).toBe("CIRCULAR_TYPE");
 
     const callbackOp = evidence.unresolved.find(
       (u) => u.symbolName === "listenEvents",
     );
     expect(callbackOp).toBeDefined();
     expect(callbackOp?.reason).toMatch(/callback|function/i);
+    expect(callbackOp?.code).toBe("UNSUPPORTED_CALLBACK");
+
+    const anyOp = evidence.unresolved.find(
+      (u) => u.symbolName === "untypedHandler",
+    );
+    expect(anyOp).toBeDefined();
+    expect(anyOp?.code).toBe("UNCONSTRAINED_ANY_OR_UNKNOWN");
+
+    const genericOp = evidence.unresolved.find(
+      (u) => u.symbolName === "unboundGeneric",
+    );
+    expect(genericOp).toBeDefined();
+    expect(genericOp?.code).toBe("UNBOUND_GENERIC");
+  });
+
+  it("extracts enums, index signatures, and utility types into valid JSON schemas", async () => {
+    const evidence = await analyzeSourceSnapshot(fixturePath);
+
+    // String Enum
+    const priorityFn = evidence.functions.find((f) => f.name === "setPriority");
+    expect(priorityFn).toBeDefined();
+    const priorityParam = priorityFn?.inputSchema.properties.priority as any;
+    expect(priorityParam.enum).toEqual(["low", "medium", "high"]);
+
+    // Numeric Enum
+    const statusFn = evidence.functions.find((f) => f.name === "setStatus");
+    expect(statusFn).toBeDefined();
+    const statusParam = statusFn?.inputSchema.properties.status as any;
+    expect(statusParam.enum).toEqual([0, 1, 2]);
+
+    // Record / Index signature
+    const lookupFn = evidence.functions.find((f) => f.name === "lookupMetadata");
+    expect(lookupFn).toBeDefined();
+    const mapParam = lookupFn?.inputSchema.properties.map as any;
+    expect(mapParam.type).toBe("object");
+    expect(mapParam.additionalProperties).toEqual({ type: "string" });
+
+    // Partial utility type
+    const updateFn = evidence.functions.find((f) => f.name === "updateConfig");
+    expect(updateFn).toBeDefined();
+    const patchParam = updateFn?.inputSchema.properties.patch as any;
+    expect(patchParam.type).toBe("object");
+    expect(patchParam.properties).toHaveProperty("apiKey");
+    // Partial makes all properties optional
+    expect(patchParam.required).toBeUndefined();
+
+    // Overloads
+    const formatFn = evidence.functions.find((f) => f.name === "formatCoordinate");
+    expect(formatFn).toBeDefined();
+    expect(formatFn?.overloadsCount).toBe(2);
   });
 
   it("produces byte-identical canonical evidence on repeated runs", async () => {

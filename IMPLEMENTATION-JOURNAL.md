@@ -39,3 +39,18 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/e2e/core-user-journey-e2e.test.ts`: Added new end-to-end test suite for both Turf and authenticated loopback client journeys (2/2 passing).
   - Full suite: 71/71 tests passing across 15 test files.
 - **Next Action:** Move to Phase 02: Analyzer Compatibility, Export Coverage and Actionable Diagnostics.
+
+## 2026-10-19: Phase 02 — Analyzer Compatibility, Export Coverage and Actionable Diagnostics
+- **Delivered Changes:**
+  1. `src/analyzer/types.ts`: Introduced `DiagnosticCode` (`CIRCULAR_TYPE`, `UNCONSTRAINED_ANY_OR_UNKNOWN`, `UNSUPPORTED_CALLBACK`, `UNBOUND_GENERIC`, `UNSUPPORTED_TYPE_CATEGORY`, `RECURSION_DEPTH_EXCEEDED`, `UNRESOLVED_CALLABLE_SIGNATURE`, `EMPTY_EXPORT_SURFACE`, `AMBIGUOUS_OVERLOAD`) and `DiagnosticSeverity` (`error`, `warning`, `info`) with structured actionable remediation. Added `overloadsCount` tracking.
+  2. `src/analyzer/type-lowering.ts`:
+     - Added support for index signatures and `Record<string, V>` via `ts.IndexKind.String`.
+     - Preserved open dictionary semantics (`Record<string, unknown>` / `Record<string, any>`) as `{ type: "object", additionalProperties: true }`.
+     - Added support for string and numeric `enum` / `enumLiteral` lowering into `{ type: "string" | "number", enum: [...] }`.
+     - Supported common utility types (`Partial`, `Required`, `Pick`, `Omit`, `Readonly`).
+     - Aligned `additionalProperties` typing in `JSONSchemaProperty` and `JSONSchemaObject` to accept both booleans and subschemas (`boolean | JSONSchemaProperty`).
+  3. `tests/fixtures/analyzer-types/index.ts`: Expanded fixture to cover string enums, numeric enums, `Partial<T>`, `Record<string, string>`, unbound generics, unconstrained `any`, and function overloads.
+- **Test Evidence:**
+  - `tests/analyzer/analyzer.test.ts`: Expanded with tests verifying structured diagnostic codes, string/numeric enums, index signatures, and utility types (6/6 passing).
+  - Full test suite: 72/72 tests passing across 15 test files.
+- **Next Action:** Move to Phase 03: Portable Capability Manifest and Safe Regeneration.

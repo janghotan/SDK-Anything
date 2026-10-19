@@ -10,23 +10,23 @@ Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to
 - Active Working branch: `feat/product-completion` (branched from `chore/sdk-anything-v0.1-finish` at commit `eb5461a`)
 - Verified baseline gates:
   - `pnpm run typecheck`: exit 0
-  - `pnpm run lint`: exit 0 (79 warnings, 0 errors)
-  - `pnpm test`: 71/71 tests passing across 15 test files, exit 0
+  - `pnpm run lint`: exit 0 (89 warnings, 0 errors)
+  - `pnpm test`: 72/72 tests passing across 15 test files, exit 0
   - `pnpm run build`: exit 0
-  - `npm pack --dry-run`: exit 0 (182 files, 378.9 kB unpacked)
+  - `npm pack --dry-run`: exit 0 (182 files, 385.9 kB unpacked)
 
 ## Current phase
-Phase 02 — Analyzer Compatibility, Export Coverage and Actionable Diagnostics.
+Phase 03 — Portable Capability Manifest and Safe Regeneration.
 
 ## Product acceptance dashboard
 Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a precise external reason where appropriate; never quietly count blocked as pass.
 
 | Area | Status | Evidence | Remaining gaps |
 |---|---|---|---|
-| Repository/baseline reverified | PASS | `pnpm test` (71/71), `tsc`, `lint`, `npm pack` clean | Complete |
+| Repository/baseline reverified | PASS | `pnpm test` (72/72), `tsc`, `lint`, `npm pack` clean | Complete |
 | User journey works from clean checkout | PASS | `tests/acceptance/core-user-journey.test.ts` & `tests/e2e/core-user-journey-e2e.test.ts` pass | Ongoing verification |
-| Analysis/export/type diagnostics actionable | IN PROGRESS | Phase 02 active: export coverage, diagnostics codes, overrides | Phase 02 |
-| Manifest stable, valid, diffable and regenerable | NOT STARTED | | Phase 03 |
+| Analysis/export/type diagnostics actionable | PASS | Structured diagnostic codes, enums, index signatures, utility types in `tests/analyzer/analyzer.test.ts` | Complete |
+| Manifest stable, valid, diffable and regenerable | IN PROGRESS | Phase 03 active: check mode, drift detection, ownership | Phase 03 |
 | Generated CLI works outside generator repo | PASS | Verified in `tests/e2e/core-user-journey-e2e.test.ts` & `tests/generators/standalone-independence.test.ts` | Phase 04 CLI enhancements |
 | Generated MCP works with standard client transport | PASS | In-memory client verified in `turf-e2e.test.ts` & `core-user-journey-e2e.test.ts` | Stdio client transport verification in Phase 04 |
 | Agent skill points to tested, discoverable commands | PASS | `tests/generators/consumer-skill.test.ts` & `SKILL.md` verified | Phase 04 composition examples |
@@ -43,7 +43,8 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 None currently blocking local progress. Docker/Podman is not installed on host; static mode and trusted-local mode are verified, and container sandbox requests fail closed with clear error as required.
 
 ## Next exact action
-Proceed to Phase 02 implementation:
-1. Review export scanner and type lowering for edge cases (barrel exports, default exports, generics, overloads, utility types).
-2. Add structured diagnostic codes and stable severities with remediation advice.
-3. Add compatibility test fixtures for varied TS/JS SDK patterns.
+Proceed to Phase 03 implementation:
+1. Manifest completeness, canonical serialization stability, and digest verification.
+2. Artifact ownership manifest and user-edit protection during regeneration.
+3. Add `--check` mode to `sdk-anything generate` for drift detection.
+4. Golden tests for canonical formatting, migration diagnostics, and regeneration diffs.

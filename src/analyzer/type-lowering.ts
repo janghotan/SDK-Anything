@@ -1,9 +1,10 @@
 import ts from "typescript";
-import type { JSONSchemaProperty } from "./types.js";
+import type { JSONSchemaProperty, DiagnosticCode } from "./types.js";
 
 export interface TypeLoweringResult {
   schema?: JSONSchemaProperty;
   unresolvedReason?: string;
+  code?: DiagnosticCode;
 }
 
 export function lowerTypeToJsonSchema(
@@ -16,13 +17,17 @@ export function lowerTypeToJsonSchema(
     return {
       unresolvedReason:
         "Type hierarchy exceeded maximum supported depth (possible recursion)",
+      code: "RECURSION_DEPTH_EXCEEDED",
     };
   }
 
   // Type ID for recursion detection (ts.Type has an internal id property)
   const typeId = (type as any).id ?? -1;
   if (typeId !== -1 && activeTypeIds.has(typeId)) {
-    return { unresolvedReason: "Circular type reference detected" };
+    return {
+      unresolvedReason: "Circular type reference detected",
+      code: "CIRCULAR_TYPE",
+    };
   }
 
   const nextActive = new Set(activeTypeIds);
@@ -37,6 +42,7 @@ export function lowerTypeToJsonSchema(
     return {
       unresolvedReason:
         "Unconstrained any or unknown type is unsupported without explicit override",
+      code: "UNCONSTRAINED_ANY_OR_UNKNOWN",
     };
   }
 
@@ -72,24 +78,57 @@ export function lowerTypeToJsonSchema(
     return { schema: { type: "number", const: val } };
   }
 
+  // Enum or EnumLiteral
+  if (flags & ts.TypeFlags.Enum || flags & ts.TypeFlags.EnumLiteral) {
+    if (type.isUnion()) {
+      const enumVals: (string | number)[] = [];
+      let isStr = false;
+      let isNum = false;
+      for (const t of type.types) {
+        if ((t as any).value !== undefined) {
+          const val = (t as any).value;
+          enumVals.push(val);
+          if (typeof val === "string") isStr = true;
+          if (typeof val === "number") isNum = true;
+        }
+      }
+      if (enumVals.length > 0) {
+        return {
+          schema: {
+            type: isStr && !isNum ? "string" : isNum && !isStr ? "number" : "string",
+            enum: enumVals,
+          },
+        };
+      }
+    }
+  }
+
   // Union Type (e.g. 'a' | 'b' | 'c', or string | number)
   if (type.isUnion()) {
     const types = type.types;
-    // Check if it's all string literals
+    // Check if it's all string literals or enum members
     const allStringLiterals = types.every(
-      (t) => (t.getFlags() & ts.TypeFlags.StringLiteral) !== 0,
+      (t) =>
+        (t.getFlags() & ts.TypeFlags.StringLiteral) !== 0 ||
+        (typeof (t as any).value === "string"),
     );
     if (allStringLiterals) {
-      const enumVals = types.map((t) => (t as ts.StringLiteralType).value);
+      const enumVals = types.map(
+        (t) => (t as ts.StringLiteralType).value ?? (t as any).value,
+      );
       return { schema: { type: "string", enum: enumVals } };
     }
 
     // Check if it's all number literals
     const allNumberLiterals = types.every(
-      (t) => (t.getFlags() & ts.TypeFlags.NumberLiteral) !== 0,
+      (t) =>
+        (t.getFlags() & ts.TypeFlags.NumberLiteral) !== 0 ||
+        (typeof (t as any).value === "number"),
     );
     if (allNumberLiterals) {
-      const enumVals = types.map((t) => (t as ts.NumberLiteralType).value);
+      const enumVals = types.map(
+        (t) => (t as ts.NumberLiteralType).value ?? (t as any).value,
+      );
       return { schema: { type: "number", enum: enumVals } };
     }
 
@@ -118,6 +157,7 @@ export function lowerTypeToJsonSchema(
       if (subRes.unresolvedReason) {
         return {
           unresolvedReason: `Union branch unresolved: ${subRes.unresolvedReason}`,
+          code: subRes.code,
         };
       }
       if (subRes.schema) {
@@ -143,6 +183,7 @@ export function lowerTypeToJsonSchema(
     if (itemRes.unresolvedReason) {
       return {
         unresolvedReason: `Array item type unresolved: ${itemRes.unresolvedReason}`,
+        code: itemRes.code,
       };
     }
     return { schema: { type: "array", items: itemRes.schema } };
@@ -174,6 +215,7 @@ export function lowerTypeToJsonSchema(
     return {
       unresolvedReason:
         "Function/callback parameters are unsupported in atomic tool operations",
+      code: "UNSUPPORTED_CALLBACK",
     };
   }
 
@@ -181,12 +223,49 @@ export function lowerTypeToJsonSchema(
   if (flags & ts.TypeFlags.TypeParameter) {
     return {
       unresolvedReason: "Unbound generic type parameter is unsupported",
+      code: "UNBOUND_GENERIC",
     };
   }
 
   // Object Type / Interface / Struct
   if (flags & ts.TypeFlags.Object) {
     const properties = type.getProperties();
+    const stringIndexInfo = checker.getIndexInfoOfType(
+      type,
+      ts.IndexKind.String,
+    );
+
+    let additionalPropertiesSchema: JSONSchemaProperty | boolean = false;
+    if (stringIndexInfo) {
+      const valFlags = stringIndexInfo.type.getFlags();
+      if (valFlags & ts.TypeFlags.Any || valFlags & ts.TypeFlags.Unknown) {
+        additionalPropertiesSchema = true;
+      } else {
+        const indexRes = lowerTypeToJsonSchema(
+          stringIndexInfo.type,
+          checker,
+          nextActive,
+          depth + 1,
+        );
+        if (indexRes.unresolvedReason) {
+          return {
+            unresolvedReason: `Index signature value unresolved: ${indexRes.unresolvedReason}`,
+            code: indexRes.code,
+          };
+        }
+        additionalPropertiesSchema = indexRes.schema ?? true;
+      }
+    }
+
+    if (properties.length === 0 && stringIndexInfo) {
+      return {
+        schema: {
+          type: "object",
+          additionalProperties: additionalPropertiesSchema,
+        },
+      };
+    }
+
     const propsSchema: Record<string, JSONSchemaProperty> = {};
     const required: string[] = [];
 
@@ -214,6 +293,7 @@ export function lowerTypeToJsonSchema(
       if (propRes.unresolvedReason) {
         return {
           unresolvedReason: `Property '${propName}' unresolved: ${propRes.unresolvedReason}`,
+          code: propRes.code,
         };
       }
 
@@ -237,12 +317,13 @@ export function lowerTypeToJsonSchema(
         type: "object",
         properties: propsSchema,
         required: required.length > 0 ? required.sort() : undefined,
-        additionalProperties: false,
+        additionalProperties: additionalPropertiesSchema,
       },
     };
   }
 
   return {
     unresolvedReason: `Unsupported type category: ${checker.typeToString(type)}`,
+    code: "UNSUPPORTED_TYPE_CATEGORY",
   };
 }

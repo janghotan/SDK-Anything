@@ -163,6 +163,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
                   reason: `Method parameter '${pName}': ${pRes.unresolvedReason}`,
                   suggestedAction:
                     "Provide reviewed schema in sdk-anything.overrides.json",
+                  code: pRes.code ?? "UNSUPPORTED_TYPE_CATEGORY",
+                  severity: "warning",
+                  canContinueGeneration: true,
                 });
                 break;
               }
@@ -212,6 +215,7 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
                 },
                 sourceLocation,
                 confidence: "high",
+                overloadsCount: callSigs.length,
               });
             }
           }
@@ -304,6 +308,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
               reason: `Parameter '${pName}': ${pRes.unresolvedReason}`,
               suggestedAction:
                 "Provide reviewed schema in sdk-anything.overrides.json",
+              code: pRes.code ?? "UNSUPPORTED_TYPE_CATEGORY",
+              severity: "warning",
+              canContinueGeneration: true,
             });
             break;
           }
@@ -351,6 +358,7 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             inputSchema,
             sourceLocation,
             confidence: "high",
+            overloadsCount: callSignatures.length,
           });
         }
       } else if (!discoveredClasses.some((c) => c.name === name)) {
@@ -361,6 +369,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             "Exported symbol could not be resolved to a local callable signature",
           suggestedAction:
             "Provide reviewed schema in sdk-anything.overrides.json",
+          code: "UNRESOLVED_CALLABLE_SIGNATURE",
+          severity: "warning",
+          canContinueGeneration: true,
         });
       }
     }

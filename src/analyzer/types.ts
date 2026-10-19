@@ -9,7 +9,7 @@ export interface JSONSchemaProperty {
   oneOf?: JSONSchemaProperty[];
   description?: string;
   default?: unknown;
-  additionalProperties?: boolean;
+  additionalProperties?: boolean | JSONSchemaProperty;
 }
 
 export interface JSONSchemaObject {
@@ -17,7 +17,7 @@ export interface JSONSchemaObject {
   type: "object";
   properties: Record<string, JSONSchemaProperty>;
   required?: string[];
-  additionalProperties?: boolean;
+  additionalProperties?: boolean | JSONSchemaProperty;
   description?: string;
 }
 
@@ -55,6 +55,7 @@ export interface DiscoveredFunction {
   outputSchema?: JSONSchemaProperty;
   sourceLocation: SourceLocation;
   confidence: "high" | "medium" | "low";
+  overloadsCount?: number;
 }
 
 export interface DiscoveredMethod {
@@ -70,6 +71,7 @@ export interface DiscoveredMethod {
   outputSchema?: JSONSchemaProperty;
   sourceLocation: SourceLocation;
   confidence: "high" | "medium" | "low";
+  overloadsCount?: number;
 }
 
 export interface DiscoveredClass {
@@ -97,11 +99,27 @@ export interface DiscoveredFactory {
   sourceLocation: SourceLocation;
 }
 
+export type DiagnosticCode =
+  | "CIRCULAR_TYPE"
+  | "UNCONSTRAINED_ANY_OR_UNKNOWN"
+  | "UNSUPPORTED_CALLBACK"
+  | "UNBOUND_GENERIC"
+  | "UNSUPPORTED_TYPE_CATEGORY"
+  | "RECURSION_DEPTH_EXCEEDED"
+  | "UNRESOLVED_CALLABLE_SIGNATURE"
+  | "EMPTY_EXPORT_SURFACE"
+  | "AMBIGUOUS_OVERLOAD";
+
+export type DiagnosticSeverity = "error" | "warning" | "info";
+
 export interface UnresolvedSymbol {
   symbolName: string;
   sourceLocation: SourceLocation;
   reason: string;
   suggestedAction: string;
+  code?: DiagnosticCode;
+  severity?: DiagnosticSeverity;
+  canContinueGeneration?: boolean;
 }
 
 export interface DocumentationSummary {
