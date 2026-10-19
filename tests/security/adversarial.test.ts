@@ -9,8 +9,16 @@ import { validatePaginationCursor } from "../../src/runtime/pagination.js";
 import { generateArtifacts } from "../../src/generators/index.js";
 import { buildManifest } from "../../src/manifest/index.js";
 import { analyzeSourceSnapshot } from "../../src/analyzer/index.js";
-import { runProjectTests } from "../../src/sandbox/runner.js";
+import {
+  runProjectTests,
+  detectContainerRuntime,
+} from "../../src/sandbox/runner.js";
 import { validateAiProposals } from "../../src/ai/proposal-parser.js";
+
+// Fail-closed behavior only applies when no container engine is installed. On
+// hosts that do provide Docker/Podman, sandbox mode legitimately executes in a
+// container, so assert the missing-engine contract only when none is present.
+const containerRuntime = detectContainerRuntime();
 
 // Helper to construct a minimal raw TAR header
 function createTarHeader(
@@ -143,13 +151,32 @@ describe("Phase 07: Security & Adversarial Test Suite", () => {
   });
 
   describe("4. Generator Confinement and Sandbox Fail-Closed Behavior", () => {
-    it("fails closed when --sandbox is requested without container engine", async () => {
-      await expect(
-        runProjectTests("./tests/fixtures/sample-local-sdk", {
-          mode: "sandbox",
-        }),
-      ).rejects.toThrow(/container runtime.*required/i);
-    });
+    it.skipIf(containerRuntime !== null)(
+      "fails closed when --sandbox is requested without container engine",
+      async () => {
+        await expect(
+          runProjectTests("./tests/fixtures/sample-local-sdk", {
+            mode: "sandbox",
+          }),
+        ).rejects.toThrow(/container runtime.*required/i);
+      },
+    );
+
+    it.skipIf(containerRuntime === null)(
+      "executes sandbox mode through the container engine instead of falling back silently",
+      async () => {
+        // The fixture intentionally has no `test` script, so the run must fail
+        // with a container-execution error rather than quietly degrading to
+        // trusted-local execution.
+        await expect(
+          runProjectTests("./tests/fixtures/sample-local-sdk", {
+            mode: "sandbox",
+            timeoutMs: 120000,
+          }),
+        ).rejects.toThrow(/Sandbox test execution failed/i);
+      },
+      120000,
+    );
 
     it("rejects generator path traversal escape attempts in generation targets", async () => {
       const turfFixture = path.resolve("examples/turf");
