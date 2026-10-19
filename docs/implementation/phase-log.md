@@ -14,6 +14,23 @@
 
 ---
 
+## Phase 03 — TypeScript/JavaScript Analyzer and Evidence Inventory
+
+- **Date**: 2026-10-18
+- **Goal**: Produce a deterministic inventory of public exports, type/signature facts, documentation, class/factory client patterns, and source provenance.
+- **Status**: completed
+- **Commit**: `730a2dc` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented `lowerTypeToJsonSchema` in `src/analyzer/type-lowering.ts` converting primitives, literals, enums, unions, arrays, and objects into JSON Schema Draft 2020-12 representations.
+  - Implemented circular reference and depth detection to prevent runaway recursion, surfacing typed unresolved reasons instead of silent degradation.
+  - Implemented `scanSource` in `src/analyzer/export-scanner.ts` using the TypeScript Compiler API with `noEmit: true`, scanning exported functions, classes, constructors, methods, and factories.
+  - Implemented parameter optionality checks across declarations, question tokens, initializers, and union types with `undefined`.
+  - Added curated analyzer fixture in `tests/fixtures/analyzer-types/` exercising pure functions, classes, factories, circular references, and callback types.
+  - Updated CLI `inspect` to display discovered functions, classes, factories, and unresolved diagnostic reasons.
+  - Verified 26/26 tests passing, byte-stable evidence generation, and clean quality gates.
+
+
 ## Phase 02 — Source Resolution
 
 - **Date**: 2026-10-18
