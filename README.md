@@ -8,6 +8,8 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/sdk-anything"><img src="https://img.shields.io/npm/v/sdk-anything?style=for-the-badge&logo=npm&color=cb3837" alt="npm version"></a>
+  <a href="https://github.com/janghotan/SDK-Anything/releases/tag/v0.1.0"><img src="https://img.shields.io/badge/Release-v0.1.0-blue?style=for-the-badge" alt="Release"></a>
   <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-blue?style=for-the-badge" alt="Quick Start"></a>
   <a href="#-test-results"><img src="https://img.shields.io/badge/Tests-121_Passing_(100%25)-brightgreen?style=for-the-badge" alt="Tests"></a>
   <a href="#-why-sdk-anything"><img src="https://img.shields.io/badge/Architecture-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
@@ -24,6 +26,8 @@
 </p>
 
 **One Command Pipeline**: Turn any TypeScript or JavaScript SDK into agent-ready tools for Claude Desktop, Cursor, Claude Code, OpenClaw, Codex, Windsurf, and custom autonomous agents.
+
+<p align="center"><code>npm install -g sdk-anything</code></p>
 
 ---
 
@@ -396,7 +400,9 @@ sdk-anything/
 │   └── sdk-anything-banner-zh.png
 ├── docs/                                # Comprehensive documentation
 │   ├── architecture.md                  # Deep pipeline & subsystem specification
-│   └── security.md                      # Security model, trust boundaries, sandboxing
+│   ├── design.md                        # Product and architecture design
+│   ├── security.md                      # Security model, trust boundaries, sandboxing
+│   └── release-evidence.md              # Verified release evidence and known limits
 ├── examples/                            # Tested reference implementations
 │   ├── turf/                            # Pure-function golden example
 │   └── client-sdk/                      # Stateful network client fixture

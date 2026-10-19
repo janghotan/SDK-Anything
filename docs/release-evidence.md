@@ -1,8 +1,8 @@
 # SDK-Anything — Release Evidence Report
 
 - **Date:** 2026-10-19
-- **Working Branch:** `feat/product-completion`
-- **Base Branch:** `chore/sdk-anything-v0.1-finish`
+- **Release commit:** `5534d16ed574bf28490d658031b35c141fbc37d0` (`main`)
+- **Version:** `0.1.0`
 - **Environment:**
   - OS: Linux x86_64 (Kernel 6.6.137)
   - Node.js: `v24.22.0` (primary), plus full-suite verification on `v20.20.2` and `v22.23.3`
@@ -10,7 +10,25 @@
   - TypeScript: `5.9.3`
   - Vitest: `3.2.7`
   - Container Runtimes: None on host (verified fail-closed behavior)
-- **Release Verdict:** **GO** (Ready for v0.1.0 Release Candidate)
+- **Release Verdict:** **SHIPPED** — `v0.1.0` published and independently verified
+
+---
+
+## 0. Release Outcome (verified in this environment)
+
+| Item | Verified value |
+|---|---|
+| npm package | `sdk-anything@0.1.0`, `dist-tags.latest = 0.1.0` |
+| Registry metadata | https://registry.npmjs.org/sdk-anything/0.1.0 |
+| Registry tarball | https://registry.npmjs.org/sdk-anything/-/sdk-anything-0.1.0.tgz |
+| npm shasum | `7c934264b7904d1cace774668a58da38c9bb786d` |
+| npm integrity | `sha512-i8Z9SKxjEWyhoAY0aylWl0cvqmS0sTVqIyKQYjK0UgzLFV/1jn9cZR4Ls/njGgb8gAEBqXPuGvltmEBg5l2kWw==` |
+| Local tarball SHA-256 | `2072638afbbc3d611526773cbf074c0f53a93ddec5feabce5f3222fb53e8897b` |
+| Git tag | annotated `v0.1.0` at `5534d16` |
+| GitHub Release | https://github.com/janghotan/SDK-Anything/releases/tag/v0.1.0 |
+| Release assets | `sdk-anything-0.1.0.tgz`, `sdk-anything-0.1.0.checksums.txt` |
+| Release-commit CI | Actions run `39290736468`, Node 20/22/24 all `success` |
+| Registry install smoke test | clean directory install; `--version` 0.1.0; `--help`, `inspect` OK; `npm audit --omit=dev` → 0 vulnerabilities |
 
 ---
 
@@ -25,7 +43,7 @@ All automated quality gates pass with zero errors:
 | **ESLint** | `pnpm run lint` | `PASS` (0 errors, 119 warnings) | ESLint clean across all source files and test suites |
 | **Automated Tests** | `pnpm test` | `PASS` (121/121 passed) | 23 test files, 100% pass rate in Vitest |
 | **Production Build** | `pnpm run build` | `PASS` (exit 0) | `tsc -p tsconfig.build.json` clean |
-| **Distribution Tarball** | `npm pack --dry-run` | `PASS` (214 files, 114.0 kB) | Whitelist enforced; tests/fixtures excluded; `prepack` builds `dist` from a clean checkout |
+| **Distribution Tarball** | `npm pack --dry-run` | `PASS` (215 files, 115.5 kB) | Whitelist enforced; tests/fixtures excluded; `prepack` builds `dist` from a clean checkout |
 | **Multi-version matrix** | `nvm use 20/22/24 && pnpm test` | `PASS` (121/121 on each) | Node `20.20.2`, `22.23.3`, and `24.22.0` all pass the complete suite, including the external generated-project build/execution harness |
 
 ---
@@ -79,7 +97,7 @@ Automated run across the 6 registered compatibility fixtures:
 ## 4. Known Limitations & Honest Boundaries
 
 - **Container isolation was not executed live.** Docker and Podman are absent on the verification host. The product correctly fails closed with an actionable error, but only static and trusted-local execution paths were exercised.
-- **Remote CI is green.** The Node 20/22/24 matrix also ran on GitHub Actions. The first remote run failed on a single environment-dependent assertion (the sandbox fail-closed check expected no container engine, but GitHub runners provide Docker); that assertion is now engine-aware and no longer requires container execution. Runs for the fixed commit `4d29f4b` and the follow-up `3dc3f29` completed successfully. GitHub Actions reported `degraded_performance` briefly, delaying the queue, which has since drained.
+- **Remote CI is green for the release commit.** Node 20/22/24 all passed in Actions run `39290736468` for `5534d16`. The first remote run of the project failed on a single environment-dependent assertion (the sandbox fail-closed check expected no container engine, but GitHub runners provide Docker); that assertion is now engine-aware and no longer requires container execution.
 - **npm dependency retrieval is bounded and best-effort.** Aggregate packages are materialised with a depth/package/size budget and no lifecycle scripts. Unsupported types still surface as warnings (for `@turf/turf`: 56 callable functions discovered, 128 actionable unresolved-symbol warnings). Registry integrity is delegated to HTTPS transport; tarball `integrity` hashes are not separately re-verified.
 - **Generated projects install from the registry.** The acceptance harness verified `npm install` + `tsc` in a clean temp project. Offline installation is not guaranteed; the repository's own test run used a warmed npm cache.
 - **AI features are mock-verified.** The optional AI layer was tested against a mock OpenAI-compatible endpoint. No live third-party model provider was called.
@@ -90,8 +108,12 @@ Automated run across the 6 registered compatibility fixtures:
 
 ## 5. Release Boundary Commitments
 
-In accordance with product instructions:
-- **No package has been published to npm.**
-- **No git tags have been pushed to remotes.**
-- **No pull request has been merged to default branch (`main`).**
-- **Recommended Candidate Tag:** `v0.1.0` (commit candidate on `feat/product-completion`).
+- **The package is published to npm** as `sdk-anything@0.1.0` (`latest`).
+- **The annotated tag `v0.1.0` is pushed** and points at release commit `5534d16`.
+- **The GitHub Release is published** with the tarball and checksum assets.
+- **Integrity is pinned:** the registry `dist.shasum`, `dist.integrity`, and the
+  local tarball SHA-256 are recorded in section 0 and match.
+- **Future versions must not reuse `0.1.0`.** Publishing another version requires
+  a new version number, a `CHANGELOG.md` entry, green CI, and fresh acceptance
+  evidence following this report's gate structure.
+

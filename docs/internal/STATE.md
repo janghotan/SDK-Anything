@@ -3,12 +3,14 @@
 > The coding agent must maintain this file after every meaningful phase. Treat repository contents and test outputs as truth; this file is a checkpoint, not proof by itself.
 
 ## Current mission
-Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to-end, dependable, agent-native SDK-to-tools product. Do not stop at sanity checks. Implement complete behavior and prove the deliverables work from an external temporary project.
+Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to-end, dependable, agent-native SDK-to-tools product, and ship the first public release.
+
+**v0.1.0 is released** (2026-10-19): npm package and GitHub Release are live. See the Release record below.
 
 ## Baseline verification (verified 2026-10-19)
 - Repository: https://github.com/janghotan/SDK-Anything
-- Active Working branch: `feat/product-completion` (branched from `chore/sdk-anything-v0.1-finish` at commit `eb5461a`)
-- Current phase-12 base commit: `0bfd04f`
+- Release branch: `main`
+- Release commit: `5534d16ed574bf28490d658031b35c141fbc37d0`
 - Verified gates (Node 24.22.0 unless noted):
   - `pnpm run format`: PASS
   - `pnpm run typecheck`: PASS
@@ -17,10 +19,25 @@ Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to
   - `pnpm test` on Node 20.20.2: PASS 121/121
   - `pnpm test` on Node 22.23.3: PASS 121/121
   - `pnpm run build`: PASS
-  - `npm pack --dry-run`: PASS (214 files, ~114 kB, `prepack` builds from a clean checkout)
+  - `npm pack --dry-run`: PASS (215 files, 115.5 kB, `prepack` builds from a clean checkout)
+
+## Release record — v0.1.0 (2026-10-19)
+- npm package: `sdk-anything@0.1.0` (`latest`)
+  - Package page: https://www.npmjs.com/package/sdk-anything
+  - Registry metadata: https://registry.npmjs.org/sdk-anything/0.1.0
+  - Registry tarball: https://registry.npmjs.org/sdk-anything/-/sdk-anything-0.1.0.tgz
+  - Registry `dist.shasum`: `7c934264b7904d1cace774668a58da38c9bb786d`
+  - Registry `dist.integrity`: `sha512-i8Z9SKxjEWyhoAY0aylWl0cvqmS0sTVqIyKQYjK0UgzLFV/1jn9cZR4Ls/njGgb8gAEBqXPuGvltmEBg5l2kWw==`
+- Git tag: `v0.1.0` (annotated, pushed) at `5534d16`
+- GitHub Release: https://github.com/janghotan/SDK-Anything/releases/tag/v0.1.0
+  - Assets: `sdk-anything-0.1.0.tgz`, `sdk-anything-0.1.0.checksums.txt`
+- Local tarball SHA-256: `2072638afbbc3d611526773cbf074c0f53a93ddec5feabce5f3222fb53e8897b`
+- CI for release commit: [run 39290736468](https://github.com/janghotan/SDK-Anything/actions/runs/39290736468) — Node 20/22/24 all `success`
+- Registry install smoke test: `npm install sdk-anything@0.1.0` in a clean directory → binary `0.1.0`, `--help` and `inspect` work, `npm audit --omit=dev` reports 0 vulnerabilities.
+- npm keeps an internal `0.0.0-stage` holding version for new package names; `dist-tags.latest` correctly resolves to `0.1.0`.
 
 ## Current phase
-Phase 12 — Continuous Gap Elimination and Final Product Acceptance. **COMPLETE for local verification.**
+Phase 12 — Continuous Gap Elimination and Final Product Acceptance. **COMPLETE and released as v0.1.0.**
 
 ## Product acceptance dashboard
 Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a precise external reason where appropriate; never quietly count blocked as pass.
@@ -45,14 +62,16 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 | Aggregate npm re-export discovery | PASS | `inspect npm:@turf/turf` now finds 56 callable functions after bounded dependency materialisation; 128 unsupported symbols reported as warnings | Bounded best-effort; see limitations |
 | Performance, determinism & operational reliability | PASS | `tests/performance/benchmarks.test.ts` (4/4): budgets, byte-identical output, AbortSignal cancellation | Complete |
 | Multi-version local matrix | PASS | Full suite 121/121 on Node 20.20.2, 22.23.3, 24.22.0 | Complete |
-| Remote CI observation | PASS | GitHub Actions run for the fixed commit `4d29f4b` succeeded (Node 24, Node 22; Node 20 job completed within the successful run). Later `3dc3f29` push and PR runs also succeeded. The initial outage-delayed backlog has drained | Complete |
+| Remote CI observation | PASS | Release commit `5534d16`: run `39290736468`, Node 20/22/24 all success. Earlier outage-delayed backlog drained | Complete |
+| npm publication | PASS | `sdk-anything@0.1.0` published; registry `latest=0.1.0`, integrity and shasum recorded above; clean-directory install verified | Complete |
+| GitHub Release | PASS | Tag `v0.1.0` at `5534d16`; release published with tarball and checksums; page fetched successfully | Complete |
 | Improvement loop and final review | PASS | TODO/FIXME/skip scan clean; two real defects fixed (vendor dependency path, per-operation allowlist for write effects) | Complete |
 | README/demo accurately reflect actual product | PASS | Bilingual READMEs updated to 121 tests / 23 files, new generation flags, and fail-closed matrix | Complete |
 | No known P0/P1 defects | PASS | Fixed: vendor `file:` path, write-effect per-operation authorization, stale `dist` on fresh `npm pack`, generated JSON-import Node 20 incompatibility, stale test counts | Keep clean |
 
 ## Active blockers
-- **Container isolation is BLOCKED on this host.** Docker/Podman is not installed. Static and trusted-local modes are verified; container requests fail closed with a clear error. No live container execution is claimed.
-- **Remote CI recovered and passed.** The first run failed solely on a single environment-dependent assertion: `tests/security/adversarial.test.ts` expected no container engine, but GitHub runners provide Docker. That assertion is now skipped when an engine is present, so the suite no longer depends on container execution. After the fix, GitHub Actions runs for `4d29f4b` and `3dc3f29` completed successfully. During the window GitHub Actions reported `degraded_performance`, which delayed the queue; it has since drained. All three Node versions also pass locally (121/121).
+- **Live container execution is unverified on this host.** Docker/Podman is not installed. Static and trusted-local modes are verified; container requests fail closed with a clear error. CI runners do have Docker, but the fail-closed assertion is skipped there; no live container execution result is claimed.
+- No release blockers remain.
 
 ## Known limitations
 - npm dependency retrieval is bounded (depth/package/size budgets), never executes lifecycle scripts, and reports unresolved dependencies as warnings. Registry integrity relies on HTTPS transport; tarball `integrity` hashes are not separately re-verified.
@@ -62,6 +81,6 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 - Platform execution evidence is Linux-only; Windows/macOS were not exercised locally.
 
 ## Next exact action
-1. Confirm the tip run for `6efc876` (CI trigger change only) reaches success; it touches no product code.
-2. Do not merge the existing pull request, tag, publish, or release.
-3. Phase 12 is otherwise complete: local matrix and remote CI both green.
+1. Optional repository polish: remove internal scratch/history files that are not part of the public product story (see the cleanup PR) while keeping release evidence, license, changelog, and contributor docs.
+2. Do not publish a new version without a new version number, changelog entry, green CI, and fresh acceptance evidence.
+3. v0.1.0 is complete; no further action is required for this release.
