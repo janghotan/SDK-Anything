@@ -6,3 +6,4 @@ export * from './manifest/index.js';
 export * from './runtime/index.js';
 export * from './generators/index.js';
 export * from './ai/index.js';
+export * from './sandbox/index.js';

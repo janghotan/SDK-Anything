@@ -10,6 +10,7 @@ import {
   applyOverrides,
 } from '../manifest/index.js';
 import { generateArtifacts } from '../generators/index.js';
+import { runProjectTests } from '../sandbox/index.js';
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -221,8 +222,48 @@ export function createCli(options: CreateCliOptions = {}): Command {
     .option('--sandbox', 'Execute tests in an isolated container sandbox (requires Docker/Podman)')
     .option('--trusted-local', 'Execute tests in local process (trusted code only, not a sandbox)')
     .option('--json', 'Output results in JSON format')
-    .action(async (_path, _cmdOptions) => {
-      // Stub for Phase 01; full implementation in subsequent phases
+    .action(async (targetPath: string, cmdOptions: { sandbox?: boolean; trustedLocal?: boolean; json?: boolean }) => {
+      try {
+        let mode: 'static' | 'trusted-local' | 'sandbox' = 'static';
+        if (cmdOptions.sandbox) {
+          mode = 'sandbox';
+        } else if (cmdOptions.trustedLocal) {
+          mode = 'trusted-local';
+        }
+
+        const report = await runProjectTests(targetPath, { mode });
+
+        if (cmdOptions.json) {
+          const out = JSON.stringify(report, null, 2);
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        } else {
+          const lines = [
+            `Verification Report for: ${path.resolve(targetPath)}`,
+            `Mode:                ${report.mode}`,
+            `Security Sandbox:    ${report.isSecuritySandbox ? 'YES (container isolated)' : 'NO (not a sandbox boundary)'}`,
+            `Static checks:       ${report.staticChecksPassed ? 'PASSED' : 'FAILED'}`,
+            `Test execution:      ${report.testExecutionPassed === undefined ? 'SKIPPED (static mode)' : report.testExecutionPassed ? 'PASSED' : 'FAILED'}`,
+            `Duration:            ${report.durationMs}ms`,
+          ];
+          if (report.warnings.length > 0) {
+            lines.push('Warnings:');
+            report.warnings.forEach(w => lines.push(`  - ${w}`));
+          }
+          const out = lines.join('\n');
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        }
+      } catch (err: unknown) {
+        const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+        if (options.writeErr) options.writeErr(errMsg + '\n');
+        else console.error(errMsg);
+        if (options.exitOverride) {
+          throw err;
+        } else {
+          process.exit(1);
+        }
+      }
     });
 
   return program;

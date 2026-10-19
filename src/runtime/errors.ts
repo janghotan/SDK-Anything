@@ -33,7 +33,7 @@ export function normalizeError(
 
   let code: NormalizedErrorCode = 'RUNTIME_ERROR';
 
-  if (/unauthorized|authentication required|invalid token|api key missing|auth/i.test(message)) {
+  if (/unauthorized|authentication required|invalid token|api key|401|forbidden|403|auth/i.test(message)) {
     code = 'AUTH_REQUIRED';
   } else if (/not found|404/i.test(message)) {
     code = 'NOT_FOUND';

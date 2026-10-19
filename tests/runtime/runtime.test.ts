@@ -29,8 +29,9 @@ describe('Shared Invocation Runtime and Policy Enforcement', () => {
     async list(input: any) {
       return mockSdkMethods.getItems(input);
     }
-    async remove(input: any) {
-      return mockSdkMethods.deleteItem(input);
+    async remove(idOrInput: any) {
+      const id = typeof idOrInput === 'object' && idOrInput !== null ? idOrInput.id : idOrInput;
+      return mockSdkMethods.deleteItem({ id });
     }
   }
 

@@ -100,10 +100,15 @@ export async function invokeOperation(
     // 5. Invoke with timeout
     const timeoutMs = context.timeoutMs ?? 30000;
     const executionPromise = (async () => {
-      // Determine argument passing style:
-      // If input is an object with multiple properties matching function params,
-      // pass positional arguments or pass input as options object
       if (typeof input === 'object' && input !== null) {
+        const propKeys = Object.keys(op.inputSchema.properties || {});
+        if (propKeys.length === 1 && propKeys[0] in (input as any)) {
+          return targetCallable.call(thisArg, (input as any)[propKeys[0]]);
+        }
+        if (targetCallable.length > 1 && propKeys.length > 1) {
+          const positional = propKeys.map(k => (input as any)[k]);
+          return targetCallable.apply(thisArg, positional);
+        }
         return targetCallable.call(thisArg, input);
       }
       return targetCallable.call(thisArg);
