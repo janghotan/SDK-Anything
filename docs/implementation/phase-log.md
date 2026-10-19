@@ -14,6 +14,23 @@
 
 ---
 
+## Phase 07 — CLI Generator and Adapter Parity
+
+- **Date**: 2026-10-18
+- **Goal**: Generate readable CLI commands from the exact same manifest/runtime operations as MCP, ensure parity, and generate consumer SKILL.md.
+- **Status**: completed
+- **Commit**: `eeb041d` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented `createGeneratedCli` in `src/generators/cli/generator.ts` with `--json` and human-readable outputs, delegating to `invokeOperation`.
+  - Implemented `generateCliProject` producing standalone TypeScript CLI code, `package.json`, and `tsconfig.json`.
+  - Implemented `generateConsumerSkill` in `src/generators/consumer-skill/generator.ts` emitting `SKILL.md` with tools table, environment credential requirements, and atomic tool composition instructions.
+  - Implemented `generateArtifacts` in `src/generators/index.ts` writing `mcp/`, `cli/`, `capability-manifest.json`, and `SKILL.md` into the target output directory.
+  - Updated CLI `generate` command.
+  - Added test suites in `tests/generators/cli-generator.test.ts` and `tests/generators/consumer-skill.test.ts`.
+  - Verified 49/49 tests pass across all test suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 06 — MCP Server Generator
 
 - **Date**: 2026-10-18
