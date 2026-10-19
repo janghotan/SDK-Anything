@@ -14,6 +14,37 @@
 
 ---
 
+## Phase 10 — Turf E2E, Docs, Packaging, and Final Review
+
+- **Date**: 2026-10-18
+- **Goal**: Demonstrate the complete product, document actual limits, verify installability, and complete release-readiness checks without publishing an unauthorized release.
+- **Status**: completed
+- **Commit**: `49ebce3` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented `@example/turf-sample` golden example in `examples/turf/` with representative GIS operations (`distance`, `point`).
+  - Added comprehensive end-to-end integration test `tests/e2e/turf-e2e.test.ts` testing static inspection, manifest building, code generation, MCP tool call execution via official `@modelcontextprotocol/sdk` client, and CLI command execution.
+  - Implemented `examples/client-sdk/README.md` explaining stateful network client configuration and credential reference patterns.
+  - Created Apache-2.0 `LICENSE` and comprehensive `README.md` covering quick start, commands, core invariants, schema, security model, and limitations.
+  - Authored deep architecture documentation in `docs/architecture.md` and security documentation in `docs/security.md`.
+  - Added GitHub Actions CI workflow at `.github/workflows/ci.yml`.
+  - Performed smoke test generating clean project artifacts and validating schemas.
+  - Executed entire 13-point verification test matrix:
+    1. Formatter / Linter: `pnpm run lint` -> 0 errors.
+    2. TypeScript typecheck: `pnpm run typecheck` -> 0 errors.
+    3. Unit tests: 59/59 tests passed.
+    4. Golden tests and deterministic generation: verified byte-stable canonical serialization.
+    5. Static security/negative tests: path traversal archive rejection, symlink escape rejection, secret leakage rejection.
+    6. Generated MCP server compile + tool call: passed via `InMemoryTransport`.
+    7. Generated CLI build + Turf execution: passed.
+    8. Client-SDK fixture E2E: passed with loopback test server.
+    9. No-AI flow: passed without AI credentials.
+    10. Mocked OpenAI-compatible flow: passed.
+    11. Static verification without sandbox runtime: passed.
+    12. Container sandbox: fail-closed check verified without silent fallback.
+    13. Clean generated output smoke test: verified.
+
+
 ## Phase 09 — Client SDK Fixture, Sandbox, and Security Hardening
 
 - **Date**: 2026-10-18
