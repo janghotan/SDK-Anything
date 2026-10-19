@@ -156,3 +156,24 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - All 19 mandatory gates evaluated and passed (100% pass rate).
   - Full test suite: 99/99 tests passing across 20 test files.
 - **Next Action:** Move to Phase 12: Continuous Gap Elimination and Final Product Acceptance.
+
+## 2026-10-19: Phase 12 — Continuous Gap Elimination and Final Product Acceptance
+- **Delivered Changes:**
+  1. `src/generators/naming.ts`: Shared collision-safe CLI/MCP naming with reserved-command handling (`info`, `list`, `invoke`, `help`), used by both adapters and `SKILL.md`.
+  2. `src/generators/cli/generator.ts` & `src/generators/mcp/generator.ts`: All discovered operations are exposed; write/destructive/unknown operations fail closed unless explicitly authorized. CLI flags: `--allow-effects`, `--allow-operations`, `--allow-destructive`. MCP env: `SDK_ANYTHING_ALLOWED_EFFECTS`, `SDK_ANYTHING_ALLOWED_OPERATIONS`, `SDK_ANYTHING_ALLOW_DESTRUCTIVE`.
+  3. `src/runtime/policy-enforcer.ts` & `src/generators/runtime-template.ts`: Fixed per-operation allowlists so they authorize the named operation regardless of its effect tier (previously a write operation still failed the effect check).
+  4. `src/generators/index.ts`: Added `--sdk-dependency` and `--vendor-sdk`; fixed vendored dependency paths to `file:../vendor/<pkg>` because adapter package manifests live one directory below the project root.
+  5. `src/generators/runtime-template.ts`, CLI/MCP generators: Replaced JSON import attributes with an explicit `loadManifest()` file read so generated projects run on Node 20; build scripts copy `capability-manifest.json` into `dist/`.
+  6. `src/source/dependency-fetcher.ts` + `src/source/npm-resolver.ts`: Bounded, script-free npm dependency retrieval (dist-tags/semver, transitive graph, size/depth limits), enabling aggregate packages such as `@turf/turf` to resolve re-exports.
+  7. `src/analyzer/export-scanner.ts` & `src/manifest/builder.ts`: Factory-returned client objects now contribute atomic operations; effect inference treats calculate/compute/format/parse/is/has as pure.
+  8. `src/cli/index.ts`: `validate` verifies artifact inventory checksums and adapter presence in generated directories.
+  9. `package.json`: Added `prepack` build so `npm pack` works from a clean checkout; `semver` runtime dependency; TypeScript remains a runtime dependency for analysis.
+- **Test Evidence:**
+  - `tests/acceptance/external-generated-project.test.ts` (6/6): installed tarball CLI → `--vendor-sdk` → independent `npm install`/`tsc` in `cli/` and `mcp/` → real CLI processes and real stdio MCP client; auth, cursor pagination, invalid input, redaction, policy denial and scoped opt-in.
+  - `tests/source/dependency-fetcher.test.ts` (6/6): deterministic mocked registry, script-free transitive extraction, dist-tag/semver resolution, non-fatal failures.
+  - `tests/generators/vendor-sdk.test.ts` (2/2): vendor copy path, relative dependency spec, Node 20-safe manifest loading.
+  - `tests/runtime/runtime.test.ts` (8/8): added per-operation allowlist regression.
+  - `inspect npm:@turf/turf --json`: 56 functions discovered (previously 0), 128 actionable warnings.
+  - Full suite: 121/121 across 23 test files on Node 20.20.2, 22.23.3 and 24.22.0.
+- **Limitations:** Docker/Podman unavailable (container sandbox verified fail-closed only); remote CI not run; dependency retrieval is bounded/best-effort.
+- **Next Action:** Commit and push `feat/product-completion`; observe remote CI; update `STATE.md` with the remote result.

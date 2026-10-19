@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="#-快速上手"><img src="https://img.shields.io/badge/快速上手-5_分钟-blue?style=for-the-badge" alt="快速上手"></a>
-  <a href="#-测试结果"><img src="https://img.shields.io/badge/测试-95_项通过_(100%25)-brightgreen?style=for-the-badge" alt="测试"></a>
+  <a href="#-测试结果"><img src="https://img.shields.io/badge/测试-121_项通过_(100%25)-brightgreen?style=for-the-badge" alt="测试"></a>
   <a href="#-为什么需要-sdk-anything"><img src="https://img.shields.io/badge/架构-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-Apache_2.0-yellow?style=for-the-badge" alt="许可证"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Docs-English-blue?style=for-the-badge" alt="English"></a>
@@ -160,7 +160,19 @@ sdk-anything generate npm:@turf/turf \
   --targets mcp,cli \
   --ai \
   --output ./generated/turf-tools
+
+# 未发布或本地构建的 SDK：将构建产物复制进生成项目，并以相对 file: 依赖安装
+sdk-anything generate ./path/to/my-sdk \
+  --vendor-sdk ./path/to/my-sdk-dist \
+  --output ./generated/my-sdk-tools
+
+# 或显式指定依赖说明符
+sdk-anything generate ./path/to/my-sdk \
+  --sdk-dependency "file:../my-sdk-dist" \
+  --output ./generated/my-sdk-tools
 ```
+
+所有已发现的原子操作都会同时暴露给 CLI 与 MCP。纯函数/只读操作默认可用；写入、破坏性及未知副作用操作可被发现，但在显式授权前**故障闭锁**（CLI：`--allow-effects`、`--allow-operations`、`--allow-destructive`；MCP：`SDK_ANYTHING_ALLOWED_EFFECTS`、`SDK_ANYTHING_ALLOWED_OPERATIONS`、`SDK_ANYTHING_ALLOW_DESTRUCTIVE`）。
 
 ### 5. 静态验证、测试与健康诊断 (Doctor)
 
@@ -264,28 +276,32 @@ $ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 
 ## 📊 测试结果
 
-每个子系统在发布前均通过覆盖 19 个套件的严格自动化测试：
+每个子系统在发布前均通过覆盖 21 个测试组（23 个 Vitest 文件）的严格自动化测试：
 
 | 测试层级 | 验证目标 | 测试项 | 状态 |
 |---|---|:---:|:---:|
 | **CLI 核心入口** | 帮助文档、版本信息、退出码、分层配置解析 | 8 | ✅ 通过 |
 | **安全源解析器** | npm 下载、本地目录、GitHub 归档、路径穿越 (`../`)、软链接逃逸 | 13 | ✅ 通过 |
+| **依赖与重导出** | Re-exports 链条、Default 导出、聚合包、未解析符号提升 | 4 | ✅ 通过 |
+| **依赖安全下载** | 有界、无生命周期脚本的 npm 依赖图物化与 semver 解析 | 6 | ✅ 通过 |
 | **TypeScript 静态分析** | TS 编译器 AST、类型降级、枚举、索引签名、实用类型 | 6 | ✅ 通过 |
-| **能力清单规范** | v1 Schema 校验、Ajv 语义检查、规范化字节稳定序列化、人工覆写 | 8 | ✅ 通过 |
-| **通用调用运行时** | 执行流水线、副作用安全拦截、敏感 Token 脱敏、请求超时控制 | 7 | ✅ 通过 |
-| **MCP 代码生成器** | 官方 `@modelcontextprotocol/sdk`、系统指引嵌入、重名消歧 | 4 | ✅ 通过 |
-| **CLI 命令行生成器** | Commander.js 命令集、输入校验、stdin 流式管道、`invoke` 逃生舱 | 6 | ✅ 通过 |
-| **代理技能生成器** | 生成 `SKILL.md` 格式、参数依赖、命令一致性、原子工具编排指导 | 2 | ✅ 通过 |
+| **能力清单规范** | v1 Schema 校验、Ajv 语义检查、规范化字节稳定序列化、人工覆写、工厂客户端 | 9 | ✅ 通过 |
+| **清单安全重新生成** | 文件校验和清单、`--check` 漂移检测、用户修改保护 | 5 | ✅ 通过 |
+| **通用调用运行时** | 执行流水线、副作用安全拦截、敏感 Token 脱敏、请求超时控制 | 8 | ✅ 通过 |
+| **MCP 代码生成器** | 官方 `@modelcontextprotocol/sdk`、系统指引嵌入、重名消歧、环境变量策略 | 5 | ✅ 通过 |
+| **CLI 命令行生成器** | Commander.js 命令集、输入校验、stdin 流式管道、策略参数、`invoke` 逃生舱 | 8 | ✅ 通过 |
+| **代理技能生成器** | 生成 `SKILL.md` 格式、命令一致性、禁用操作授权指引 | 3 | ✅ 通过 |
+| **SDK 内嵌打包** | 项目根 `vendor/`、相对依赖说明符、Node 20 安全清单加载 | 2 | ✅ 通过 |
 | **AI 提案辅助层** | OpenAI 兼容接口 Mock、提示词注入隔离、隐私告知弹窗、优雅降级 | 6 | ✅ 通过 |
 | **安全与执行沙箱** | 有状态客户端生命周期、回环测试服务、故障闭锁沙箱检测 | 5 | ✅ 通过 |
 | **对抗性安全测试** | 压缩包穿越攻击、恶意软链接、解压炸弹、URL 凭据脱敏、循环游标拦截 | 9 | ✅ 通过 |
-| **清单安全重新生成** | 文件校验和清单、`--check` 漂移检测、用户修改保护 | 5 | ✅ 通过 |
 | **SDK 兼容性实验室** | 覆盖 6 种 SDK 架构形态的自动化验证（纯计算、认证客户端、Barrel、复杂类型、工厂、格式错误） | 2 | ✅ 通过 |
-| **核心流程端到端测试** | 完整闭环：检查 → 清单 → 原子生成 → 进程级 CLI 与 MCP 工具执行 | 4 | ✅ 通过 |
-| **安装包分发校验** | Tarball 内容白名单机制、`doctor` 命令、重定向零外部依赖 | 3 | ✅ 通过 |
-| **独立性与黄金用例** | 零仓库反向引用、独立编译运行、Turf 黄金测试 | 3 | ✅ 通过 |
-| **依赖与重导出** | Re-exports 链条、Default 导出、未解析符号提升 | 4 | ✅ 通过 |
-| **总计** | **19 个自动化测试套件 100% 通过（0 项类型或 Lint 错误）** | **95** | **✅ 全部绿灯** |
+| **核心流程端到端测试** | 完整闭环：检查 → 清单 → 原子生成 → 进程级 CLI 与 MCP 工具执行（含 Turf 黄金用例） | 5 | ✅ 通过 |
+| **独立性与黄金用例** | 零仓库反向引用、生成运行时独立编译 | 2 | ✅ 通过 |
+| **安装包分发校验** | Tarball 内容白名单、安装后二进制执行、`doctor` 命令、可重定位打包 | 4 | ✅ 通过 |
+| **性能与确定性** | 粗粒度预算、字节一致序列化、AbortSignal 取消 | 4 | ✅ 通过 |
+| **外部生成项目验收** | 安装 Tarball → 内嵌 SDK → `npm install`/构建 → 真实 CLI 进程 + stdio MCP 客户端 | 6 | ✅ 通过 |
+| **总计** | **23 个测试文件 100% 通过（0 项类型或 Lint 错误）** | **121** | **✅ 全部绿灯** |
 
 ---
 
@@ -365,7 +381,7 @@ sdk-anything/
 │   ├── generators/                      # MCP 服务、CLI 与 SKILL.md 生成器
 │   ├── ai/                              # 可选 AI 提案客户端与隐私告知
 │   └── sandbox/                         # 静态检测与容器执行沙箱
-└── tests/                               # 11 组 Vitest 自动化测试套件 (59 项测试)
+└── tests/                               # 23 组 Vitest 自动化测试套件 (121 项测试)
 ```
 
 ---
@@ -381,5 +397,5 @@ sdk-anything/
 
 <p align="center">
   <strong>SDK-Anything</strong> — <em>让全球所有软件库皆可 Agent-Native 化。</em><br>
-  <sub>专为自主 AI 智能体时代打造 • 59 项自动化测试通过 • 100% 确定性保证</sub>
+  <sub>专为自主 AI 智能体时代打造 • 121 项自动化测试通过 • 100% 确定性保证</sub>
 </p>
