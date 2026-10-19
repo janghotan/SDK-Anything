@@ -296,7 +296,7 @@ Every subsystem undergoes rigorous multi-layer testing across 21 groups (23 Vite
 | **MCP Generator** | Official `@modelcontextprotocol/sdk`, instructions, collision disambiguation, env policy | 5 | ✅ Passed |
 | **CLI Generator** | Commander.js commands, adapter parity, stdin piping, policy flags, `invoke` escape hatch | 8 | ✅ Passed |
 | **Consumer Skill** | Generated `SKILL.md` format, doc/command consistency, disabled-operation guidance | 3 | ✅ Passed |
-| **Vendor SDK Packaging** | Project-root `vendor/`, relative dependency specs, Node 20-safe manifest loading | 2 | ✅ Passed |
+| **Vendor SDK Packaging** | Project-root `vendor/`, relative dependency specs, package-name validation, Node 20-safe manifest loading | 3 | ✅ Passed |
 | **AI Proposal Layer** | Mock OpenAI endpoint, prompt-injection defense, privacy disclosure, fallback | 6 | ✅ Passed |
 | **Security & Sandbox** | Stateful client lifecycle, loopback server, fail-closed container detection | 5 | ✅ Passed |
 | **Adversarial Security** | Tarball traversal, symlinks, bombs, URL secret redaction, pagination loop guards | 9 | ✅ Passed |
