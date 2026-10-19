@@ -10,20 +10,20 @@ Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to
 - Active Working branch: `feat/product-completion` (branched from `chore/sdk-anything-v0.1-finish` at commit `eb5461a`)
 - Verified baseline gates:
   - `pnpm run typecheck`: exit 0
-  - `pnpm run lint`: exit 0 (94 warnings, 0 errors)
-  - `pnpm test`: 92/92 tests passing across 18 test files, exit 0
+  - `pnpm run lint`: exit 0 (99 warnings, 0 errors)
+  - `pnpm test`: 95/95 tests passing across 19 test files, exit 0
   - `pnpm run build`: exit 0
-  - `npm pack --dry-run`: exit 0 (202 files, 436.3 kB unpacked)
+  - `npm pack --dry-run`: exit 0 (206 files, 452.3 kB unpacked)
 
 ## Current phase
-Phase 08 — Installable Deliverables and Agent Integration Experience.
+Phase 09 — CLI UX, Documentation, Demos and Open-Source Adoption.
 
 ## Product acceptance dashboard
 Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a precise external reason where appropriate; never quietly count blocked as pass.
 
 | Area | Status | Evidence | Remaining gaps |
 |---|---|---|---|
-| Repository/baseline reverified | PASS | `pnpm test` (92/92), `tsc`, `lint`, `npm pack` clean | Complete |
+| Repository/baseline reverified | PASS | `pnpm test` (95/95), `tsc`, `lint`, `npm pack` clean | Complete |
 | User journey works from clean checkout | PASS | `tests/acceptance/core-user-journey.test.ts` & `tests/e2e/core-user-journey-e2e.test.ts` pass | Ongoing verification |
 | Analysis/export/type diagnostics actionable | PASS | Structured diagnostic codes, enums, index signatures, utility types in `tests/analyzer/analyzer.test.ts` | Complete |
 | Manifest stable, valid, diffable and regenerable | PASS | `tests/manifest/regeneration.test.ts` (5/5 pass) verifies `.sdk-anything-inventory.json`, `--check`, user conflict prevention | Complete |
@@ -36,16 +36,16 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 | Unsafe operations fail closed | PASS | Fail-closed destructive policy verified in `security-and-sandbox.test.ts` and `core-user-journey-e2e.test.ts` | Complete |
 | Sandbox behavior and labels are honest | PASS | Missing container fails closed, static/trusted-local explicitly labeled with env details | Complete |
 | Security hardening & adversarial tests | PASS | `tests/security/adversarial.test.ts` (9/9 pass) verifies traversal, symlinks, bombs, URL secret redaction, loop guards | Complete |
-| Clean package install works | IN PROGRESS | Phase 08 active: tarball pack, consumer install test, doctor command | Phase 08 |
+| Clean package install & bundle deliverables | PASS | `tests/distribution/package-install.test.ts` (3/3 pass) verifies tarball contents, `doctor` command, and MCP client config | Complete |
 | Multi-version CI and reproducible release evidence | NOT STARTED | | Phase 11 |
-| README/demo accurately reflect actual product | NOT STARTED | | Phase 09 |
+| README/demo accurately reflect actual product | IN PROGRESS | Phase 09 active: docs update, bilingual README sync, runnable demo scripts | Phase 09 |
 | No known P0/P1 defects | PASS | Fixed validator schema path, TS strict errors, policy enforcer bug | Keep clean |
 
 ## Active blockers
 None currently blocking local progress. Docker/Podman is not installed on host; static mode and trusted-local mode are verified, and container sandbox requests fail closed with clear error as required.
 
 ## Next exact action
-Proceed to Phase 08 implementation:
-1. Implement `sdk-anything doctor` (or verify) command reporting environment, versions, dependencies, and manifest health.
-2. Build an automated tarball packaging and clean install integration test (`tests/distribution/package-install.test.ts`).
-3. Generate sample MCP client configurations (`claude_desktop_config.json`, etc.) in generated bundles.
+Proceed to Phase 09 implementation:
+1. Update `README.md` and `README.zh-CN.md` with accurate CLI reference, commands, safety defaults, and runnable quickstart.
+2. Create dedicated demo scripts in `examples/` for pure functions, authenticated clients, and override promotion.
+3. Add contributor documentation (`CONTRIBUTING.md`).

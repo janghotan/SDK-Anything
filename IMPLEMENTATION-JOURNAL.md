@@ -116,3 +116,13 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/security/adversarial.test.ts`: Added 9-part adversarial test suite covering archive traversal (`../`), symlink rejection, zip bomb decompression size limit, URL credential and query token redaction, pagination infinite loop detection, container sandbox fail-closed behavior, target path traversal rejection, and prompt injection defense (9/9 passing).
   - Full test suite: 92/92 tests passing across 18 test files.
 - **Next Action:** Move to Phase 08: Installable Deliverables and Agent Integration Experience.
+
+## 2026-10-19: Phase 08 — Installable Deliverables and Agent Integration Experience
+- **Delivered Changes:**
+  1. `src/cli/doctor.ts` & `src/cli/index.ts`: Implemented `sdk-anything doctor [path]` command verifying target SDK, manifest schema, inventory checksum integrity, Node/container runtime, and policy summary.
+  2. `src/generators/mcp/generator.ts`: Added `claude_desktop_config.json` generation with environment secret placeholders to generated MCP bundles.
+  3. Package distribution verification: Tested `npm pack --dry-run --json` to ensure 100% of required runtime code/schemas are included and all tests/fixtures/internal prompts are excluded.
+- **Test Evidence:**
+  - `tests/distribution/package-install.test.ts`: Added tests verifying MCP client configuration generation, `doctor` command output and health checks, and package tarball runtime whitelist (3/3 passing).
+  - Full test suite: 95/95 tests passing across 19 test files.
+- **Next Action:** Move to Phase 09: CLI UX, Documentation, Demos and Open-Source Adoption.

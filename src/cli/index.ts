@@ -15,6 +15,7 @@ import {
   checkAndRecordDisclosure,
   requestAiProposals,
 } from "../ai/index.js";
+import { runDoctorCheck } from "./doctor.js";
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -423,6 +424,69 @@ export function createCli(options: CreateCliOptions = {}): Command {
             const out = lines.join("\n");
             if (options.writeOut) options.writeOut(out + "\n");
             else console.log(out);
+          }
+        } catch (err: unknown) {
+          const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+          if (options.writeErr) options.writeErr(errMsg + "\n");
+          else console.error(errMsg);
+          if (options.exitOverride) {
+            throw err;
+          } else {
+            process.exit(1);
+          }
+        }
+      },
+    );
+
+  program
+    .command("doctor [path]")
+    .description("Verify environment, dependencies, and generated project health")
+    .option("--json", "Output results in JSON format")
+    .action(
+      async (
+        targetPath: string = ".",
+        cmdOptions: { json?: boolean },
+      ) => {
+        try {
+          const report = runDoctorCheck(targetPath);
+          if (cmdOptions.json) {
+            const out = JSON.stringify(report, null, 2);
+            if (options.writeOut) options.writeOut(out + "\n");
+            else console.log(out);
+          } else {
+            const lines = [
+              `SDK-Anything Doctor Report for: ${report.targetPath}`,
+              `Status:             ${report.healthy ? "HEALTHY" : "ISSUES FOUND"}`,
+              `Target SDK:         ${report.packageName ? `${report.packageName}@${report.packageVersion}` : "Not a generated project directory"}`,
+              `Source Digest:      ${report.digest ?? "none"}`,
+              `Manifest Version:   ${report.manifestVersion ?? "none"}`,
+              `Generator Version:  ${report.generatorVersion ?? "none"}`,
+              `Inventory:          ${report.inventoryValid ? `VALID (${report.totalFiles} files verified)` : "UNVERIFIED"}`,
+              `Node Runtime:       ${report.nodeVersion}`,
+              `Container Runtime:  ${report.containerRuntime ?? "none"}`,
+              `Policy:             ${report.policySummary.enabledOperations} enabled, ${report.policySummary.disabledOperations} disabled`,
+            ];
+            if (report.warnings.length > 0) {
+              lines.push("Warnings:");
+              report.warnings.forEach((w) => lines.push(`  - ${w}`));
+            }
+            if (report.errors.length > 0) {
+              lines.push("Errors:");
+              report.errors.forEach((e) => lines.push(`  - ${e}`));
+            }
+            const out = lines.join("\n");
+            if (options.writeOut) options.writeOut(out + "\n");
+            else console.log(out);
+          }
+
+          if (!report.healthy) {
+            if (options.exitOverride) {
+              throw new Error(
+                `Doctor check found ${report.errors.length} errors`,
+              );
+            } else {
+              process.exit(1);
+            }
           }
         } catch (err: unknown) {
           const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;

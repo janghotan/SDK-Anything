@@ -296,11 +296,39 @@ main().catch((err: unknown) => {
     2,
   );
 
+  const envPlaceholders: Record<string, string> = {};
+  if (manifest.client?.options) {
+    for (const [_, opt] of Object.entries(manifest.client.options)) {
+      if (opt.source && opt.source.startsWith("env:")) {
+        const envName = opt.source.slice(4);
+        envPlaceholders[envName] = "<YOUR_SECRET_OR_CONFIG_VALUE>";
+      }
+    }
+  }
+
+  const claudeDesktopConfigJson = JSON.stringify(
+    {
+      mcpServers: {
+        [safePkgName]: {
+          command: "node",
+          args: ["./dist/server.js"],
+          env:
+            Object.keys(envPlaceholders).length > 0
+              ? envPlaceholders
+              : undefined,
+        },
+      },
+    },
+    null,
+    2,
+  );
+
   return {
     "server.ts": serverTs,
     "runtime.ts": getStandaloneRuntimeSource(),
     "package.json": packageJson,
     "tsconfig.json": tsconfigJson,
     "capability-manifest.json": canonicalManifestJson,
+    "claude_desktop_config.json": claudeDesktopConfigJson,
   };
 }
