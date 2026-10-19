@@ -120,6 +120,12 @@ export async function invokeOperation(
       return targetCallable.call(thisArg);
     })();
 
+    if (context.signal?.aborted) {
+      throw new Error(
+        `Operation '${operationId}' was cancelled before execution`,
+      );
+    }
+
     let timeoutHandle: any;
     const timeoutPromise = new Promise((_, reject) => {
       timeoutHandle = setTimeout(() => {
@@ -131,11 +137,31 @@ export async function invokeOperation(
       }, timeoutMs);
     });
 
+    let abortListener: (() => void) | undefined;
+    const abortPromise = new Promise((_, reject) => {
+      if (context.signal) {
+        abortListener = () => {
+          reject(
+            new Error(
+              `Operation '${operationId}' was cancelled by AbortSignal`,
+            ),
+          );
+        };
+        context.signal.addEventListener("abort", abortListener, {
+          once: true,
+        });
+      }
+    });
+
     const rawResult = await Promise.race([
       executionPromise,
       timeoutPromise,
+      abortPromise,
     ]).finally(() => {
       clearTimeout(timeoutHandle);
+      if (context.signal && abortListener) {
+        context.signal.removeEventListener("abort", abortListener);
+      }
     });
 
     // 6. Bounding / Pagination

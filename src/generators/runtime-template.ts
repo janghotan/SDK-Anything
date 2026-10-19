@@ -15,6 +15,7 @@ export interface InvocationContext {
   confirmDestructive?: (opId: string) => Promise<boolean>;
   sdkInstance?: unknown;
   sdkModule?: any;
+  signal?: AbortSignal;
 }
 
 export interface InvocationResult {
@@ -255,12 +256,31 @@ export async function invokeOperation(
       return targetCallable.call(thisArg);
     })();
 
+    if (context.signal?.aborted) {
+      throw new Error(\`Operation '\${operationId}' was cancelled before execution\`);
+    }
+
     let timer: any;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => reject(new Error(\`Operation '\${operationId}' timed out after \${timeoutMs}ms\`)), timeoutMs);
     });
 
-    const rawResult = await Promise.race([executionPromise, timeoutPromise]).finally(() => clearTimeout(timer));
+    let abortListener: (() => void) | undefined;
+    const abortPromise = new Promise((_, reject) => {
+      if (context.signal) {
+        abortListener = () => {
+          reject(new Error(\`Operation '\${operationId}' was cancelled by AbortSignal\`));
+        };
+        context.signal.addEventListener('abort', abortListener, { once: true });
+      }
+    });
+
+    const rawResult = await Promise.race([executionPromise, timeoutPromise, abortPromise]).finally(() => {
+      clearTimeout(timer);
+      if (context.signal && abortListener) {
+        context.signal.removeEventListener('abort', abortListener);
+      }
+    });
     const bounded = boundResult(rawResult, op.result?.pagination, { maxItems: context.maxItems, maxBytes: context.maxBytes });
 
     return {
