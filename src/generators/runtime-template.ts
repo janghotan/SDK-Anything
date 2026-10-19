@@ -11,6 +11,7 @@ export interface InvocationContext {
   maxItems?: number;
   maxBytes?: number;
   interactive?: boolean;
+  allowDestructive?: boolean;
   confirmDestructive?: (opId: string) => Promise<boolean>;
   sdkInstance?: unknown;
   sdkModule?: any;
@@ -47,7 +48,9 @@ export function normalizeError(err: unknown, knownSecrets: string[] = []) {
   const message = redactSecrets(rawMessage, knownSecrets);
   let code = 'RUNTIME_ERROR';
 
-  if (/unauthorized|authentication required|invalid token|api key|401|forbidden|403|auth/i.test(message)) {
+  if (/policy denied|permission denied|disabled by default|unauthorized effect/i.test(message)) {
+    code = 'POLICY_DENIED';
+  } else if (/unauthorized|authentication required|invalid token|api key|401|forbidden|403|\\bauth\\b/i.test(message)) {
     code = 'AUTH_REQUIRED';
   } else if (/not found|404/i.test(message)) {
     code = 'NOT_FOUND';
@@ -57,8 +60,6 @@ export function normalizeError(err: unknown, knownSecrets: string[] = []) {
     code = 'TIMEOUT';
   } else if (/invalid input|validation failed|missing required property/i.test(message)) {
     code = 'INVALID_INPUT';
-  } else if (/policy denied|permission denied|disabled by default/i.test(message)) {
-    code = 'POLICY_DENIED';
   } else if (/sdk error|network error|econnrefused|fetch failed/i.test(message)) {
     code = 'SDK_ERROR';
   }
@@ -125,12 +126,18 @@ export async function enforceOperationPolicy(op: any, context: InvocationContext
   if (!op.enabledByDefault && (!context.allowedEffects || !context.allowedEffects.includes(op.effect))) {
     throw new Error(\`Policy denied: operation '\${op.id}' is disabled by default in manifest.\`);
   }
-  if (op.effect === 'destructive' && context.interactive) {
-    if (context.confirmDestructive) {
-      const confirmed = await context.confirmDestructive(op.id);
-      if (!confirmed) throw new Error(\`Policy denied: destructive operation '\${op.id}' was rejected by user confirmation\`);
-    } else {
-      throw new Error(\`Policy denied: destructive operation '\${op.id}' requires interactive confirmation\`);
+  if (op.effect === 'destructive') {
+    if (context.interactive) {
+      if (context.confirmDestructive) {
+        const confirmed = await context.confirmDestructive(op.id);
+        if (!confirmed) throw new Error(\`Policy denied: destructive operation '\${op.id}' was rejected by user confirmation\`);
+      } else {
+        throw new Error(\`Policy denied: destructive operation '\${op.id}' requires interactive confirmation\`);
+      }
+    } else if (context.interactive === false) {
+      if (!context.allowDestructive && !context.allowedOperationIds?.includes(op.id)) {
+        throw new Error(\`Policy denied: destructive operation '\${op.id}' cannot be executed in non-interactive environment without explicit authorization (allowDestructive: true or allowedOperationIds)\`);
+      }
     }
   }
 }

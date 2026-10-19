@@ -2,22 +2,25 @@ name: CI
 
 on:
   push:
-    branches: [main, feat/*]
+    branches: [main, feat/*, chore/*]
   pull_request:
     branches: [main]
 
 jobs:
   verify:
-    name: Typecheck, Lint, Test, and Build
+    name: Node ${{ matrix.node-version }} - Quality Gates & Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -27,14 +30,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
+      - name: Check code formatting
+        run: pnpm run format
+
+      - name: TypeScript Typecheck
         run: pnpm run typecheck
 
-      - name: Lint
+      - name: ESLint
         run: pnpm run lint
 
-      - name: Run tests
+      - name: Automated Tests
         run: pnpm test
 
-      - name: Build
+      - name: Production Build
         run: pnpm run build
+
+      - name: Package Distribution Dry-Run
+        run: npm pack --dry-run

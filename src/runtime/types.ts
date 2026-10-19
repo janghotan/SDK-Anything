@@ -26,6 +26,7 @@ export interface InvocationContext {
   maxItems?: number;
   maxBytes?: number;
   interactive?: boolean;
+  allowDestructive?: boolean;
   confirmDestructive?: (opId: string) => Promise<boolean>;
   sdkInstance?: unknown;
   sdkModule?: any;

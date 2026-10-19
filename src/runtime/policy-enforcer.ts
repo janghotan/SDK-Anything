@@ -40,19 +40,31 @@ export async function enforceOperationPolicy(
     );
   }
 
-  // Interactive destructive check
-  if (op.effect === "destructive" && context.interactive) {
-    if (context.confirmDestructive) {
-      const confirmed = await context.confirmDestructive(op.id);
-      if (!confirmed) {
+  // Destructive operations safety check
+  if (op.effect === "destructive") {
+    if (context.interactive) {
+      if (context.confirmDestructive) {
+        const confirmed = await context.confirmDestructive(op.id);
+        if (!confirmed) {
+          throw new Error(
+            `Policy denied: destructive operation '${op.id}' was rejected by user confirmation`,
+          );
+        }
+      } else {
         throw new Error(
-          `Policy denied: destructive operation '${op.id}' was rejected by user confirmation`,
+          `Policy denied: destructive operation '${op.id}' requires interactive confirmation, but no confirmation handler is available`,
         );
       }
-    } else {
-      throw new Error(
-        `Policy denied: destructive operation '${op.id}' requires interactive confirmation, but no confirmation handler is available`,
-      );
+    } else if (context.interactive === false) {
+      // Non-interactive / non-TTY environment must fail closed without explicit authorization
+      if (
+        !context.allowDestructive &&
+        !context.allowedOperationIds?.includes(op.id)
+      ) {
+        throw new Error(
+          `Policy denied: destructive operation '${op.id}' cannot be executed in non-interactive environment without explicit authorization (allowDestructive: true or allowedOperationIds)`,
+        );
+      }
     }
   }
 }

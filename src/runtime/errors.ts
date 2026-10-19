@@ -43,7 +43,13 @@ export function normalizeError(
   let code: NormalizedErrorCode = "RUNTIME_ERROR";
 
   if (
-    /unauthorized|authentication required|invalid token|api key|401|forbidden|403|auth/i.test(
+    /policy denied|permission denied|disabled by default|unauthorized effect/i.test(
+      message,
+    )
+  ) {
+    code = "POLICY_DENIED";
+  } else if (
+    /unauthorized|authentication required|invalid token|api key|401|forbidden|403|\bauth\b/i.test(
       message,
     )
   ) {
@@ -60,12 +66,6 @@ export function normalizeError(
     )
   ) {
     code = "INVALID_INPUT";
-  } else if (
-    /policy denied|permission denied|disabled by default|unauthorized effect/i.test(
-      message,
-    )
-  ) {
-    code = "POLICY_DENIED";
   } else if (
     /sdk error|network error|econnrefused|fetch failed/i.test(message)
   ) {
