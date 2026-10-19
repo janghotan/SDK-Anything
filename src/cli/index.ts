@@ -7,7 +7,9 @@ import {
   buildManifest,
   validateManifest,
   generateStarterOverrides,
+  applyOverrides,
 } from '../manifest/index.js';
+import { generateArtifacts } from '../generators/index.js';
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -101,8 +103,55 @@ export function createCli(options: CreateCliOptions = {}): Command {
     .option('--output <dir>', 'Output directory for generated project', './generated')
     .option('--ai', 'Enable optional AI-assisted descriptions and operation selection')
     .option('--json', 'Output results in JSON format')
-    .action(async (_source, _cmdOptions) => {
-      // Stub for Phase 01; full implementation in subsequent phases
+    .action(async (source: string, cmdOptions: { targets?: string; output?: string; ai?: boolean; json?: boolean }) => {
+      try {
+        const snapshot = await resolveSource(source);
+        const evidence = await analyzeSourceSnapshot(snapshot);
+        let manifest = buildManifest(evidence);
+
+        // Check for local overrides file in cwd
+        const overridesPath = path.resolve('sdk-anything.overrides.json');
+        if (fs.existsSync(overridesPath)) {
+          const rawOverrides = JSON.parse(fs.readFileSync(overridesPath, 'utf8'));
+          manifest = applyOverrides(manifest, rawOverrides);
+        }
+
+        const targets = (cmdOptions.targets ?? 'mcp,cli').split(',').map(t => t.trim()).filter(Boolean);
+        const outputDir = cmdOptions.output ?? './generated';
+
+        const generatedFiles = generateArtifacts(manifest, targets, outputDir);
+
+        if (cmdOptions.json) {
+          const out = JSON.stringify({
+            manifest: manifest.source,
+            targets,
+            outputDir: path.resolve(outputDir),
+            files: generatedFiles.map(f => path.relative(process.cwd(), f)),
+          }, null, 2);
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        } else {
+          const lines = [
+            `Generated artifacts in: ${path.resolve(outputDir)}`,
+            `Targets: ${targets.join(', ')}`,
+            `Enabled operations: ${manifest.operations.filter(o => o.enabledByDefault).length}`,
+            `Files created:`,
+            ...generatedFiles.map(f => `  - ${path.relative(process.cwd(), f)}`),
+          ];
+          const out = lines.join('\n');
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        }
+      } catch (err: unknown) {
+        const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+        if (options.writeErr) options.writeErr(errMsg + '\n');
+        else console.error(errMsg);
+        if (options.exitOverride) {
+          throw err;
+        } else {
+          process.exit(1);
+        }
+      }
     });
 
   program
