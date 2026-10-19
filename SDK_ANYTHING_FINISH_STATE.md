@@ -12,13 +12,15 @@
   - `pnpm run lint`: exit 0 (68 warnings, 0 errors)
   - `pnpm test`: 60/60 passing tests across 11 test files, exit 0
   - `pnpm run build`: exit 0
-- Active phase: Phase 01 — Generated Project Independence
-- Active task: Task 1 — Standalone Generated Project Independence
-- Last verified commit: 243b45f
-- Last verified commands and outcomes: tsc, eslint, vitest (60/60 pass), tsc build (exit 0)
-- Known failures / root-cause evidence: none at current HEAD
+- Active phase: Phase 02 — SDK Compatibility and Type/Lifecycle Edge Cases
+- Active task: Task 2 — Re-Export and Dependency Declaration Handling
+- Last verified commit: cb827a0
+- Last verified commands and outcomes: tsc, eslint, vitest (62/62 pass), tsc build (exit 0)
+- Known failures / root-cause evidence: none
 - Tests skipped and why: live OpenAI provider test skipped (mocked fixtures used); Docker/Podman container tests skipped because neither is installed on host (fail-closed behavior verified)
-- Phase commits: Phase 00 planned and committed on chore/sdk-anything-v0.1-finish
-- Push status / destination: chore/sdk-anything-v0.1-finish (local commit, ready to push when authorized)
-- Next concrete action: Implement Task 1 tests and verify generated project independence in temp directory outside repo
+- Phase commits:
+  - `dc54978` (Phase 00: baseline audit and finish plan)
+  - `cb827a0` (Phase 01: standalone project independence tests outside repo)
+- Push status / destination: chore/sdk-anything-v0.1-finish (local commits, ready to push when authorized)
+- Next concrete action: Implement Task 2 tests and enhance dependency declaration resolution for re-export packages
 - Known limitations / risk accepted: Docker/Podman absent on host; static validation and trusted-local child process verified
