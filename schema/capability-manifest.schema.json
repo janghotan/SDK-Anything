@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sdk-anything.dev/schemas/manifest/v1.json",
+  "title": "SDK-Anything Capability Manifest v1",
+  "type": "object",
+  "required": ["schemaVersion", "generatorVersion", "source", "operations", "unresolved"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "sdk-anything/manifest/v1"
+    },
+    "generatorVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+"
+    },
+    "source": {
+      "type": "object",
+      "required": ["kind", "package", "version", "digest"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["npm", "local", "github"] },
+        "package": { "type": "string" },
+        "version": { "type": "string" },
+        "revision": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "client": {
+      "type": "object",
+      "required": ["module", "export", "construction", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "module": { "type": "string" },
+        "export": { "type": "string" },
+        "construction": { "type": "string", "enum": ["none", "class", "factory"] },
+        "options": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["type", "required"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string" },
+              "source": { "type": "string" },
+              "required": { "type": "boolean" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "summary",
+          "description",
+          "invoke",
+          "inputSchema",
+          "effect",
+          "enabledByDefault",
+          "result",
+          "provenance"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-zA-Z0-9_.-]+$" },
+          "name": { "type": "string" },
+          "summary": { "type": "string" },
+          "description": { "type": "string" },
+          "invoke": {
+            "type": "object",
+            "required": ["kind"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "type": "string", "enum": ["top-level-function", "instance-method"] },
+              "functionName": { "type": "string" },
+              "receiver": { "type": "string" },
+              "method": { "type": "string" }
+            }
+          },
+          "inputSchema": { "type": "object" },
+          "outputSchema": { "type": "object" },
+          "effect": {
+            "type": "string",
+            "enum": ["pure", "read", "write", "destructive", "unknown"]
+          },
+          "enabledByDefault": { "type": "boolean" },
+          "result": {
+            "type": "object",
+            "required": ["mode"],
+            "additionalProperties": false,
+            "properties": {
+              "mode": { "type": "string", "enum": ["direct", "paginated"] },
+              "pagination": {
+                "type": "object",
+                "required": ["type"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "type": "string", "enum": ["cursor", "page", "offset"] },
+                  "cursorParam": { "type": "string" },
+                  "responseItemsField": { "type": "string" },
+                  "responseNextCursorField": { "type": "string" },
+                  "maxItems": { "type": "integer", "minimum": 1 },
+                  "maxBytes": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "required": ["sourceFile", "confidence"],
+            "additionalProperties": false,
+            "properties": {
+              "sourceFile": { "type": "string" },
+              "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+              "overridesApplied": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "reason", "suggestedAction"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "reason": { "type": "string" },
+          "suggestedAction": { "type": "string" }
+        }
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,6 +1,13 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Command } from 'commander';
 import { resolveSource } from '../source/index.js';
 import { analyzeSourceSnapshot } from '../analyzer/index.js';
+import {
+  buildManifest,
+  validateManifest,
+  generateStarterOverrides,
+} from '../manifest/index.js';
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -36,6 +43,16 @@ export function createCli(options: CreateCliOptions = {}): Command {
       try {
         const snapshot = await resolveSource(source);
         const evidence = await analyzeSourceSnapshot(snapshot);
+
+        if (cmdOptions.writeOverrides) {
+          const manifest = buildManifest(evidence);
+          const starterOverrides = generateStarterOverrides(manifest);
+          const overridesPath = path.resolve('sdk-anything.overrides.json');
+          fs.writeFileSync(overridesPath, JSON.stringify(starterOverrides, null, 2), 'utf8');
+          const msg = `Wrote starter overrides to ${overridesPath}`;
+          if (options.writeOut) options.writeOut(msg + '\n');
+          else console.log(msg);
+        }
 
         if (cmdOptions.json) {
           const out = JSON.stringify(evidence, null, 2);
@@ -92,8 +109,61 @@ export function createCli(options: CreateCliOptions = {}): Command {
     .command('validate <path>')
     .description('Statically validate capability manifest and generated project')
     .option('--json', 'Output results in JSON format')
-    .action(async (_path, _cmdOptions) => {
-      // Stub for Phase 01; full implementation in subsequent phases
+    .action(async (targetPath: string, cmdOptions: { json?: boolean }) => {
+      try {
+        let manifestFile = path.resolve(targetPath);
+        if (fs.existsSync(manifestFile) && fs.statSync(manifestFile).isDirectory()) {
+          const candidate = path.join(manifestFile, 'capability-manifest.json');
+          const candidateAlt = path.join(manifestFile, 'sdk-anything.manifest.json');
+          if (fs.existsSync(candidate)) {
+            manifestFile = candidate;
+          } else if (fs.existsSync(candidateAlt)) {
+            manifestFile = candidateAlt;
+          } else {
+            throw new Error(`No manifest file found in directory: ${targetPath}`);
+          }
+        }
+
+        if (!fs.existsSync(manifestFile)) {
+          throw new Error(`Manifest file does not exist: ${manifestFile}`);
+        }
+
+        const raw = fs.readFileSync(manifestFile, 'utf8');
+        const manifest = JSON.parse(raw);
+        const result = validateManifest(manifest);
+
+        if (cmdOptions.json) {
+          const out = JSON.stringify(result, null, 2);
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        } else {
+          if (result.valid) {
+            const msg = `Manifest is valid: ${manifest.schemaVersion} (${manifest.operations?.length ?? 0} operations)`;
+            if (options.writeOut) options.writeOut(msg + '\n');
+            else console.log(msg);
+          } else {
+            const lines = [`Manifest validation failed:`];
+            result.errors.forEach(e => lines.push(`  - ${e}`));
+            const out = lines.join('\n');
+            if (options.writeErr) options.writeErr(out + '\n');
+            else console.error(out);
+            if (options.exitOverride) {
+              throw new Error(`Manifest validation failed with ${result.errors.length} errors`);
+            } else {
+              process.exit(1);
+            }
+          }
+        }
+      } catch (err: unknown) {
+        const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+        if (options.writeErr) options.writeErr(errMsg + '\n');
+        else console.error(errMsg);
+        if (options.exitOverride) {
+          throw err;
+        } else {
+          process.exit(1);
+        }
+      }
     });
 
   program
