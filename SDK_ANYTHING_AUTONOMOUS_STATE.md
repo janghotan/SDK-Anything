@@ -2,12 +2,12 @@
 
 - Project: SDK-Anything
 - Spec: `spec/SDK-Anything-Design-Revised.md` (canonical repository copy at `docs/superpowers/specs/2026-10-18-sdk-anything-design-revised.md`)
-- Current phase: Phase 06 — MCP Server Generator
-- Current plan task: Task 6 — Inspectable MCP Server Code Generator
+- Current phase: Phase 07 — CLI Generator and Adapter Parity
+- Current plan task: Task 7 — CLI Code Generator and Consumer SKILL.md
 - Current branch: feat/sdk-anything-v0.1
 - Remote push target: none (push blocked: no remote configured)
-- Last known green commit: 2390d37
-- Last verification command/result: pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build (41 tests passed)
+- Last known green commit: 108252e
+- Last verification command/result: pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build (44 tests passed)
 - Pending blocker: none (local execution proceeding autonomously)
 
 ## Phase ledger
@@ -20,7 +20,8 @@
 | 03 Static analyzer and evidence | completed | 730a2dc | 26 tests passed (5 analyzer tests + 21 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | TypeScript Compiler API, type lowering to JSON Schema, unresolved diagnostics |
 | 04 Manifest and overrides | completed | 76fe346 | 34 tests passed (8 manifest tests + 26 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Manifest v1 JSON Schema, Ajv validator, canonical serializer, overrides |
 | 05 Shared runtime and policy | completed | 2390d37 | 41 tests passed (7 runtime tests + 34 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Client lifecycle, credential refs, policy enforcement, pagination bounds, error normalization |
-| 06 MCP generator | in_progress | pending | — | — | — |
+| 06 MCP generator | completed | 108252e | 44 tests passed (3 mcp tests + 41 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Official MCP TypeScript SDK integration, stdio and in-memory transport, tool dispatch |
+| 07 CLI generator | in_progress | pending | — | — | — |
 | 02 Source resolution | pending | — | — | — | — |
 | 03 Static analyzer and evidence | pending | — | — | — | — |
 | 04 Manifest and overrides | pending | — | — | — | — |

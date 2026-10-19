@@ -14,6 +14,21 @@
 
 ---
 
+## Phase 06 — MCP Server Generator
+
+- **Date**: 2026-10-18
+- **Goal**: Generate inspectable TypeScript MCP server source from the validated manifest and shared runtime contract.
+- **Status**: completed
+- **Commit**: `108252e` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Validated official `@modelcontextprotocol/sdk` APIs (`Server`, `StdioServerTransport`, `ListToolsRequestSchema`, `CallToolRequestSchema`, `InMemoryTransport`).
+  - Implemented `createMcpServer` and `toMcpToolName` in `src/generators/mcp/generator.ts` mapping enabled manifest operations to MCP tools.
+  - Implemented `generateMcpProject` producing inspectable TypeScript server source, pinned `package.json`, `tsconfig.json`, and `capability-manifest.json`.
+  - Added unit and protocol integration tests verifying `listTools` and `callTool` via official MCP `InMemoryTransport`.
+  - Verified 44/44 tests pass across all test suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 05 — Shared Runtime, Client Lifecycle, and Policy Enforcement
 
 - **Date**: 2026-10-18
