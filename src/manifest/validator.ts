@@ -61,6 +61,12 @@ export function validateManifest(
     return { valid: false, errors: ["Manifest must be an object"] };
   }
 
+  if (manifest.schemaVersion !== "sdk-anything/manifest/v1") {
+    errors.push(
+      `Unsupported schema version '${manifest.schemaVersion}'. Supported version is 'sdk-anything/manifest/v1'. Please regenerate with SDK-Anything v${manifest.generatorVersion || "0.1.0"} or run migration.`,
+    );
+  }
+
   // Operation IDs uniqueness
   const seenIds = new Set<string>();
   if (Array.isArray(manifest.operations)) {

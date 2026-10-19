@@ -6,13 +6,20 @@ import type { CapabilityManifest } from "../manifest/types.js";
 import { generateMcpProject } from "./mcp/generator.js";
 import { generateCliProject } from "./cli/generator.js";
 import { generateConsumerSkill } from "./consumer-skill/generator.js";
+import {
+  createArtifactInventory,
+  checkDrift,
+} from "./inventory.js";
 
 export * from "./mcp/index.js";
 export * from "./cli/index.js";
 export * from "./consumer-skill/index.js";
+export * from "./inventory.js";
 
 export interface GenerateArtifactsOptions {
   sdkDependencyVersion?: string;
+  force?: boolean;
+  check?: boolean;
 }
 
 export function generateProjectReadme(
@@ -147,14 +154,62 @@ export function generateArtifacts(
     }
   }
 
+  // Add artifact inventory to fileMap
+  const inventory = createArtifactInventory(
+    fileMap,
+    manifest.source.digest,
+    manifest.generatorVersion,
+  );
+  fileMap.set(
+    ".sdk-anything-inventory.json",
+    JSON.stringify(inventory, null, 2),
+  );
+
   // Verify all paths stay within resolvedOutDir
   for (const relPath of fileMap.keys()) {
     const targetPath = path.resolve(resolvedOutDir, relPath);
-    if (!targetPath.startsWith(resolvedOutDir + path.sep) && targetPath !== resolvedOutDir) {
+    if (
+      !targetPath.startsWith(resolvedOutDir + path.sep) &&
+      targetPath !== resolvedOutDir
+    ) {
       throw new Error(
         `Path traversal detected: generated path '${targetPath}' escapes output directory '${resolvedOutDir}'`,
       );
     }
+  }
+
+  // Drift check
+  const drift = checkDrift(resolvedOutDir, fileMap);
+
+  if (options.check) {
+    if (drift.hasDrift) {
+      const details = [
+        drift.addedFiles.length > 0
+          ? `  Added: ${drift.addedFiles.join(", ")}`
+          : "",
+        drift.removedFiles.length > 0
+          ? `  Removed: ${drift.removedFiles.join(", ")}`
+          : "",
+        drift.modifiedFiles.length > 0
+          ? `  Modified: ${drift.modifiedFiles.join(", ")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      throw new Error(
+        `Drift detected in generated project at ${resolvedOutDir}:\n${details}`,
+      );
+    }
+    return Array.from(fileMap.keys()).map((rel) =>
+      path.join(resolvedOutDir, rel),
+    );
+  }
+
+  // Check for user-modified conflicts
+  if (drift.userModifiedConflicts.length > 0 && !options.force) {
+    throw new Error(
+      `Conflict detected: The following files have been modified by user since last generation: ${drift.userModifiedConflicts.join(", ")}. Pass --force to overwrite user modifications, or merge changes manually.`,
+    );
   }
 
   // Atomic write via staging directory

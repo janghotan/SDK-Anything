@@ -157,6 +157,11 @@ export function createCli(options: CreateCliOptions = {}): Command {
       "--ai",
       "Enable optional AI-assisted descriptions and operation selection",
     )
+    .option("--check", "Check for drift without writing files to disk")
+    .option(
+      "--force",
+      "Overwrite existing user-modified files without confirmation",
+    )
     .option("--json", "Output results in JSON format")
     .action(
       async (
@@ -165,6 +170,8 @@ export function createCli(options: CreateCliOptions = {}): Command {
           targets?: string;
           output?: string;
           ai?: boolean;
+          check?: boolean;
+          force?: boolean;
           json?: boolean;
         },
       ) => {
@@ -192,7 +199,19 @@ export function createCli(options: CreateCliOptions = {}): Command {
             manifest,
             targets,
             outputDir,
+            {
+              check: !!cmdOptions.check,
+              force: !!cmdOptions.force,
+            },
           );
+
+          if (cmdOptions.check) {
+            const checkMsg =
+              "No drift detected; generated project is up to date.";
+            if (options.writeOut) options.writeOut(checkMsg + "\n");
+            else console.log(checkMsg);
+            return;
+          }
 
           if (cmdOptions.json) {
             const out = JSON.stringify(
