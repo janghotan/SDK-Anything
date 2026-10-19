@@ -12,16 +12,17 @@
   - `pnpm run lint`: exit 0 (68 warnings, 0 errors)
   - `pnpm test`: 60/60 passing tests across 11 test files, exit 0
   - `pnpm run build`: exit 0
-- Active phase: Phase 03 — Security and MCP/CLI Policy Parity
-- Active task: Task 3 — Security & Non-Interactive Policy Parity
-- Last verified commit: 320b21a
-- Last verified commands and outcomes: tsc, eslint, vitest (66/66 pass), tsc build (exit 0)
+- Active phase: Phase 04 — Quality Gates and CI
+- Active task: Task 4 — Packaging Hygiene and Quality Gates
+- Last verified commit: 6474216
+- Last verified commands and outcomes: tsc, eslint, vitest (67/67 pass), tsc build (exit 0)
 - Known failures / root-cause evidence: none
 - Tests skipped and why: live OpenAI provider test skipped (mocked fixtures used); Docker/Podman container tests skipped because neither is installed on host (fail-closed behavior verified)
 - Phase commits:
   - `dc54978` (Phase 00: baseline audit and finish plan)
   - `cb827a0` (Phase 01: standalone project independence tests outside repo)
   - `320b21a` (Phase 02: re-export resolution, default/named export tests, override promotions)
+  - `6474216` (Phase 03: fail-closed non-interactive destructive policy and output path confinement)
 - Push status / destination: chore/sdk-anything-v0.1-finish (local commits, ready to push when authorized)
-- Next concrete action: Enforce fail-closed non-interactive destructive policy in runtime and verify with tests
+- Next concrete action: Configure explicit files whitelist in package.json and verify npm pack dry-run
 - Known limitations / risk accepted: Docker/Podman absent on host; static validation and trusted-local child process verified

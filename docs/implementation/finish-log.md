@@ -56,3 +56,16 @@
   - Verified pathful validation errors when overrides target non-existent operation IDs.
   - All 66 tests passing across 13 test suites.
 
+---
+
+## Phase 03 — Security and MCP/CLI Policy Parity
+
+- **Status**: completed
+- **Commit**: `6474216` on `chore/sdk-anything-v0.1-finish`
+- **Actions**:
+  - Hardened destructive operation policy enforcement in `src/runtime/policy-enforcer.ts` and `src/generators/runtime-template.ts`: in non-interactive/non-TTY environments, destructive operations strictly fail closed unless explicitly authorized via `allowDestructive: true` or `allowedOperationIds`.
+  - Added `--allow-destructive` flag to generated CLIs and programmatic CLI runner.
+  - Hardened `src/runtime/errors.ts` so `POLICY_DENIED` is prioritized over `AUTH_REQUIRED` and word boundaries `\bauth\b` are used to prevent false positive matching on words like "authorization".
+  - Added path traversal escape validation in `src/generators/index.ts` ensuring all generated files remain confined within `resolvedOutDir`.
+  - All 67 tests passing.
+
