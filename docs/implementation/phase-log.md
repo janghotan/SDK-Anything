@@ -14,6 +14,22 @@
 
 ---
 
+## Phase 05 — Shared Runtime, Client Lifecycle, and Policy Enforcement
+
+- **Date**: 2026-10-18
+- **Goal**: Build the single invocation layer consumed by both generated adapters, including client construction, input validation, secrets, result normalization, limits, and policy checks.
+- **Status**: completed
+- **Commit**: `2390d37` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented `invokeOperation` in `src/runtime/invoker.ts` orchestrating input validation, policy enforcement, client instantiation, timeout bounding, pagination limiting, and error normalization.
+  - Implemented `enforceOperationPolicy` in `src/runtime/policy-enforcer.ts` ensuring read/pure operations run by default and write/destructive/unknown operations are strictly blocked without explicit policy enablement or interactive confirmation.
+  - Implemented `resolveClient` in `src/runtime/client-lifecycle.ts` extracting credential references (`env:VAR_NAME`) only at runtime, never in static code.
+  - Implemented `normalizeError` and `redactSecrets` in `src/runtime/errors.ts` ensuring credentials and sensitive tokens are completely redacted from error messages.
+  - Implemented `boundResult` in `src/runtime/pagination.ts` enforcing item count and byte limits.
+  - Verified 41/41 tests pass across all test suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 04 — Manifest Schema, Overrides, and Policy Model
 
 - **Date**: 2026-10-18
