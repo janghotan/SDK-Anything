@@ -114,71 +114,73 @@ export function createGeneratedCli(
         "Explicitly authorize execution of destructive operations in non-interactive environments",
       )
       .option("--json", "Output result in machine-readable JSON format")
-      .action(async (cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
-        try {
-          let inputData: any = {};
-          if (cmdOpts.input) {
-            try {
-              inputData = JSON.parse(cmdOpts.input);
-            } catch (err: any) {
-              throw new Error(
-                `INVALID_INPUT: Failed to parse --input JSON: ${err.message}`,
-              );
+      .action(
+        async (cmdOpts: {
+          input?: string;
+          json?: boolean;
+          allowDestructive?: boolean;
+        }) => {
+          try {
+            let inputData: any = {};
+            if (cmdOpts.input) {
+              try {
+                inputData = JSON.parse(cmdOpts.input);
+              } catch (err: any) {
+                throw new Error(
+                  `INVALID_INPUT: Failed to parse --input JSON: ${err.message}`,
+                );
+              }
             }
-          }
 
-          const result = await invokeOperation(
-            manifest,
-            op.id,
-            inputData,
-            {
+            const result = await invokeOperation(manifest, op.id, inputData, {
               ...context,
-              allowDestructive: cmdOpts.allowDestructive ?? context.allowDestructive,
-            },
-          );
+              allowDestructive:
+                cmdOpts.allowDestructive ?? context.allowDestructive,
+            });
 
-          if (result.success) {
-            const outText = cmdOpts.json
-              ? JSON.stringify(result.data, null, 2)
-              : typeof result.data === "string"
-                ? result.data
-                : JSON.stringify(result.data, null, 2);
+            if (result.success) {
+              const outText = cmdOpts.json
+                ? JSON.stringify(result.data, null, 2)
+                : typeof result.data === "string"
+                  ? result.data
+                  : JSON.stringify(result.data, null, 2);
 
-            if (context.writeOut) context.writeOut(outText + "\n");
-            else console.log(outText);
-          } else {
-            const errEnvelope = {
-              error: {
-                code: result.error?.code ?? "RUNTIME_ERROR",
-                message: result.error?.message ?? "Operation failed",
-                suggestedAction: result.error?.suggestedAction,
-              },
-            };
-            const errText = cmdOpts.json
-              ? JSON.stringify(errEnvelope, null, 2)
-              : `Error [${errEnvelope.error.code}]: ${errEnvelope.error.message}`;
+              if (context.writeOut) context.writeOut(outText + "\n");
+              else console.log(outText);
+            } else {
+              const errEnvelope = {
+                error: {
+                  code: result.error?.code ?? "RUNTIME_ERROR",
+                  message: result.error?.message ?? "Operation failed",
+                  suggestedAction: result.error?.suggestedAction,
+                },
+              };
+              const errText = cmdOpts.json
+                ? JSON.stringify(errEnvelope, null, 2)
+                : `Error [${errEnvelope.error.code}]: ${errEnvelope.error.message}`;
 
-            if (context.writeErr) context.writeErr(errText + "\n");
-            else console.error(errText);
+              if (context.writeErr) context.writeErr(errText + "\n");
+              else console.error(errText);
+
+              if (context.exitOverride) {
+                throw new Error(errText);
+              } else {
+                process.exit(1);
+              }
+            }
+          } catch (err: unknown) {
+            const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+            if (context.writeErr) context.writeErr(errMsg + "\n");
+            else console.error(errMsg);
 
             if (context.exitOverride) {
-              throw new Error(errText);
+              throw err;
             } else {
               process.exit(1);
             }
           }
-        } catch (err: unknown) {
-          const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
-          if (context.writeErr) context.writeErr(errMsg + "\n");
-          else console.error(errMsg);
-
-          if (context.exitOverride) {
-            throw err;
-          } else {
-            process.exit(1);
-          }
-        }
-      });
+        },
+      );
   }
 
   return program;

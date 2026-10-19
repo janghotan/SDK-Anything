@@ -81,3 +81,16 @@
   - Expanded GitHub Actions CI workflow in `.github/workflows/ci.yml` across Node 20 and Node 22 LTS, covering formatting, typecheck, lint, full tests, build, and package dry-run.
   - All local quality gates verified: `pnpm run format`, `pnpm run typecheck`, `pnpm run lint`, `pnpm test`, `pnpm run build`.
 
+---
+
+## Phase 05 & Phase 06 — Documentation, Independent Review, and Release Candidate
+
+- **Status**: completed
+- **Commit**: pending commit on `chore/sdk-anything-v0.1-finish`
+- **Actions**:
+  - Verified exact documented quickstart user journey (`inspect` → `generate` → `validate` → `test --trusted-local`) in temporary workspace.
+  - Verified bilingual READMEs ([README.md](README.md) and [README.zh-CN.md](README.zh-CN.md)) with hero banners and language links.
+  - Authored release candidate assessment in `docs/implementation/v0.1-readiness-report.md`.
+  - Verified clean diffs, no accidental secrets, and 100% test pass rate across 67 automated tests.
+  - Verdict: Ready as v0.1 Release Candidate.
+

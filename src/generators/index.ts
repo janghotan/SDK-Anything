@@ -44,7 +44,9 @@ export function generateArtifacts(
     for (const [relPath, content] of Object.entries(mcpFiles)) {
       const fullPath = path.resolve(mcpDir, relPath);
       if (!fullPath.startsWith(resolvedOutDir + path.sep)) {
-        throw new Error(`Path traversal detected: generated path '${fullPath}' escapes output directory '${resolvedOutDir}'`);
+        throw new Error(
+          `Path traversal detected: generated path '${fullPath}' escapes output directory '${resolvedOutDir}'`,
+        );
       }
       fs.mkdirSync(path.dirname(fullPath), { recursive: true });
       fs.writeFileSync(fullPath, content, "utf8");
@@ -60,7 +62,9 @@ export function generateArtifacts(
     for (const [relPath, content] of Object.entries(cliFiles)) {
       const fullPath = path.resolve(cliDir, relPath);
       if (!fullPath.startsWith(resolvedOutDir + path.sep)) {
-        throw new Error(`Path traversal detected: generated path '${fullPath}' escapes output directory '${resolvedOutDir}'`);
+        throw new Error(
+          `Path traversal detected: generated path '${fullPath}' escapes output directory '${resolvedOutDir}'`,
+        );
       }
       fs.mkdirSync(path.dirname(fullPath), { recursive: true });
       fs.writeFileSync(fullPath, content, "utf8");

@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import * as path from "node:path";
 import { analyzeSourceSnapshot } from "../../src/analyzer/index.js";
-import { buildManifest, applyOverrides, validateManifest } from "../../src/manifest/index.js";
+import {
+  buildManifest,
+  applyOverrides,
+  validateManifest,
+} from "../../src/manifest/index.js";
 import { invokeOperation } from "../../src/runtime/index.js";
 import type { SdkAnythingOverrides } from "../../src/manifest/types.js";
 
@@ -18,8 +22,12 @@ describe("Phase 02: SDK Compatibility and Edge Cases", () => {
     expect(uniqueIds.size).toBe(ids.length);
 
     // Verify default and named exports are cleanly represented
-    expect(manifest.operations.some((o) => o.id === "calculateDistance")).toBe(true);
-    expect(manifest.operations.some((o) => o.id === "formatCoordinate")).toBe(true);
+    expect(manifest.operations.some((o) => o.id === "calculateDistance")).toBe(
+      true,
+    );
+    expect(manifest.operations.some((o) => o.id === "formatCoordinate")).toBe(
+      true,
+    );
   });
 
   it("promotes unresolved symbols to executable operations when human overrides supply schemas", async () => {
@@ -28,7 +36,9 @@ describe("Phase 02: SDK Compatibility and Edge Cases", () => {
 
     // 'listenEvents' was unresolved due to callback parameter
     expect(manifest.unresolved.some((u) => u.id === "listenEvents")).toBe(true);
-    expect(manifest.operations.some((o) => o.id === "listenEvents")).toBe(false);
+    expect(manifest.operations.some((o) => o.id === "listenEvents")).toBe(
+      false,
+    );
 
     // Provide reviewed override schema for listenEvents
     const overrides: SdkAnythingOverrides = {
@@ -50,10 +60,16 @@ describe("Phase 02: SDK Compatibility and Edge Cases", () => {
     };
 
     const updatedManifest = applyOverrides(manifest, overrides);
-    expect(updatedManifest.unresolved.some((u) => u.id === "listenEvents")).toBe(false);
-    expect(updatedManifest.operations.some((o) => o.id === "listenEvents")).toBe(true);
+    expect(
+      updatedManifest.unresolved.some((u) => u.id === "listenEvents"),
+    ).toBe(false);
+    expect(
+      updatedManifest.operations.some((o) => o.id === "listenEvents"),
+    ).toBe(true);
 
-    const promotedOp = updatedManifest.operations.find((o) => o.id === "listenEvents");
+    const promotedOp = updatedManifest.operations.find(
+      (o) => o.id === "listenEvents",
+    );
     expect(promotedOp?.enabledByDefault).toBe(true);
     expect(promotedOp?.effect).toBe("read");
     expect(promotedOp?.provenance.overridesApplied).toContain("inputSchema");
@@ -103,7 +119,8 @@ describe("Phase 02: SDK Compatibility and Edge Cases", () => {
         kind: "local",
         package: "default-client-sdk",
         version: "1.0.0",
-        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       },
       client: {
         module: "default-client-sdk",
@@ -132,9 +149,14 @@ describe("Phase 02: SDK Compatibility and Edge Cases", () => {
       unresolved: [],
     };
 
-    const res = await invokeOperation(clientManifest, "client.ping", {}, {
-      sdkModule: mockModuleWithDefault,
-    });
+    const res = await invokeOperation(
+      clientManifest,
+      "client.ping",
+      {},
+      {
+        sdkModule: mockModuleWithDefault,
+      },
+    );
 
     expect(res.success).toBe(true);
     expect(res.data).toEqual({ pong: true });

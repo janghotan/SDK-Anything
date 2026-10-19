@@ -142,7 +142,13 @@ describe("Sandbox Security and Trust Mode Enforcement", () => {
     const testManifest: any = {
       schemaVersion: "sdk-anything/manifest/v1",
       generatorVersion: "0.1.0",
-      source: { kind: "local", package: "test", version: "1.0.0", digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000" },
+      source: {
+        kind: "local",
+        package: "test",
+        version: "1.0.0",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      },
       operations: [
         {
           id: "deleteItem",
@@ -161,23 +167,35 @@ describe("Sandbox Security and Trust Mode Enforcement", () => {
     };
 
     // Non-interactive without allowDestructive must fail closed
-    const resBlocked = await invokeOperation(testManifest, "deleteItem", {}, {
-      sdkModule: mockModule,
-      interactive: false,
-      allowedEffects: ["pure", "read", "destructive"],
-      allowDestructive: false,
-    });
+    const resBlocked = await invokeOperation(
+      testManifest,
+      "deleteItem",
+      {},
+      {
+        sdkModule: mockModule,
+        interactive: false,
+        allowedEffects: ["pure", "read", "destructive"],
+        allowDestructive: false,
+      },
+    );
     expect(resBlocked.success).toBe(false);
     expect(resBlocked.error?.code).toBe("POLICY_DENIED");
-    expect(resBlocked.error?.message).toMatch(/non-interactive environment without explicit authorization/i);
+    expect(resBlocked.error?.message).toMatch(
+      /non-interactive environment without explicit authorization/i,
+    );
 
     // Non-interactive WITH allowDestructive: true succeeds
-    const resAllowed = await invokeOperation(testManifest, "deleteItem", {}, {
-      sdkModule: mockModule,
-      interactive: false,
-      allowedEffects: ["pure", "read", "destructive"],
-      allowDestructive: true,
-    });
+    const resAllowed = await invokeOperation(
+      testManifest,
+      "deleteItem",
+      {},
+      {
+        sdkModule: mockModule,
+        interactive: false,
+        allowedEffects: ["pure", "read", "destructive"],
+        allowDestructive: true,
+      },
+    );
     expect(resAllowed.success).toBe(true);
     expect(resAllowed.data).toEqual({ deleted: true });
   });

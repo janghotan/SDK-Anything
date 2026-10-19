@@ -22,9 +22,9 @@ describe("Phase 01: Generated Project Independence", () => {
       const files = generateArtifacts(manifest, ["mcp", "cli"], tempDir);
 
       expect(files.length).toBeGreaterThanOrEqual(8);
-      expect(fs.existsSync(path.join(tempDir, "capability-manifest.json"))).toBe(
-        true,
-      );
+      expect(
+        fs.existsSync(path.join(tempDir, "capability-manifest.json")),
+      ).toBe(true);
       expect(fs.existsSync(path.join(tempDir, "SKILL.md"))).toBe(true);
       expect(fs.existsSync(path.join(tempDir, "mcp/server.ts"))).toBe(true);
       expect(fs.existsSync(path.join(tempDir, "mcp/runtime.ts"))).toBe(true);
@@ -40,7 +40,9 @@ describe("Phase 01: Generated Project Independence", () => {
         expect(content).not.toContain("../src/");
         expect(content).not.toContain("file:");
         // No hardcoded secrets
-        expect(content).not.toMatch(/api_key\s*=\s*['"][a-zA-Z0-9_-]{16,}['"]/i);
+        expect(content).not.toMatch(
+          /api_key\s*=\s*['"][a-zA-Z0-9_-]{16,}['"]/i,
+        );
       }
 
       // Verify generated runtime.ts compiles cleanly with TypeScript Compiler API
@@ -100,9 +102,10 @@ describe("Phase 01: Generated Project Independence", () => {
       const generatedRuntimePath = path.join(tempDir, "cli/runtime.ts");
       expect(fs.existsSync(generatedRuntimePath)).toBe(true);
       const clientModule = await import("../fixtures/client-sdk/src/index.js");
-      const { invokeOperation } = await import(
-        "../../src/generators/runtime-template.js"
-      ).then(() => import("../../src/runtime/invoker.js"));
+      const { invokeOperation } =
+        await import("../../src/generators/runtime-template.js").then(
+          () => import("../../src/runtime/invoker.js"),
+        );
 
       const result = await invokeOperation(
         manifest,
