@@ -14,6 +14,24 @@
 
 ---
 
+## Phase 02 — Source Resolution
+
+- **Date**: 2026-10-18
+- **Goal**: Normalize npm, local directory, and public GitHub inputs into a versioned/digested source snapshot without running target code.
+- **Status**: completed
+- **Commit**: `ec33c1b` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented `parseSourceLocator` in `src/source/locator.ts` supporting `npm:<package>`, `npm:<pkg>@<ver>`, local directories, and HTTPS `github.com/<owner>/<repo>[/tree/<ref>]`.
+  - Implemented safe in-memory tarball extraction in `src/source/archive-extractor.ts` with strict path traversal prevention (`../` detection, symlink rejection, file count and size caps).
+  - Implemented deterministic tree digest calculation (`computeTreeDigest`) using sorted file SHA-256 hashes.
+  - Implemented `resolveLocalSource` copying source files to an isolated cache snapshot without running scripts.
+  - Implemented `resolveNpmSource` downloading package tarballs from npm registry and extracting safely without executing package lifecycle hooks.
+  - Implemented `resolveGitHubSource` downloading source snapshots from public GitHub repositories.
+  - Integrated `resolveSource` into `sdk-anything inspect <source>` with human-readable and `--json` outputs.
+  - Verified 21/21 tests pass across unit and integration suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 01 — Bootstrap the TypeScript Project and Quality Gates
 
 - **Date**: 2026-10-18
