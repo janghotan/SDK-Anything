@@ -6,6 +6,13 @@ export interface TestReport {
   staticChecksPassed: boolean;
   testExecutionPassed?: boolean;
   durationMs: number;
+  environment?: {
+    runtime: string;
+    os: string;
+    nodeVersion: string;
+  };
+  executedTasks?: string[];
+  skippedTasks?: string[];
   logs: string[];
   warnings: string[];
 }

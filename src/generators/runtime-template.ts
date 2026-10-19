@@ -116,14 +116,26 @@ export function resolveClient(clientDesc: any, context: InvocationContext) {
 }
 
 export async function enforceOperationPolicy(op: any, context: InvocationContext): Promise<void> {
-  const allowedEffects = context.allowedEffects ?? ['pure', 'read'];
+  const allowedEffects = [
+    ...(context.allowedEffects ?? ['pure', 'read']),
+  ];
+  if (context.allowDestructive || context.allowedOperationIds?.includes(op.id)) {
+    if (!allowedEffects.includes('destructive')) {
+      allowedEffects.push('destructive');
+    }
+  }
   if (context.allowedOperationIds && !context.allowedOperationIds.includes(op.id)) {
     throw new Error(\`Policy denied: operation '\${op.id}' is not in the explicit allowedOperationIds list\`);
   }
   if (!allowedEffects.includes(op.effect)) {
     throw new Error(\`Policy denied: operation '\${op.id}' has effect '\${op.effect}', which is disabled by default.\`);
   }
-  if (!op.enabledByDefault && (!context.allowedEffects || !context.allowedEffects.includes(op.effect))) {
+  const isExplicitlyAuthorized =
+    (context.allowedEffects && context.allowedEffects.includes(op.effect)) ||
+    (op.effect === 'destructive' && context.allowDestructive) ||
+    context.allowedOperationIds?.includes(op.id);
+
+  if (!op.enabledByDefault && !isExplicitlyAuthorized) {
     throw new Error(\`Policy denied: operation '\${op.id}' is disabled by default in manifest.\`);
   }
   if (op.effect === 'destructive') {

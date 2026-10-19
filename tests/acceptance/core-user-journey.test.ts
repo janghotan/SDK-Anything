@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import * as os from "node:os";
-import ts from "typescript";
 import { createCli } from "../../src/cli/index.js";
 import { generateArtifacts } from "../../src/generators/index.js";
 import { buildManifest } from "../../src/manifest/index.js";

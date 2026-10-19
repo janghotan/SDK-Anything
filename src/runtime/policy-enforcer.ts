@@ -8,10 +8,18 @@ export async function enforceOperationPolicy(
   op: OperationDescriptor,
   context: InvocationContext,
 ): Promise<void> {
-  const allowedEffects: OperationEffect[] = context.allowedEffects ?? [
-    "pure",
-    "read",
+  const allowedEffects: OperationEffect[] = [
+    ...(context.allowedEffects ?? ["pure", "read"]),
   ];
+
+  if (
+    context.allowDestructive ||
+    context.allowedOperationIds?.includes(op.id)
+  ) {
+    if (!allowedEffects.includes("destructive")) {
+      allowedEffects.push("destructive");
+    }
+  }
 
   // Check allowlist if provided
   if (
@@ -30,11 +38,13 @@ export async function enforceOperationPolicy(
     );
   }
 
-  // If operation is marked disabled in manifest and no explicit override in allowedEffects
-  if (
-    !op.enabledByDefault &&
-    (!context.allowedEffects || !context.allowedEffects.includes(op.effect))
-  ) {
+  // If operation is marked disabled in manifest and no explicit override in allowedEffects/authorization
+  const isExplicitlyAuthorized =
+    (context.allowedEffects && context.allowedEffects.includes(op.effect)) ||
+    (op.effect === "destructive" && context.allowDestructive) ||
+    context.allowedOperationIds?.includes(op.id);
+
+  if (!op.enabledByDefault && !isExplicitlyAuthorized) {
     throw new Error(
       `Policy denied: operation '${op.id}' is disabled by default in manifest. Must be enabled via policy configuration or overrides.`,
     );

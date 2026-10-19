@@ -318,7 +318,7 @@ for (const op of enabledOperations) {
     });
 }
 
-program.parseAsync(process.argv).catch(err => {
+program.parseAsync(process.argv).catch((err: unknown) => {
   console.error('Fatal CLI error:', err);
   process.exit(1);
 });
@@ -336,6 +336,7 @@ program.parseAsync(process.argv).catch(err => {
       scripts: {
         build: "tsc",
         start: "node dist/cli.js",
+        test: "tsc --noEmit",
       },
       dependencies: {
         commander: "^15.0.0",
@@ -357,6 +358,7 @@ program.parseAsync(process.argv).catch(err => {
         module: "NodeNext",
         moduleResolution: "NodeNext",
         lib: ["ES2022"],
+        types: ["node"],
         strict: true,
         esModuleInterop: true,
         skipLibCheck: true,

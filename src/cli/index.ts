@@ -77,6 +77,26 @@ export function createCli(options: CreateCliOptions = {}): Command {
             if (options.writeOut) options.writeOut(out + "\n");
             else console.log(out);
           } else {
+            const manifest = buildManifest(evidence);
+            const pureOps = manifest.operations.filter(
+              (o) => o.effect === "pure",
+            ).length;
+            const readOps = manifest.operations.filter(
+              (o) => o.effect === "read",
+            ).length;
+            const writeOps = manifest.operations.filter(
+              (o) => o.effect === "write",
+            ).length;
+            const destructiveOps = manifest.operations.filter(
+              (o) => o.effect === "destructive",
+            ).length;
+            const unknownOps = manifest.operations.filter(
+              (o) => o.effect === "unknown",
+            ).length;
+            const enabledOps = manifest.operations.filter(
+              (o) => o.enabledByDefault,
+            ).length;
+
             const lines = [
               `Resolved source: ${snapshot.identifier}`,
               `Kind:            ${snapshot.kind}`,
@@ -86,12 +106,15 @@ export function createCli(options: CreateCliOptions = {}): Command {
               `Functions:       ${evidence.functions.length} (${evidence.functions.map((f) => f.name).join(", ") || "none"})`,
               `Classes:         ${evidence.classes.length} (${evidence.classes.map((c) => c.name).join(", ") || "none"})`,
               `Factories:       ${evidence.factories.length} (${evidence.factories.map((f) => f.name).join(", ") || "none"})`,
+              `Operations:      ${manifest.operations.length} (${enabledOps} enabled by default; pure: ${pureOps}, read: ${readOps}, write: ${writeOps}, destructive: ${destructiveOps}, unknown: ${unknownOps})`,
               `Unresolved:      ${evidence.unresolved.length}`,
             ];
             if (evidence.unresolved.length > 0) {
               lines.push(`Unresolved symbols:`);
               evidence.unresolved.forEach((u) =>
-                lines.push(`  - ${u.symbolName}: ${u.reason}`),
+                lines.push(
+                  `  - ${u.symbolName}: [${u.reason}] ${u.suggestedAction || ""}`,
+                ),
               );
             }
             if (snapshot.warnings.length > 0) {
@@ -328,6 +351,9 @@ export function createCli(options: CreateCliOptions = {}): Command {
               `Security Sandbox:    ${report.isSecuritySandbox ? "YES (container isolated)" : "NO (not a sandbox boundary)"}`,
               `Static checks:       ${report.staticChecksPassed ? "PASSED" : "FAILED"}`,
               `Test execution:      ${report.testExecutionPassed === undefined ? "SKIPPED (static mode)" : report.testExecutionPassed ? "PASSED" : "FAILED"}`,
+              `Environment:         ${report.environment ? `${report.environment.runtime} (${report.environment.nodeVersion}) on ${report.environment.os}` : "unknown"}`,
+              `Executed tasks:      ${report.executedTasks?.join(", ") || "none"}`,
+              `Skipped tasks:       ${report.skippedTasks?.join(", ") || "none"}`,
               `Duration:            ${report.durationMs}ms`,
             ];
             if (report.warnings.length > 0) {

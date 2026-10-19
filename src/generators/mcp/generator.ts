@@ -59,7 +59,7 @@ export function createMcpServer(
   });
 
   // Register CallTool
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     const toolName = request.params.name;
     const op = toolToOpMap.get(toolName);
 
@@ -183,7 +183,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   const op = toolMap.get(request.params.name);
   if (!op) {
     return {
@@ -227,7 +227,7 @@ async function main() {
   console.error('SDK-Anything MCP server running on stdio');
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error('Fatal MCP server error:', err);
   process.exit(1);
 });
@@ -246,6 +246,7 @@ main().catch(err => {
       scripts: {
         build: "tsc",
         start: "node dist/server.js",
+        test: "tsc --noEmit",
       },
       dependencies: {
         "@modelcontextprotocol/sdk": "^1.32.1",
@@ -268,6 +269,7 @@ main().catch(err => {
         module: "NodeNext",
         moduleResolution: "NodeNext",
         lib: ["ES2022"],
+        types: ["node"],
         strict: true,
         esModuleInterop: true,
         skipLibCheck: true,

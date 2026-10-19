@@ -81,7 +81,7 @@ export function applyOverrides(
         }
 
         throw new Error(
-          `Unknown operation ID in overrides: '${opId}' does not match any discovered operation`,
+          `Unknown operation ID in overrides: '${opId}' (at /operations/${opId}) does not match any discovered operation`,
         );
       }
 

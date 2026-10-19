@@ -25,3 +25,17 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/acceptance/core-user-journey.test.ts` (RED: failing tests proving external-cwd validation error and strict TS errors).
   - `docs/implementation/product-completion-roadmap.md` (roadmap and user-journey map).
 - **Next Action:** Begin Phase 01 implementation to turn acceptance tests GREEN and harden end-to-end public user journeys.
+
+## 2026-10-19: Phase 01 — Make the Core User Journey Real, Complete and Boringly Reliable
+- **Delivered Changes:**
+  1. `src/manifest/validator.ts`: Replaced relative `schemaPath` with `import.meta.url` resolution and multi-candidate fallback. Manifest validation now works reliably from any external working directory.
+  2. `src/generators/cli/generator.ts` & `src/generators/mcp/generator.ts`: Fixed TS7006 implicit any parameters in error catch handlers and MCP request handlers. Added `"types": ["node"]` to generated `tsconfig.json` and `"test": "tsc --noEmit"` to generated `package.json`.
+  3. `src/generators/index.ts`: Implemented atomic staging via ephemeral directory, preventing partial or corrupted writes. Added path traversal protection against directory escapes. Added `generateProjectReadme` emitting a comprehensive root `README.md` with relocatable paths.
+  4. `src/runtime/policy-enforcer.ts` & `src/generators/runtime-template.ts`: Fixed policy enforcer bug where `--allow-destructive` was blocked by default `["pure", "read"]` allowedEffects filter. Destructive operations now succeed when explicitly authorized and fail closed otherwise.
+  5. `src/sandbox/runner.ts` & `src/cli/index.ts`: Enhanced verification report to explicitly declare executed tasks, skipped tasks, and host environment facts (Node version, OS).
+  6. `src/manifest/overrides.ts`: Added JSON pointer location `/operations/${opId}` to unknown operation ID errors.
+- **Test Evidence:**
+  - `tests/acceptance/core-user-journey.test.ts`: Turned from RED to GREEN (2/2 passing).
+  - `tests/e2e/core-user-journey-e2e.test.ts`: Added new end-to-end test suite for both Turf and authenticated loopback client journeys (2/2 passing).
+  - Full suite: 71/71 tests passing across 15 test files.
+- **Next Action:** Move to Phase 02: Analyzer Compatibility, Export Coverage and Actionable Diagnostics.
