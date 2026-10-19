@@ -43,3 +43,16 @@
   - Verified standalone client execution against loopback HTTP server with environment credentials.
   - All 62 tests passing.
 
+---
+
+## Phase 02 — SDK Compatibility and Type/Lifecycle Edge Cases
+
+- **Status**: completed
+- **Commit**: `320b21a` on `chore/sdk-anything-v0.1-finish`
+- **Actions**:
+  - Implemented `tests/source/dependency-resolution.test.ts`.
+  - Verified default exports and named export compatibility in client lifecycle.
+  - Verified human overrides workflow promotes unresolved symbols with inputSchemas into enabled operations without source modification.
+  - Verified pathful validation errors when overrides target non-existent operation IDs.
+  - All 66 tests passing across 13 test suites.
+
