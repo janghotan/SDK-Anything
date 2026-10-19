@@ -280,6 +280,21 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             });
           }
 
+          // A factory commonly returns an object/interface rather than a
+          // named class. Inspect that returned type so its methods become
+          // first-class operations instead of disappearing.
+          const awaitedReturn =
+            (checker as any).getAwaitedType?.(returnType) ?? returnType;
+          const factoryMethods = matchedClass
+            ? matchedClass.methods
+            : discoverMethodsFromType(
+                awaitedReturn,
+                name,
+                sourceLocation,
+                checker,
+                unresolvedSymbols,
+              );
+
           discoveredFactories.push({
             id: name,
             name,
@@ -288,7 +303,7 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             description: doc,
             parameters: factoryParams,
             returnsClient: clientName,
-            methods: matchedClass ? matchedClass.methods : [],
+            methods: factoryMethods,
             sourceLocation,
           });
           continue;
@@ -404,6 +419,94 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
     ),
     documentation: docSummary,
   };
+}
+
+function discoverMethodsFromType(
+  type: ts.Type,
+  receiverName: string,
+  sourceLocation: SourceLocation,
+  checker: ts.TypeChecker,
+  unresolvedSymbols: UnresolvedSymbol[],
+): DiscoveredMethod[] {
+  const methods: DiscoveredMethod[] = [];
+
+  for (const prop of type.getProperties()) {
+    const propName = prop.getName();
+    if (propName.startsWith("_") || propName === "constructor") continue;
+
+    const propType = checker.getTypeOfSymbol(prop);
+    const callSigs = propType.getCallSignatures();
+    if (callSigs.length === 0) continue;
+
+    const sig = callSigs[0];
+    const methodParams: DiscoveredParameter[] = [];
+    const inputProps: Record<string, JSONSchemaProperty> = {};
+    const requiredProps: string[] = [];
+    let methodUnresolved = false;
+
+    for (const param of sig.parameters) {
+      const pType = checker.getTypeOfSymbol(param);
+      const pName = param.getName();
+      const pIsOpt = isParamOptional(param, checker);
+      const pRes = lowerTypeToJsonSchema(pType, checker);
+
+      if (pRes.unresolvedReason) {
+        methodUnresolved = true;
+        unresolvedSymbols.push({
+          symbolName: `${receiverName}.${propName}`,
+          sourceLocation,
+          reason: `Method parameter '${pName}': ${pRes.unresolvedReason}`,
+          suggestedAction:
+            "Provide reviewed schema in sdk-anything.overrides.json",
+          code: pRes.code ?? "UNSUPPORTED_TYPE_CATEGORY",
+          severity: "warning",
+          canContinueGeneration: true,
+        });
+        break;
+      }
+
+      methodParams.push({
+        name: pName,
+        typeText: checker.typeToString(pType),
+        required: !pIsOpt,
+        schema: pRes.schema,
+        description: ts.displayPartsToString(
+          param.getDocumentationComment(checker),
+        ),
+      });
+      if (pRes.schema) inputProps[pName] = pRes.schema;
+      if (!pIsOpt) requiredProps.push(pName);
+    }
+
+    if (methodUnresolved) continue;
+
+    const returnType = sig.getReturnType();
+    const returnTypeText = checker.typeToString(returnType);
+    const isAsync = returnTypeText.startsWith("Promise<");
+
+    methods.push({
+      id: `${receiverName.toLowerCase()}.${propName}`,
+      name: propName,
+      receiver: receiverName,
+      isAsync,
+      description: ts.displayPartsToString(
+        prop.getDocumentationComment(checker),
+      ),
+      parameters: methodParams,
+      returnType: { typeText: returnTypeText, isAsync },
+      inputSchema: {
+        type: "object",
+        properties: inputProps,
+        required: requiredProps.length > 0 ? requiredProps.sort() : undefined,
+        additionalProperties: false,
+      },
+      sourceLocation,
+      confidence: "high",
+      overloadsCount: callSigs.length,
+    });
+  }
+
+  return methods.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function isParamOptional(param: ts.Symbol, checker: ts.TypeChecker): boolean {

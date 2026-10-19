@@ -16,11 +16,11 @@ export const FIXTURE_CATALOG: FixtureCatalogEntry[] = [
     name: "Loopback Authenticated Client",
     relativePath: "tests/fixtures/client-sdk",
     shape: "authenticated-client",
-    expectedOperationsCount: 2,
+    expectedOperationsCount: 3,
     expectedUnresolvedCount: 0,
     expectSuccess: true,
     notes:
-      "Class-based API client with auth credentials, pagination, and destructive operations",
+      "Class-based API client with auth credentials, pagination, and write/destructive operations",
   },
   {
     id: "analyzer-types",
@@ -48,10 +48,11 @@ export const FIXTURE_CATALOG: FixtureCatalogEntry[] = [
     name: "Factory Client SDK",
     relativePath: "tests/fixtures/factory-sdk",
     shape: "factory-client",
-    expectedOperationsCount: 0,
+    expectedOperationsCount: 2,
     expectedUnresolvedCount: 0,
     expectSuccess: true,
-    notes: "Factory function returning client instance with methods",
+    notes:
+      "Factory function returning a client object; its methods are generated as atomic operations",
   },
   {
     id: "empty-malformed-sdk",
