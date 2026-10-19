@@ -74,6 +74,31 @@ From a single capability manifest (`sdk-anything/manifest/v1`), SDK-Anything sim
 
 ### 1. Installation
 
+Install the published package with your package manager of choice:
+
+```bash
+# npm
+npm install -g sdk-anything
+
+# pnpm
+pnpm add -g sdk-anything
+
+# Yarn Classic (v1)
+yarn global add sdk-anything
+
+# Yarn Berry (v2+) — run without a global install
+yarn dlx sdk-anything --help
+```
+
+Or run it ad hoc without installing globally:
+
+```bash
+npx sdk-anything --help
+```
+
+<details>
+<summary>Build from source instead</summary>
+
 ```bash
 # Clone the repository
 git clone https://github.com/janghotan/SDK-Anything.git
@@ -86,6 +111,8 @@ pnpm run build
 # Link CLI globally (optional)
 pnpm link --global
 ```
+
+</details>
 
 ### 2. Inspect Any SDK in Seconds
 

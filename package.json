@@ -3,6 +3,34 @@
   "version": "0.1.0",
   "description": "Turn TypeScript/JavaScript SDKs into inspectable, testable, agent-friendly MCP tools and CLIs",
   "license": "Apache-2.0",
+  "author": "janghotan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janghotan/SDK-Anything.git"
+  },
+  "homepage": "https://github.com/janghotan/SDK-Anything#readme",
+  "bugs": {
+    "url": "https://github.com/janghotan/SDK-Anything/issues"
+  },
+  "keywords": [
+    "sdk",
+    "mcp",
+    "model-context-protocol",
+    "cli",
+    "agent",
+    "ai-agents",
+    "typescript",
+    "codegen",
+    "introspection",
+    "manifest",
+    "developer-tools"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "sdk-anything": "./dist/cli/bin.js"
@@ -15,6 +43,7 @@
     "skills",
     "README.md",
     "README.zh-CN.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "exports": {
