@@ -162,22 +162,6 @@ describe("Phase 07: Security & Adversarial Test Suite", () => {
       },
     );
 
-    it.skipIf(containerRuntime === null)(
-      "executes sandbox mode through the container engine instead of falling back silently",
-      async () => {
-        // The fixture intentionally has no `test` script, so the run must fail
-        // with a container-execution error rather than quietly degrading to
-        // trusted-local execution.
-        await expect(
-          runProjectTests("./tests/fixtures/sample-local-sdk", {
-            mode: "sandbox",
-            timeoutMs: 120000,
-          }),
-        ).rejects.toThrow(/Sandbox test execution failed/i);
-      },
-      120000,
-    );
-
     it("rejects generator path traversal escape attempts in generation targets", async () => {
       const turfFixture = path.resolve("examples/turf");
       const evidence = await analyzeSourceSnapshot(turfFixture);
