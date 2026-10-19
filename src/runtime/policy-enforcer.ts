@@ -31,8 +31,11 @@ export async function enforceOperationPolicy(
     );
   }
 
-  // Check effect permissions
-  if (!allowedEffects.includes(op.effect)) {
+  // Check effect permissions. An explicit per-operation allowlist entry is a
+  // stronger grant than the effect tier list and authorizes that operation.
+  const explicitlyAllowed =
+    context.allowedOperationIds?.includes(op.id) === true;
+  if (!explicitlyAllowed && !allowedEffects.includes(op.effect)) {
     throw new Error(
       `Policy denied: operation '${op.id}' has effect '${op.effect}', which is disabled by default. Permitted effects: [${allowedEffects.join(", ")}]`,
     );

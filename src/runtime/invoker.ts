@@ -66,6 +66,8 @@ export async function invokeOperation(
           code: "INVALID_INPUT",
           message: `Input validation failed for '${operationId}': ${errorDetails}`,
           details: validator.errors,
+          suggestedAction:
+            "Check the input payload against the operation input schema",
         },
         executionTimeMs: Date.now() - startTime,
       };

@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { invokeOperation, redactSecrets } from "../../src/runtime/index.js";
+import {
+  invokeOperation,
+  redactSecrets,
+  enforceOperationPolicy,
+} from "../../src/runtime/index.js";
 import type { CapabilityManifest } from "../../src/manifest/types.js";
 
 describe("Shared Invocation Runtime and Policy Enforcement", () => {
@@ -204,6 +208,39 @@ describe("Shared Invocation Runtime and Policy Enforcement", () => {
     );
     expect(res.success).toBe(true);
     expect(res.data).toEqual({ deleted: true, id: "123" });
+  });
+
+  it("authorizes a disabled write operation through the per-operation allowlist", async () => {
+    const writeOp = {
+      id: "items.create",
+      name: "createItem",
+      summary: "Create item",
+      description: "Create item",
+      invoke: { kind: "top-level-function" as const, functionName: "create" },
+      inputSchema: {
+        type: "object" as const,
+        properties: { name: { type: "string" } },
+        required: ["name"],
+      },
+      effect: "write" as const,
+      enabledByDefault: false,
+      result: { mode: "direct" as const },
+      provenance: { sourceFile: "index.ts", confidence: "high" as const },
+    };
+
+    await expect(
+      enforceOperationPolicy(writeOp, {
+        allowedOperationIds: ["items.create"],
+        interactive: false,
+      }),
+    ).resolves.toBeUndefined();
+
+    await expect(
+      enforceOperationPolicy(writeOp, {
+        allowedEffects: ["pure", "read"],
+        interactive: false,
+      }),
+    ).rejects.toThrow(/disabled by default/i);
   });
 
   it("resolves credentials from environment references and redacts secrets from errors", async () => {
