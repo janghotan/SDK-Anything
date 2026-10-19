@@ -1,8 +1,8 @@
-import * as crypto from 'node:crypto';
-import type { CapabilityManifest } from './types.js';
+import * as crypto from "node:crypto";
+import type { CapabilityManifest } from "./types.js";
 
 export function canonicalizeJson(obj: any): any {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return obj;
   }
 
@@ -20,7 +20,9 @@ export function canonicalizeJson(obj: any): any {
   return sortedObj;
 }
 
-export function serializeCanonicalManifest(manifest: CapabilityManifest): string {
+export function serializeCanonicalManifest(
+  manifest: CapabilityManifest,
+): string {
   // Sort operations by ID
   const clone = JSON.parse(JSON.stringify(manifest)) as CapabilityManifest;
   if (clone.operations) {
@@ -36,6 +38,9 @@ export function serializeCanonicalManifest(manifest: CapabilityManifest): string
 
 export function computeManifestDigest(manifest: CapabilityManifest): string {
   const serialized = serializeCanonicalManifest(manifest);
-  const hash = crypto.createHash('sha256').update(serialized, 'utf8').digest('hex');
+  const hash = crypto
+    .createHash("sha256")
+    .update(serialized, "utf8")
+    .digest("hex");
   return `sha256:${hash}`;
 }

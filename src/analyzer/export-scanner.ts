@@ -1,6 +1,6 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import ts from 'typescript';
+import * as fs from "node:fs";
+import * as path from "node:path";
+import ts from "typescript";
 import type {
   EvidenceInventory,
   DiscoveredFunction,
@@ -12,8 +12,8 @@ import type {
   SourceLocation,
   JSONSchemaObject,
   JSONSchemaProperty,
-} from './types.js';
-import { lowerTypeToJsonSchema } from './type-lowering.js';
+} from "./types.js";
+import { lowerTypeToJsonSchema } from "./type-lowering.js";
 
 export interface ScanOptions {
   sourceKind: string;
@@ -55,27 +55,45 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
 
     for (const exp of exports) {
       const name = exp.getName();
-      if (name.startsWith('_')) continue;
+      if (name.startsWith("_")) continue;
 
       let targetSymbol = exp;
       if (exp.flags & ts.SymbolFlags.Alias) {
         targetSymbol = checker.getAliasedSymbol(exp);
       }
 
-      const declarations = targetSymbol.getDeclarations() ?? exp.getDeclarations() ?? [];
+      const declarations =
+        targetSymbol.getDeclarations() ?? exp.getDeclarations() ?? [];
       const decl = declarations[0];
       const sourceLocation: SourceLocation = decl
         ? {
-            filePath: path.relative(rootDir, decl.getSourceFile().fileName).replace(/\\/g, '/'),
-            line: decl.getSourceFile().getLineAndCharacterOfPosition(decl.getStart()).line + 1,
-            character: decl.getSourceFile().getLineAndCharacterOfPosition(decl.getStart()).character + 1,
+            filePath: path
+              .relative(rootDir, decl.getSourceFile().fileName)
+              .replace(/\\/g, "/"),
+            line:
+              decl
+                .getSourceFile()
+                .getLineAndCharacterOfPosition(decl.getStart()).line + 1,
+            character:
+              decl
+                .getSourceFile()
+                .getLineAndCharacterOfPosition(decl.getStart()).character + 1,
           }
-        : { filePath: path.relative(rootDir, entryPointFile).replace(/\\/g, '/'), line: 1, character: 1 };
+        : {
+            filePath: path
+              .relative(rootDir, entryPointFile)
+              .replace(/\\/g, "/"),
+            line: 1,
+            character: 1,
+          };
 
       const doc = ts.displayPartsToString(exp.getDocumentationComment(checker));
 
       // 1. Is it a class?
-      if (targetSymbol.flags & ts.SymbolFlags.Class || (decl && ts.isClassDeclaration(decl))) {
+      if (
+        targetSymbol.flags & ts.SymbolFlags.Class ||
+        (decl && ts.isClassDeclaration(decl))
+      ) {
         const classType = checker.getDeclaredTypeOfSymbol(targetSymbol);
         const constructorType = checker.getTypeOfSymbol(targetSymbol);
         const constructSignatures = constructorType.getConstructSignatures();
@@ -93,7 +111,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
               typeText: checker.typeToString(pType),
               required: !pIsOpt,
               schema: pRes.schema,
-              description: ts.displayPartsToString(param.getDocumentationComment(checker)),
+              description: ts.displayPartsToString(
+                param.getDocumentationComment(checker),
+              ),
             });
           }
         }
@@ -103,7 +123,7 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
 
         for (const prop of classProperties) {
           const propName = prop.getName();
-          if (propName.startsWith('_') || propName === 'constructor') continue;
+          if (propName.startsWith("_") || propName === "constructor") continue;
 
           const propType = checker.getTypeOfSymbol(prop);
           const callSigs = propType.getCallSignatures();
@@ -127,7 +147,8 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
                   symbolName: `${name}.${propName}`,
                   sourceLocation,
                   reason: `Method parameter '${pName}': ${pRes.unresolvedReason}`,
-                  suggestedAction: 'Provide reviewed schema in sdk-anything.overrides.json',
+                  suggestedAction:
+                    "Provide reviewed schema in sdk-anything.overrides.json",
                 });
                 break;
               }
@@ -137,7 +158,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
                 typeText: checker.typeToString(pType),
                 required: !pIsOpt,
                 schema: pRes.schema,
-                description: ts.displayPartsToString(param.getDocumentationComment(checker)),
+                description: ts.displayPartsToString(
+                  param.getDocumentationComment(checker),
+                ),
               });
 
               if (pRes.schema) {
@@ -151,27 +174,30 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             if (!methodUnresolved) {
               const returnType = sig.getReturnType();
               const returnTypeText = checker.typeToString(returnType);
-              const isAsync = returnTypeText.startsWith('Promise<');
+              const isAsync = returnTypeText.startsWith("Promise<");
 
               methods.push({
                 id: `${name.toLowerCase()}.${propName}`,
                 name: propName,
                 receiver: name,
                 isAsync,
-                description: ts.displayPartsToString(prop.getDocumentationComment(checker)),
+                description: ts.displayPartsToString(
+                  prop.getDocumentationComment(checker),
+                ),
                 parameters: methodParams,
                 returnType: {
                   typeText: returnTypeText,
                   isAsync,
                 },
                 inputSchema: {
-                  type: 'object',
+                  type: "object",
                   properties: inputProps,
-                  required: requiredProps.length > 0 ? requiredProps.sort() : undefined,
+                  required:
+                    requiredProps.length > 0 ? requiredProps.sort() : undefined,
                   additionalProperties: false,
                 },
                 sourceLocation,
-                confidence: 'high',
+                confidence: "high",
               });
             }
           }
@@ -201,9 +227,18 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
         const returnTypeText = checker.typeToString(returnType);
 
         // Check if it's a factory function creating a client
-        const matchedClass = discoveredClasses.find(c => c.name === returnTypeText || returnTypeText.includes(c.name));
-        if (matchedClass || name.startsWith('create') && (name.includes('Client') || name.includes('Sdk') || name.includes('Instance'))) {
-          const clientName = matchedClass?.name ?? returnTypeText.replace(/Promise<|>/g, '');
+        const matchedClass = discoveredClasses.find(
+          (c) => c.name === returnTypeText || returnTypeText.includes(c.name),
+        );
+        if (
+          matchedClass ||
+          (name.startsWith("create") &&
+            (name.includes("Client") ||
+              name.includes("Sdk") ||
+              name.includes("Instance")))
+        ) {
+          const clientName =
+            matchedClass?.name ?? returnTypeText.replace(/Promise<|>/g, "");
           const factoryParams: DiscoveredParameter[] = [];
           for (const param of sig.parameters) {
             const pType = checker.getTypeOfSymbol(param);
@@ -215,7 +250,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
               typeText: checker.typeToString(pType),
               required: !pIsOpt,
               schema: pRes.schema,
-              description: ts.displayPartsToString(param.getDocumentationComment(checker)),
+              description: ts.displayPartsToString(
+                param.getDocumentationComment(checker),
+              ),
             });
           }
 
@@ -251,7 +288,8 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
               symbolName: name,
               sourceLocation,
               reason: `Parameter '${pName}': ${pRes.unresolvedReason}`,
-              suggestedAction: 'Provide reviewed schema in sdk-anything.overrides.json',
+              suggestedAction:
+                "Provide reviewed schema in sdk-anything.overrides.json",
             });
             break;
           }
@@ -261,7 +299,9 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             typeText: checker.typeToString(pType),
             required: !pIsOpt,
             schema: pRes.schema,
-            description: ts.displayPartsToString(param.getDocumentationComment(checker)),
+            description: ts.displayPartsToString(
+              param.getDocumentationComment(checker),
+            ),
           });
 
           if (pRes.schema) {
@@ -273,11 +313,12 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
         }
 
         if (!fnUnresolved) {
-          const isAsync = returnTypeText.startsWith('Promise<');
+          const isAsync = returnTypeText.startsWith("Promise<");
           const inputSchema: JSONSchemaObject = {
-            type: 'object',
+            type: "object",
             properties: inputProps,
-            required: requiredProps.length > 0 ? requiredProps.sort() : undefined,
+            required:
+              requiredProps.length > 0 ? requiredProps.sort() : undefined,
             additionalProperties: false,
           };
 
@@ -295,7 +336,7 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             },
             inputSchema,
             sourceLocation,
-            confidence: 'high',
+            confidence: "high",
           });
         }
       }
@@ -314,11 +355,13 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
       revision: options.sourceRevision,
       digest: options.sourceDigest,
     },
-    entryPoint: path.relative(rootDir, entryPointFile).replace(/\\/g, '/'),
+    entryPoint: path.relative(rootDir, entryPointFile).replace(/\\/g, "/"),
     functions: discoveredFunctions.sort((a, b) => a.id.localeCompare(b.id)),
     classes: discoveredClasses.sort((a, b) => a.id.localeCompare(b.id)),
     factories: discoveredFactories.sort((a, b) => a.id.localeCompare(b.id)),
-    unresolved: unresolvedSymbols.sort((a, b) => a.symbolName.localeCompare(b.symbolName)),
+    unresolved: unresolvedSymbols.sort((a, b) =>
+      a.symbolName.localeCompare(b.symbolName),
+    ),
     documentation: docSummary,
   };
 }
@@ -334,17 +377,20 @@ function isParamOptional(param: ts.Symbol, checker: ts.TypeChecker): boolean {
     }
   }
   const pType = checker.getTypeOfSymbol(param);
-  if (pType.isUnion() && pType.types.some(t => (t.flags & ts.TypeFlags.Undefined) !== 0)) {
+  if (
+    pType.isUnion() &&
+    pType.types.some((t) => (t.flags & ts.TypeFlags.Undefined) !== 0)
+  ) {
     return true;
   }
   return false;
 }
 
 function findEntryPoint(rootDir: string): string {
-  const pkgJsonPath = path.join(rootDir, 'package.json');
+  const pkgJsonPath = path.join(rootDir, "package.json");
   if (fs.existsSync(pkgJsonPath)) {
     try {
-      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
 
       // Check types / typings
       if (pkg.types && fs.existsSync(path.join(rootDir, pkg.types))) {
@@ -356,12 +402,18 @@ function findEntryPoint(rootDir: string): string {
 
       // Check exports
       if (pkg.exports) {
-        if (typeof pkg.exports === 'string' && fs.existsSync(path.join(rootDir, pkg.exports))) {
+        if (
+          typeof pkg.exports === "string" &&
+          fs.existsSync(path.join(rootDir, pkg.exports))
+        ) {
           return path.resolve(rootDir, pkg.exports);
         }
-        if (pkg.exports['.']) {
-          const dot = pkg.exports['.'];
-          if (typeof dot === 'string' && fs.existsSync(path.join(rootDir, dot))) {
+        if (pkg.exports["."]) {
+          const dot = pkg.exports["."];
+          if (
+            typeof dot === "string" &&
+            fs.existsSync(path.join(rootDir, dot))
+          ) {
             return path.resolve(rootDir, dot);
           }
           if (dot.types && fs.existsSync(path.join(rootDir, dot.types))) {
@@ -384,12 +436,12 @@ function findEntryPoint(rootDir: string): string {
 
   // Common fallbacks
   const fallbacks = [
-    'index.ts',
-    'src/index.ts',
-    'index.d.ts',
-    'dist/index.d.ts',
-    'index.js',
-    'src/index.js',
+    "index.ts",
+    "src/index.ts",
+    "index.d.ts",
+    "dist/index.d.ts",
+    "index.js",
+    "src/index.js",
   ];
 
   for (const candidate of fallbacks) {
@@ -401,23 +453,23 @@ function findEntryPoint(rootDir: string): string {
 
   // If no entry found, search for any .ts or .js file in root or src
   const files = fs.readdirSync(rootDir);
-  const tsFile = files.find(f => f.endsWith('.ts') || f.endsWith('.js'));
+  const tsFile = files.find((f) => f.endsWith(".ts") || f.endsWith(".js"));
   if (tsFile) {
     return path.resolve(rootDir, tsFile);
   }
 
-  return path.resolve(rootDir, 'index.ts');
+  return path.resolve(rootDir, "index.ts");
 }
 
 function findDocumentationSummary(rootDir: string) {
   let readmePath: string | undefined;
   let readmeSnippet: string | undefined;
 
-  for (const name of ['README.md', 'readme.md', 'README', 'readme']) {
+  for (const name of ["README.md", "readme.md", "README", "readme"]) {
     const p = path.join(rootDir, name);
     if (fs.existsSync(p)) {
-      readmePath = path.relative(rootDir, p).replace(/\\/g, '/');
-      const content = fs.readFileSync(p, 'utf8');
+      readmePath = path.relative(rootDir, p).replace(/\\/g, "/");
+      const content = fs.readFileSync(p, "utf8");
       readmeSnippet = content.slice(0, 1000);
       break;
     }

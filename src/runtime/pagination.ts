@@ -1,4 +1,4 @@
-import type { PaginationDescriptor } from '../manifest/types.js';
+import type { PaginationDescriptor } from "../manifest/types.js";
 
 export interface BoundedResult {
   data: any;
@@ -8,7 +8,7 @@ export interface BoundedResult {
 export function boundResult(
   data: any,
   paginationDesc?: PaginationDescriptor,
-  contextCaps?: { maxItems?: number; maxBytes?: number }
+  contextCaps?: { maxItems?: number; maxBytes?: number },
 ): BoundedResult {
   if (data === null || data === undefined) {
     return { data, truncated: false };
@@ -26,8 +26,8 @@ export function boundResult(
       result = data.slice(0, maxItems);
       truncated = true;
     }
-  } else if (typeof data === 'object') {
-    const itemsField = paginationDesc?.responseItemsField ?? 'items';
+  } else if (typeof data === "object") {
+    const itemsField = paginationDesc?.responseItemsField ?? "items";
     if (Array.isArray(data[itemsField])) {
       const items = data[itemsField];
       if (items.length > maxItems) {
@@ -43,13 +43,19 @@ export function boundResult(
   // 2. Check byte size
   try {
     const jsonStr = JSON.stringify(result);
-    if (Buffer.byteLength(jsonStr, 'utf8') > maxBytes) {
+    if (Buffer.byteLength(jsonStr, "utf8") > maxBytes) {
       truncated = true;
       // If it's an object with items, progressively slice items down to fit within maxBytes
-      const itemsField = paginationDesc?.responseItemsField ?? 'items';
-      if (typeof result === 'object' && Array.isArray(result[itemsField])) {
+      const itemsField = paginationDesc?.responseItemsField ?? "items";
+      if (typeof result === "object" && Array.isArray(result[itemsField])) {
         let items = result[itemsField];
-        while (items.length > 0 && Buffer.byteLength(JSON.stringify({ ...result, [itemsField]: items }), 'utf8') > maxBytes) {
+        while (
+          items.length > 0 &&
+          Buffer.byteLength(
+            JSON.stringify({ ...result, [itemsField]: items }),
+            "utf8",
+          ) > maxBytes
+        ) {
           items = items.slice(0, Math.floor(items.length / 2));
         }
         result = {

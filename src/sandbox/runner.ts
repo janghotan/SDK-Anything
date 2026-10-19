@@ -1,20 +1,20 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { execSync, spawnSync } from 'node:child_process';
-import type { TestMode, TestReport } from './types.js';
-import { validateManifest } from '../manifest/validator.js';
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { execSync, spawnSync } from "node:child_process";
+import type { TestMode, TestReport } from "./types.js";
+import { validateManifest } from "../manifest/validator.js";
 
-export function detectContainerRuntime(): 'docker' | 'podman' | null {
+export function detectContainerRuntime(): "docker" | "podman" | null {
   try {
-    execSync('docker --version', { stdio: 'ignore' });
-    return 'docker';
+    execSync("docker --version", { stdio: "ignore" });
+    return "docker";
   } catch {
     // Docker not available
   }
 
   try {
-    execSync('podman --version', { stdio: 'ignore' });
-    return 'podman';
+    execSync("podman --version", { stdio: "ignore" });
+    return "podman";
   } catch {
     // Podman not available
   }
@@ -30,12 +30,12 @@ export interface RunProjectTestsOptions {
 
 export async function runProjectTests(
   projectPath: string,
-  options: RunProjectTestsOptions = {}
+  options: RunProjectTestsOptions = {},
 ): Promise<TestReport> {
   const startTime = Date.now();
   const logs: string[] = [];
   const warnings: string[] = [];
-  const mode: TestMode = options.mode ?? 'static';
+  const mode: TestMode = options.mode ?? "static";
   const resolvedPath = path.resolve(projectPath);
 
   if (!fs.existsSync(resolvedPath)) {
@@ -44,19 +44,23 @@ export async function runProjectTests(
 
   // 1. Static Verification (always executed, requires no container)
   logs.push(`Running static checks on ${resolvedPath}...`);
-  let manifestPath = path.join(resolvedPath, 'capability-manifest.json');
+  let manifestPath = path.join(resolvedPath, "capability-manifest.json");
   if (!fs.existsSync(manifestPath)) {
-    manifestPath = path.join(resolvedPath, 'sdk-anything.manifest.json');
+    manifestPath = path.join(resolvedPath, "sdk-anything.manifest.json");
   }
 
   if (fs.existsSync(manifestPath)) {
     try {
-      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
       const val = validateManifest(manifest);
       if (!val.valid) {
-        throw new Error(`Static manifest validation failed: ${val.errors.join('; ')}`);
+        throw new Error(
+          `Static manifest validation failed: ${val.errors.join("; ")}`,
+        );
       }
-      logs.push(`Manifest schema validation passed (${manifest.operations?.length ?? 0} operations)`);
+      logs.push(
+        `Manifest schema validation passed (${manifest.operations?.length ?? 0} operations)`,
+      );
     } catch (err: any) {
       throw new Error(`Manifest verification failed: ${err.message}`);
     }
@@ -67,43 +71,47 @@ export async function runProjectTests(
   const staticChecksPassed = true;
 
   // 2. Execution Testing Modes
-  if (mode === 'sandbox') {
+  if (mode === "sandbox") {
     const runtime = detectContainerRuntime();
     if (!runtime) {
       throw new Error(
         `Container runtime (docker or podman) is required for --sandbox mode, but neither was found on PATH. ` +
-        `SDK-Anything refuses to silently fall back to trusted-local execution for untrusted code.`
+          `SDK-Anything refuses to silently fall back to trusted-local execution for untrusted code.`,
       );
     }
 
     // Container isolation execution
-    logs.push(`Executing tests inside isolated ${runtime} container (no network, temporary volume)...`);
+    logs.push(
+      `Executing tests inside isolated ${runtime} container (no network, temporary volume)...`,
+    );
     const containerArgs = [
-      'run',
-      '--rm',
-      '--network',
-      'none',
-      '-v',
+      "run",
+      "--rm",
+      "--network",
+      "none",
+      "-v",
       `${resolvedPath}:/workspace:ro`,
-      '-w',
-      '/workspace',
-      'node:20-alpine',
-      'npm',
-      'test',
+      "-w",
+      "/workspace",
+      "node:20-alpine",
+      "npm",
+      "test",
     ];
 
     const proc = spawnSync(runtime, containerArgs, {
-      encoding: 'utf8',
+      encoding: "utf8",
       timeout: options.timeoutMs ?? 60000,
     });
 
     if (proc.status !== 0) {
-      throw new Error(`Sandbox test execution failed (exit code ${proc.status}): ${proc.stderr || proc.stdout}`);
+      throw new Error(
+        `Sandbox test execution failed (exit code ${proc.status}): ${proc.stderr || proc.stdout}`,
+      );
     }
 
-    logs.push('Container test execution passed.');
+    logs.push("Container test execution passed.");
     return {
-      mode: 'sandbox',
+      mode: "sandbox",
       isSecuritySandbox: true,
       staticChecksPassed: true,
       testExecutionPassed: true,
@@ -113,28 +121,30 @@ export async function runProjectTests(
     };
   }
 
-  if (mode === 'trusted-local') {
-    logs.push('Running tests in --trusted-local mode (sanitized child process environment, NOT a security sandbox)...');
+  if (mode === "trusted-local") {
+    logs.push(
+      "Running tests in --trusted-local mode (sanitized child process environment, NOT a security sandbox)...",
+    );
 
     // Run test script if package.json has test
-    const pkgPath = path.join(resolvedPath, 'package.json');
+    const pkgPath = path.join(resolvedPath, "package.json");
     let testPassed = true;
 
     if (fs.existsSync(pkgPath)) {
       try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
         if (pkg.scripts?.test) {
           const sanitizedEnv: Record<string, string> = {
-            PATH: process.env.PATH || '',
-            NODE_ENV: 'test',
-            TMPDIR: process.env.TMPDIR || '/tmp',
+            PATH: process.env.PATH || "",
+            NODE_ENV: "test",
+            TMPDIR: process.env.TMPDIR || "/tmp",
             ...(options.env || {}),
           };
 
-          const proc = spawnSync('npm', ['test'], {
+          const proc = spawnSync("npm", ["test"], {
             cwd: resolvedPath,
             env: sanitizedEnv,
-            encoding: 'utf8',
+            encoding: "utf8",
             timeout: options.timeoutMs ?? 30000,
           });
 
@@ -143,16 +153,16 @@ export async function runProjectTests(
             // If test failed or exited with non-zero
             testPassed = false;
           } else {
-            logs.push('Test command passed.');
+            logs.push("Test command passed.");
           }
         }
       } catch {
-        warnings.push('Could not execute npm test in trusted local directory');
+        warnings.push("Could not execute npm test in trusted local directory");
       }
     }
 
     return {
-      mode: 'trusted-local',
+      mode: "trusted-local",
       isSecuritySandbox: false, // Explicitly false
       staticChecksPassed: true,
       testExecutionPassed: testPassed,
@@ -164,7 +174,7 @@ export async function runProjectTests(
 
   // mode === 'static'
   return {
-    mode: 'static',
+    mode: "static",
     isSecuritySandbox: false,
     staticChecksPassed,
     testExecutionPassed: undefined,

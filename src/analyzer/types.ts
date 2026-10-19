@@ -14,7 +14,7 @@ export interface JSONSchemaProperty {
 
 export interface JSONSchemaObject {
   $schema?: string;
-  type: 'object';
+  type: "object";
   properties: Record<string, JSONSchemaProperty>;
   required?: string[];
   additionalProperties?: boolean;
@@ -54,7 +54,7 @@ export interface DiscoveredFunction {
   inputSchema: JSONSchemaObject;
   outputSchema?: JSONSchemaProperty;
   sourceLocation: SourceLocation;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
 }
 
 export interface DiscoveredMethod {
@@ -69,7 +69,7 @@ export interface DiscoveredMethod {
   inputSchema: JSONSchemaObject;
   outputSchema?: JSONSchemaProperty;
   sourceLocation: SourceLocation;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
 }
 
 export interface DiscoveredClass {

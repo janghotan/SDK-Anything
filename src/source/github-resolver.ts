@@ -1,13 +1,20 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as os from 'node:os';
-import * as crypto from 'node:crypto';
-import type { GitHubLocator, SourceSnapshot, ResolveSourceOptions } from './types.js';
-import { extractTarballSafely, computeTreeDigest } from './archive-extractor.js';
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as os from "node:os";
+import * as crypto from "node:crypto";
+import type {
+  GitHubLocator,
+  SourceSnapshot,
+  ResolveSourceOptions,
+} from "./types.js";
+import {
+  extractTarballSafely,
+  computeTreeDigest,
+} from "./archive-extractor.js";
 
 export async function resolveGitHubSource(
   locator: GitHubLocator,
-  options: ResolveSourceOptions = {}
+  options: ResolveSourceOptions = {},
 ): Promise<SourceSnapshot> {
   const fetchFn = options.fetchFn ?? fetch;
   const timeoutMs = options.timeoutMs ?? 30000;
@@ -23,26 +30,26 @@ export async function resolveGitHubSource(
       const res = await fetchFn(repoApiUrl, {
         signal: controller.signal,
         headers: {
-          'User-Agent': 'SDK-Anything-Resolver/0.1.0',
-          Accept: 'application/vnd.github.v3+json',
+          "User-Agent": "SDK-Anything-Resolver/0.1.0",
+          Accept: "application/vnd.github.v3+json",
         },
       });
       clearTimeout(timer);
 
       if (res.ok) {
         const data = (await res.json()) as any;
-        ref = data.default_branch || 'main';
+        ref = data.default_branch || "main";
       } else {
         // Fallback default
-        ref = 'main';
+        ref = "main";
       }
     } catch {
       clearTimeout(timer);
-      ref = 'main';
+      ref = "main";
     }
   }
 
-  const resolvedRef = ref || 'main';
+  const resolvedRef = ref || "main";
   const tarballUrl = `https://api.github.com/repos/${locator.owner}/${locator.repo}/tarball/${resolvedRef}`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -52,28 +59,36 @@ export async function resolveGitHubSource(
     tarballRes = await fetchFn(tarballUrl, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'SDK-Anything-Resolver/0.1.0',
-        Accept: 'application/vnd.github.v3+json',
+        "User-Agent": "SDK-Anything-Resolver/0.1.0",
+        Accept: "application/vnd.github.v3+json",
       },
     });
   } catch (err: any) {
     clearTimeout(timer);
-    throw new Error(`Failed to download GitHub archive for ${locator.owner}/${locator.repo}: ${err?.message || String(err)}`);
+    throw new Error(
+      `Failed to download GitHub archive for ${locator.owner}/${locator.repo}: ${err?.message || String(err)}`,
+    );
   }
   clearTimeout(timer);
 
   if (!tarballRes.ok) {
-    throw new Error(`GitHub returned HTTP ${tarballRes.status} for ${locator.owner}/${locator.repo} (${tarballUrl})`);
+    throw new Error(
+      `GitHub returned HTTP ${tarballRes.status} for ${locator.owner}/${locator.repo} (${tarballUrl})`,
+    );
   }
 
   const arrayBuffer = await tarballRes.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  const cacheBase = options.cacheDir ?? path.join(os.tmpdir(), 'sdk-anything-snapshots');
-  const safeRepoId = `${locator.owner}_${locator.repo}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const cacheBase =
+    options.cacheDir ?? path.join(os.tmpdir(), "sdk-anything-snapshots");
+  const safeRepoId = `${locator.owner}_${locator.repo}`.replace(
+    /[^a-zA-Z0-9_-]/g,
+    "_",
+  );
   const snapshotDir = path.join(
     cacheBase,
-    `gh-${safeRepoId}-${resolvedRef}-${crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8)}`
+    `gh-${safeRepoId}-${resolvedRef}-${crypto.createHash("sha256").update(buffer).digest("hex").slice(0, 8)}`,
   );
 
   await extractTarballSafely(buffer, snapshotDir, {
@@ -83,11 +98,11 @@ export async function resolveGitHubSource(
   });
 
   const digest = computeTreeDigest(snapshotDir);
-  const pkgJsonPath = path.join(snapshotDir, 'package.json');
+  const pkgJsonPath = path.join(snapshotDir, "package.json");
 
   return {
-    kind: 'github',
-    identifier: `https://github.com/${locator.owner}/${locator.repo}${locator.ref ? `/tree/${locator.ref}` : ''}`,
+    kind: "github",
+    identifier: `https://github.com/${locator.owner}/${locator.repo}${locator.ref ? `/tree/${locator.ref}` : ""}`,
     packageName: locator.repo,
     version: resolvedRef,
     revision: resolvedRef,

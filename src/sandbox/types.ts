@@ -1,4 +1,4 @@
-export type TestMode = 'static' | 'trusted-local' | 'sandbox';
+export type TestMode = "static" | "trusted-local" | "sandbox";
 
 export interface TestReport {
   mode: TestMode;

@@ -1,5 +1,5 @@
-import type { EvidenceInventory } from '../analyzer/types.js';
-import type { AiOperationProposal } from './types.js';
+import type { EvidenceInventory } from "../analyzer/types.js";
+import type { AiOperationProposal } from "./types.js";
 
 export interface ValidationProposalsResult {
   valid: boolean;
@@ -9,17 +9,25 @@ export interface ValidationProposalsResult {
 
 export function validateAiProposals(
   evidence: EvidenceInventory,
-  rawJson: unknown
+  rawJson: unknown,
 ): ValidationProposalsResult {
   const errors: string[] = [];
 
-  if (!rawJson || typeof rawJson !== 'object') {
-    return { valid: false, proposals: [], errors: ['AI response must be a JSON object'] };
+  if (!rawJson || typeof rawJson !== "object") {
+    return {
+      valid: false,
+      proposals: [],
+      errors: ["AI response must be a JSON object"],
+    };
   }
 
   const rawObj = rawJson as Record<string, unknown>;
   if (!Array.isArray(rawObj.proposals)) {
-    return { valid: false, proposals: [], errors: ['AI response must contain a "proposals" array'] };
+    return {
+      valid: false,
+      proposals: [],
+      errors: ['AI response must contain a "proposals" array'],
+    };
   }
 
   const knownIds = new Set<string>();
@@ -43,32 +51,47 @@ export function validateAiProposals(
 
   for (let i = 0; i < rawObj.proposals.length; i++) {
     const item = rawObj.proposals[i];
-    if (!item || typeof item !== 'object') {
+    if (!item || typeof item !== "object") {
       errors.push(`Proposal at index ${i} is not an object`);
       continue;
     }
 
-    const opId = String((item as Record<string, unknown>).operationId || '').trim();
+    const opId = String(
+      (item as Record<string, unknown>).operationId || "",
+    ).trim();
     if (!opId) {
       errors.push(`Proposal at index ${i} missing required operationId`);
       continue;
     }
 
     if (!knownIds.has(opId)) {
-      errors.push(`AI proposed operationId '${opId}' which does not exist in discovered SDK evidence`);
+      errors.push(
+        `AI proposed operationId '${opId}' which does not exist in discovered SDK evidence`,
+      );
       continue;
     }
 
-    const summary = typeof (item as any).summary === 'string' ? (item as any).summary.trim() : undefined;
-    const description = typeof (item as any).description === 'string' ? (item as any).description.trim() : undefined;
-    const group = typeof (item as any).group === 'string' ? (item as any).group.trim() : undefined;
+    const summary =
+      typeof (item as any).summary === "string"
+        ? (item as any).summary.trim()
+        : undefined;
+    const description =
+      typeof (item as any).description === "string"
+        ? (item as any).description.trim()
+        : undefined;
+    const group =
+      typeof (item as any).group === "string"
+        ? (item as any).group.trim()
+        : undefined;
 
     validatedProposals.push({
       operationId: opId,
       summary,
       description,
       group,
-      examples: Array.isArray((item as any).examples) ? (item as any).examples : undefined,
+      examples: Array.isArray((item as any).examples)
+        ? (item as any).examples
+        : undefined,
     });
   }
 

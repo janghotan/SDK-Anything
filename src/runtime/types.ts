@@ -1,15 +1,15 @@
-import type { OperationEffect } from '../manifest/types.js';
+import type { OperationEffect } from "../manifest/types.js";
 
 export type NormalizedErrorCode =
-  | 'INVALID_INPUT'
-  | 'POLICY_DENIED'
-  | 'AUTH_REQUIRED'
-  | 'NOT_FOUND'
-  | 'RATE_LIMITED'
-  | 'TIMEOUT'
-  | 'SDK_ERROR'
-  | 'UNSUPPORTED_OPERATION'
-  | 'RUNTIME_ERROR';
+  | "INVALID_INPUT"
+  | "POLICY_DENIED"
+  | "AUTH_REQUIRED"
+  | "NOT_FOUND"
+  | "RATE_LIMITED"
+  | "TIMEOUT"
+  | "SDK_ERROR"
+  | "UNSUPPORTED_OPERATION"
+  | "RUNTIME_ERROR";
 
 export interface NormalizedError {
   code: NormalizedErrorCode;

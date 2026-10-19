@@ -1,25 +1,31 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
-import type { CapabilityManifest, OperationDescriptor } from '../../manifest/types.js';
-import { serializeCanonicalManifest } from '../../manifest/serializer.js';
-import { invokeOperation } from '../../runtime/invoker.js';
-import type { InvocationContext } from '../../runtime/types.js';
+} from "@modelcontextprotocol/sdk/types.js";
+import type {
+  CapabilityManifest,
+  OperationDescriptor,
+} from "../../manifest/types.js";
+import { serializeCanonicalManifest } from "../../manifest/serializer.js";
+import { invokeOperation } from "../../runtime/invoker.js";
+import type { InvocationContext } from "../../runtime/types.js";
 
 export function toMcpToolName(operationId: string): string {
   return operationId
-    .replace(/[^a-zA-Z0-9_]/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/[^a-zA-Z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }
 
 export function createMcpServer(
   manifest: CapabilityManifest,
-  context: InvocationContext = {}
+  context: InvocationContext = {},
 ): Server {
-  const safeServerName = manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const safeServerName = manifest.source.package.replace(
+    /[^a-zA-Z0-9_-]/g,
+    "-",
+  );
   const server = new Server(
     {
       name: `sdk-anything-${safeServerName}`,
@@ -29,11 +35,11 @@ export function createMcpServer(
       capabilities: {
         tools: {},
       },
-    }
+    },
   );
 
   // Map only enabled operations
-  const enabledOps = manifest.operations.filter(op => op.enabledByDefault);
+  const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
   const toolToOpMap = new Map<string, OperationDescriptor>();
 
   for (const op of enabledOps) {
@@ -43,9 +49,9 @@ export function createMcpServer(
 
   // Register ListTools
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const tools = enabledOps.map(op => ({
+    const tools = enabledOps.map((op) => ({
       name: toMcpToolName(op.id),
-      description: `${op.summary}${op.description ? `\n\n${op.description}` : ''}\n\nEffect: ${op.effect}`,
+      description: `${op.summary}${op.description ? `\n\n${op.description}` : ""}\n\nEffect: ${op.effect}`,
       inputSchema: op.inputSchema as any,
     }));
     return { tools };
@@ -61,7 +67,7 @@ export function createMcpServer(
         isError: true,
         content: [
           {
-            type: 'text' as const,
+            type: "text" as const,
             text: `UNSUPPORTED_OPERATION: Tool '${toolName}' is not enabled or does not exist on this server.`,
           },
         ],
@@ -72,22 +78,25 @@ export function createMcpServer(
     const result = await invokeOperation(manifest, op.id, input, context);
 
     if (result.success) {
-      const text = typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2);
+      const text =
+        typeof result.data === "string"
+          ? result.data
+          : JSON.stringify(result.data, null, 2);
       return {
         content: [
           {
-            type: 'text' as const,
+            type: "text" as const,
             text,
           },
         ],
       };
     } else {
-      const errMsg = `${result.error?.code ?? 'RUNTIME_ERROR'}: ${result.error?.message ?? 'Operation failed'}`;
+      const errMsg = `${result.error?.code ?? "RUNTIME_ERROR"}: ${result.error?.message ?? "Operation failed"}`;
       return {
         isError: true,
         content: [
           {
-            type: 'text' as const,
+            type: "text" as const,
             text: errMsg,
           },
         ],
@@ -104,10 +113,10 @@ export interface GenerateMcpOptions {
 
 export function generateMcpProject(
   manifest: CapabilityManifest,
-  options: GenerateMcpOptions = {}
+  options: GenerateMcpOptions = {},
 ): Record<string, string> {
   const canonicalManifestJson = serializeCanonicalManifest(manifest);
-  const enabledOps = manifest.operations.filter(op => op.enabledByDefault);
+  const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
 
   const sdkPkgName = manifest.source.package;
   const sdkPkgVersion = options.sdkDependencyVersion ?? manifest.source.version;
@@ -136,7 +145,7 @@ function toMcpToolName(id: string): string {
 
 // Available enabled operations
 const enabledOperations = ${JSON.stringify(
-    enabledOps.map(op => ({
+    enabledOps.map((op) => ({
       id: op.id,
       name: toMcpToolName(op.id),
       summary: op.summary,
@@ -145,14 +154,14 @@ const enabledOperations = ${JSON.stringify(
       inputSchema: op.inputSchema,
     })),
     null,
-    2
+    2,
   )};
 
 const toolMap = new Map<string, any>(enabledOperations.map(op => [op.name, op]));
 
 const server = new Server(
   {
-    name: 'sdk-anything-${manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, '-')}',
+    name: 'sdk-anything-${manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, "-")}',
     version: '${manifest.source.version}',
   },
   {
@@ -227,55 +236,57 @@ main().catch(err => {
 `;
 
   // Generate package.json
-  const safePkgName = manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+  const safePkgName = manifest.source.package
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .toLowerCase();
   const packageJson = JSON.stringify(
     {
       name: `mcp-${safePkgName}`,
-      version: '0.1.0',
-      type: 'module',
+      version: "0.1.0",
+      type: "module",
       private: true,
       scripts: {
-        build: 'tsc',
-        start: 'node dist/server.js',
+        build: "tsc",
+        start: "node dist/server.js",
       },
       dependencies: {
-        '@modelcontextprotocol/sdk': '^1.32.1',
+        "@modelcontextprotocol/sdk": "^1.32.1",
         [sdkPkgName]: sdkPkgVersion,
       },
       devDependencies: {
-        '@types/node': '^24.0.0',
-        typescript: '^5.7.3',
+        "@types/node": "^24.0.0",
+        typescript: "^5.7.3",
       },
     },
     null,
-    2
+    2,
   );
 
   // Generate tsconfig.json
   const tsconfigJson = JSON.stringify(
     {
       compilerOptions: {
-        target: 'ES2022',
-        module: 'NodeNext',
-        moduleResolution: 'NodeNext',
-        lib: ['ES2022'],
+        target: "ES2022",
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        lib: ["ES2022"],
         strict: true,
         esModuleInterop: true,
         skipLibCheck: true,
-        outDir: './dist',
-        rootDir: './',
+        outDir: "./dist",
+        rootDir: "./",
         resolveJsonModule: true,
       },
-      include: ['server.ts'],
+      include: ["server.ts"],
     },
     null,
-    2
+    2,
   );
 
   return {
-    'server.ts': serverTs,
-    'package.json': packageJson,
-    'tsconfig.json': tsconfigJson,
-    'capability-manifest.json': canonicalManifestJson,
+    "server.ts": serverTs,
+    "package.json": packageJson,
+    "tsconfig.json": tsconfigJson,
+    "capability-manifest.json": canonicalManifestJson,
   };
 }

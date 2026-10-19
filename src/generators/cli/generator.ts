@@ -1,14 +1,14 @@
-import { Command } from 'commander';
-import type { CapabilityManifest } from '../../manifest/types.js';
-import { serializeCanonicalManifest } from '../../manifest/serializer.js';
-import { invokeOperation } from '../../runtime/invoker.js';
-import type { InvocationContext } from '../../runtime/types.js';
+import { Command } from "commander";
+import type { CapabilityManifest } from "../../manifest/types.js";
+import { serializeCanonicalManifest } from "../../manifest/serializer.js";
+import { invokeOperation } from "../../runtime/invoker.js";
+import type { InvocationContext } from "../../runtime/types.js";
 
 export function toCliCommandName(operationId: string): string {
   return operationId
-    .replace(/[^a-zA-Z0-9_-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export interface GeneratedCliContext extends InvocationContext {
@@ -19,14 +19,16 @@ export interface GeneratedCliContext extends InvocationContext {
 
 export function createGeneratedCli(
   manifest: CapabilityManifest,
-  context: GeneratedCliContext = {}
+  context: GeneratedCliContext = {},
 ): Command {
   const program = new Command();
-  const safeName = manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const safeName = manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, "-");
 
   program
     .name(`sdk-cli-${safeName}`)
-    .description(`Generated CLI for ${manifest.source.package} v${manifest.source.version}`)
+    .description(
+      `Generated CLI for ${manifest.source.package} v${manifest.source.version}`,
+    )
     .version(manifest.source.version);
 
   if (context.writeOut || context.writeErr) {
@@ -41,15 +43,18 @@ export function createGeneratedCli(
   }
 
   // Register commands for enabled operations
-  const enabledOps = manifest.operations.filter(op => op.enabledByDefault);
+  const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
 
   for (const op of enabledOps) {
     const cmdName = toCliCommandName(op.id);
     program
       .command(cmdName)
       .description(`${op.summary} [Effect: ${op.effect}]`)
-      .option('--input <json>', 'JSON string payload representing input arguments')
-      .option('--json', 'Output result in machine-readable JSON format')
+      .option(
+        "--input <json>",
+        "JSON string payload representing input arguments",
+      )
+      .option("--json", "Output result in machine-readable JSON format")
       .action(async (cmdOpts: { input?: string; json?: boolean }) => {
         try {
           let inputData: any = {};
@@ -57,26 +62,33 @@ export function createGeneratedCli(
             try {
               inputData = JSON.parse(cmdOpts.input);
             } catch (err: any) {
-              throw new Error(`INVALID_INPUT: Failed to parse --input JSON: ${err.message}`);
+              throw new Error(
+                `INVALID_INPUT: Failed to parse --input JSON: ${err.message}`,
+              );
             }
           }
 
-          const result = await invokeOperation(manifest, op.id, inputData, context);
+          const result = await invokeOperation(
+            manifest,
+            op.id,
+            inputData,
+            context,
+          );
 
           if (result.success) {
             const outText = cmdOpts.json
               ? JSON.stringify(result.data, null, 2)
-              : typeof result.data === 'string'
+              : typeof result.data === "string"
                 ? result.data
                 : JSON.stringify(result.data, null, 2);
 
-            if (context.writeOut) context.writeOut(outText + '\n');
+            if (context.writeOut) context.writeOut(outText + "\n");
             else console.log(outText);
           } else {
             const errEnvelope = {
               error: {
-                code: result.error?.code ?? 'RUNTIME_ERROR',
-                message: result.error?.message ?? 'Operation failed',
+                code: result.error?.code ?? "RUNTIME_ERROR",
+                message: result.error?.message ?? "Operation failed",
                 suggestedAction: result.error?.suggestedAction,
               },
             };
@@ -84,7 +96,7 @@ export function createGeneratedCli(
               ? JSON.stringify(errEnvelope, null, 2)
               : `Error [${errEnvelope.error.code}]: ${errEnvelope.error.message}`;
 
-            if (context.writeErr) context.writeErr(errText + '\n');
+            if (context.writeErr) context.writeErr(errText + "\n");
             else console.error(errText);
 
             if (context.exitOverride) {
@@ -95,7 +107,7 @@ export function createGeneratedCli(
           }
         } catch (err: unknown) {
           const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
-          if (context.writeErr) context.writeErr(errMsg + '\n');
+          if (context.writeErr) context.writeErr(errMsg + "\n");
           else console.error(errMsg);
 
           if (context.exitOverride) {
@@ -116,14 +128,16 @@ export interface GenerateCliOptions {
 
 export function generateCliProject(
   manifest: CapabilityManifest,
-  options: GenerateCliOptions = {}
+  options: GenerateCliOptions = {},
 ): Record<string, string> {
   const canonicalManifestJson = serializeCanonicalManifest(manifest);
-  const enabledOps = manifest.operations.filter(op => op.enabledByDefault);
+  const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
 
   const sdkPkgName = manifest.source.package;
   const sdkPkgVersion = options.sdkDependencyVersion ?? manifest.source.version;
-  const safePkgName = manifest.source.package.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+  const safePkgName = manifest.source.package
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .toLowerCase();
 
   const cliTs = `// Generated by SDK-Anything v${manifest.generatorVersion}
 // Manifest schema: ${manifest.schemaVersion}
@@ -141,7 +155,7 @@ function toCliCommandName(id: string): string {
 }
 
 const enabledOperations = ${JSON.stringify(
-    enabledOps.map(op => ({
+    enabledOps.map((op) => ({
       id: op.id,
       cmdName: toCliCommandName(op.id),
       name: op.name,
@@ -151,7 +165,7 @@ const enabledOperations = ${JSON.stringify(
       inputSchema: op.inputSchema,
     })),
     null,
-    2
+    2,
   )};
 
 const program = new Command();
@@ -200,53 +214,53 @@ program.parseAsync(process.argv).catch(err => {
   const packageJson = JSON.stringify(
     {
       name: `cli-${safePkgName}`,
-      version: '0.1.0',
-      type: 'module',
+      version: "0.1.0",
+      type: "module",
       private: true,
       bin: {
-        [`sdk-cli-${safePkgName}`]: './dist/cli.js',
+        [`sdk-cli-${safePkgName}`]: "./dist/cli.js",
       },
       scripts: {
-        build: 'tsc',
-        start: 'node dist/cli.js',
+        build: "tsc",
+        start: "node dist/cli.js",
       },
       dependencies: {
-        commander: '^15.0.0',
+        commander: "^15.0.0",
         [sdkPkgName]: sdkPkgVersion,
       },
       devDependencies: {
-        '@types/node': '^24.0.0',
-        typescript: '^5.7.3',
+        "@types/node": "^24.0.0",
+        typescript: "^5.7.3",
       },
     },
     null,
-    2
+    2,
   );
 
   const tsconfigJson = JSON.stringify(
     {
       compilerOptions: {
-        target: 'ES2022',
-        module: 'NodeNext',
-        moduleResolution: 'NodeNext',
-        lib: ['ES2022'],
+        target: "ES2022",
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        lib: ["ES2022"],
         strict: true,
         esModuleInterop: true,
         skipLibCheck: true,
-        outDir: './dist',
-        rootDir: './',
+        outDir: "./dist",
+        rootDir: "./",
         resolveJsonModule: true,
       },
-      include: ['cli.ts'],
+      include: ["cli.ts"],
     },
     null,
-    2
+    2,
   );
 
   return {
-    'cli.ts': cliTs,
-    'package.json': packageJson,
-    'tsconfig.json': tsconfigJson,
-    'capability-manifest.json': canonicalManifestJson,
+    "cli.ts": cliTs,
+    "package.json": packageJson,
+    "tsconfig.json": tsconfigJson,
+    "capability-manifest.json": canonicalManifestJson,
   };
 }

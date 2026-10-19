@@ -1,6 +1,10 @@
-import type { JSONSchemaObject, JSONSchemaProperty } from '../analyzer/types.js';
+import type {
+  JSONSchemaObject,
+  JSONSchemaProperty,
+} from "../analyzer/types.js";
 
-export type OperationEffect = 'pure' | 'read' | 'write' | 'destructive' | 'unknown';
+export type OperationEffect =
+  "pure" | "read" | "write" | "destructive" | "unknown";
 
 export interface ClientOptionDescriptor {
   type: string;
@@ -12,12 +16,12 @@ export interface ClientOptionDescriptor {
 export interface ClientDescriptor {
   module: string;
   export: string;
-  construction: 'none' | 'class' | 'factory';
+  construction: "none" | "class" | "factory";
   options: Record<string, ClientOptionDescriptor>;
 }
 
 export interface PaginationDescriptor {
-  type: 'cursor' | 'page' | 'offset';
+  type: "cursor" | "page" | "offset";
   cursorParam?: string;
   responseItemsField?: string;
   responseNextCursorField?: string;
@@ -26,12 +30,12 @@ export interface PaginationDescriptor {
 }
 
 export interface OperationResultDescriptor {
-  mode: 'direct' | 'paginated';
+  mode: "direct" | "paginated";
   pagination?: PaginationDescriptor;
 }
 
 export interface OperationInvokeDescriptor {
-  kind: 'top-level-function' | 'instance-method';
+  kind: "top-level-function" | "instance-method";
   functionName?: string;
   receiver?: string;
   method?: string;
@@ -39,7 +43,7 @@ export interface OperationInvokeDescriptor {
 
 export interface OperationProvenance {
   sourceFile: string;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
   overridesApplied?: string[];
 }
 
@@ -64,7 +68,7 @@ export interface UnresolvedDescriptor {
 }
 
 export interface ManifestSourceDescriptor {
-  kind: 'npm' | 'local' | 'github';
+  kind: "npm" | "local" | "github";
   package: string;
   version: string;
   revision?: string;
@@ -72,7 +76,7 @@ export interface ManifestSourceDescriptor {
 }
 
 export interface CapabilityManifest {
-  schemaVersion: 'sdk-anything/manifest/v1';
+  schemaVersion: "sdk-anything/manifest/v1";
   generatorVersion: string;
   source: ManifestSourceDescriptor;
   client?: ClientDescriptor;
@@ -91,13 +95,13 @@ export interface OperationOverride {
 }
 
 export interface ClientOverride {
-  construction?: 'none' | 'class' | 'factory';
+  construction?: "none" | "class" | "factory";
   export?: string;
   options?: Record<string, Partial<ClientOptionDescriptor>>;
 }
 
 export interface SdkAnythingOverrides {
-  schemaVersion: 'sdk-anything/overrides/v1';
+  schemaVersion: "sdk-anything/overrides/v1";
   client?: ClientOverride;
   operations?: Record<string, OperationOverride>;
 }

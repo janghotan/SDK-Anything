@@ -1,4 +1,4 @@
-export type Units = 'kilometers' | 'miles' | 'degrees';
+export type Units = "kilometers" | "miles" | "degrees";
 
 export interface Point {
   latitude: number;
@@ -32,7 +32,7 @@ export interface CircularNode {
 export function calculateDistance(
   from: Point,
   to: Point,
-  units?: Units
+  units?: Units,
 ): number {
   return 42;
 }
@@ -60,7 +60,7 @@ export class RestClient {
    * List items from the API.
    */
   async listItems(query?: string, limit?: number): Promise<Item[]> {
-    return [{ id: '1', name: 'Sample' }];
+    return [{ id: "1", name: "Sample" }];
   }
 
   /**

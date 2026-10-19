@@ -1,18 +1,18 @@
-export type SourceKind = 'npm' | 'local' | 'github';
+export type SourceKind = "npm" | "local" | "github";
 
 export interface NpmLocator {
-  kind: 'npm';
+  kind: "npm";
   packageName: string;
   versionOrTag?: string;
 }
 
 export interface LocalLocator {
-  kind: 'local';
+  kind: "local";
   localPath: string;
 }
 
 export interface GitHubLocator {
-  kind: 'github';
+  kind: "github";
   owner: string;
   repo: string;
   ref?: string;
