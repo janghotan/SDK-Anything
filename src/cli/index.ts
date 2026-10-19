@@ -1,0 +1,67 @@
+import { Command } from 'commander';
+
+export interface CreateCliOptions {
+  writeOut?: (str: string) => void;
+  writeErr?: (str: string) => void;
+  exitOverride?: boolean;
+}
+
+export function createCli(options: CreateCliOptions = {}): Command {
+  const program = new Command();
+
+  program
+    .name('sdk-anything')
+    .description('Turn TypeScript/JavaScript SDKs into inspectable, testable, agent-friendly MCP tools and CLIs')
+    .version('0.1.0');
+
+  if (options.writeOut || options.writeErr) {
+    program.configureOutput({
+      writeOut: options.writeOut ?? ((str) => process.stdout.write(str)),
+      writeErr: options.writeErr ?? ((str) => process.stderr.write(str)),
+    });
+  }
+
+  if (options.exitOverride) {
+    program.exitOverride();
+  }
+
+  program
+    .command('inspect <source>')
+    .description('Inspect an npm package, local directory, or public GitHub repo statically')
+    .option('--write-overrides', 'Emit starter sdk-anything.overrides.json for ambiguous types/lifecycle')
+    .option('--json', 'Output results in JSON format')
+    .action(async (_source, _cmdOptions) => {
+      // Stub for Phase 01; full implementation in subsequent phases
+    });
+
+  program
+    .command('generate <source>')
+    .description('Generate MCP server, CLI, and consumer SKILL.md from inspected SDK')
+    .option('--targets <targets>', 'Comma-separated generation targets (mcp,cli)', 'mcp,cli')
+    .option('--output <dir>', 'Output directory for generated project', './generated')
+    .option('--ai', 'Enable optional AI-assisted descriptions and operation selection')
+    .option('--json', 'Output results in JSON format')
+    .action(async (_source, _cmdOptions) => {
+      // Stub for Phase 01; full implementation in subsequent phases
+    });
+
+  program
+    .command('validate <path>')
+    .description('Statically validate capability manifest and generated project')
+    .option('--json', 'Output results in JSON format')
+    .action(async (_path, _cmdOptions) => {
+      // Stub for Phase 01; full implementation in subsequent phases
+    });
+
+  program
+    .command('test <path>')
+    .description('Run verification tests for generated project')
+    .option('--sandbox', 'Execute tests in an isolated container sandbox (requires Docker/Podman)')
+    .option('--trusted-local', 'Execute tests in local process (trusted code only, not a sandbox)')
+    .option('--json', 'Output results in JSON format')
+    .action(async (_path, _cmdOptions) => {
+      // Stub for Phase 01; full implementation in subsequent phases
+    });
+
+  return program;
+}
