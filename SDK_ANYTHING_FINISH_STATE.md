@@ -1,0 +1,24 @@
+# SDK-Anything Finish State
+
+- Last updated (UTC): 2026-10-19T07:55:00Z
+- Repository path: /home/jangho/Projects/SDK-Anything
+- Current branch: chore/sdk-anything-v0.1-finish
+- Current HEAD: 243b45f
+- Remote/upstream: https://github.com/janghotan/SDK-Anything.git (main, feat/sdk-anything-v0.1)
+- Working tree status at start: clean on branch main at commit 243b45f
+- User changes found and preservation action: checked out dedicated finish branch chore/sdk-anything-v0.1-finish; no user uncommitted edits found
+- Initial test/build baseline (exact commands, exit codes):
+  - `pnpm run typecheck`: exit 0
+  - `pnpm run lint`: exit 0 (68 warnings, 0 errors)
+  - `pnpm test`: 60/60 passing tests across 11 test files, exit 0
+  - `pnpm run build`: exit 0
+- Active phase: Phase 01 — Generated Project Independence
+- Active task: Task 1 — Standalone Generated Project Independence
+- Last verified commit: 243b45f
+- Last verified commands and outcomes: tsc, eslint, vitest (60/60 pass), tsc build (exit 0)
+- Known failures / root-cause evidence: none at current HEAD
+- Tests skipped and why: live OpenAI provider test skipped (mocked fixtures used); Docker/Podman container tests skipped because neither is installed on host (fail-closed behavior verified)
+- Phase commits: Phase 00 planned and committed on chore/sdk-anything-v0.1-finish
+- Push status / destination: chore/sdk-anything-v0.1-finish (local commit, ready to push when authorized)
+- Next concrete action: Implement Task 1 tests and verify generated project independence in temp directory outside repo
+- Known limitations / risk accepted: Docker/Podman absent on host; static validation and trusted-local child process verified
