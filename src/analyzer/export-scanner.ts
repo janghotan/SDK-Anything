@@ -29,6 +29,12 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
   const rootDir = options.sourcePath;
   const entryPointFile = findEntryPoint(rootDir);
 
+  if (!fs.existsSync(entryPointFile)) {
+    throw new Error(
+      `Entry point file not found in ${rootDir}. Could not locate main, types, or default entry files.`,
+    );
+  }
+
   // Configure TypeScript program
   const compilerOptions: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022,

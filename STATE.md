@@ -11,27 +11,27 @@ Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to
 - Verified baseline gates:
   - `pnpm run typecheck`: exit 0
   - `pnpm run lint`: exit 0 (93 warnings, 0 errors)
-  - `pnpm test`: 80/80 tests passing across 16 test files, exit 0
+  - `pnpm test`: 82/82 tests passing across 17 test files, exit 0
   - `pnpm run build`: exit 0
-  - `npm pack --dry-run`: exit 0 (186 files, 414.5 kB unpacked)
+  - `npm pack --dry-run`: exit 0 (202 files, 431.5 kB unpacked)
 
 ## Current phase
-Phase 05 — Build a Real SDK Compatibility Lab.
+Phase 06 — AI-Assisted Analysis as Optional, Evidence-Bounded Augmentation.
 
 ## Product acceptance dashboard
 Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a precise external reason where appropriate; never quietly count blocked as pass.
 
 | Area | Status | Evidence | Remaining gaps |
 |---|---|---|---|
-| Repository/baseline reverified | PASS | `pnpm test` (80/80), `tsc`, `lint`, `npm pack` clean | Complete |
+| Repository/baseline reverified | PASS | `pnpm test` (82/82), `tsc`, `lint`, `npm pack` clean | Complete |
 | User journey works from clean checkout | PASS | `tests/acceptance/core-user-journey.test.ts` & `tests/e2e/core-user-journey-e2e.test.ts` pass | Ongoing verification |
 | Analysis/export/type diagnostics actionable | PASS | Structured diagnostic codes, enums, index signatures, utility types in `tests/analyzer/analyzer.test.ts` | Complete |
 | Manifest stable, valid, diffable and regenerable | PASS | `tests/manifest/regeneration.test.ts` (5/5 pass) verifies `.sdk-anything-inventory.json`, `--check`, user conflict prevention | Complete |
 | Generated CLI works outside generator repo | PASS | Stdin support, command collision disambiguation, `invoke <operationId>` escape hatch in `cli-generator.test.ts` | Complete |
 | Generated MCP works with standard client transport | PASS | Tool collision disambiguation, server instructions, structured error envelopes in `mcp-generator.test.ts` | Complete |
 | Agent skill points to tested, discoverable commands | PASS | `tests/generators/consumer-skill.test.ts` verifies 100% doc/command consistency and concrete multi-step composition | Complete |
-| Stateful/authenticated SDK scenario succeeds | PASS | `tests/e2e/core-user-journey-e2e.test.ts` loopback HTTP + auth + pagination verified | Phase 05 fixture catalog |
-| Compatibility fixture matrix passes | IN PROGRESS | Phase 05 active: multi-SDK fixture catalog and automated compatibility runner | Phase 05 |
+| Stateful/authenticated SDK scenario succeeds | PASS | `tests/e2e/core-user-journey-e2e.test.ts` loopback HTTP + auth + pagination verified | Complete |
+| Compatibility fixture matrix passes | PASS | `tests/compatibility/compatibility-lab.test.ts` passes 100% across 6 fixtures covering required shapes | Complete |
 | Unsafe operations fail closed | PASS | Fail-closed destructive policy verified in `security-and-sandbox.test.ts` and `core-user-journey-e2e.test.ts` | Verify across all generated artifacts |
 | Sandbox behavior and labels are honest | PASS | Missing container fails closed, static/trusted-local explicitly labeled with env details | Complete |
 | Clean package install works | NOT STARTED | `npm pack --dry-run` passes | Needs clean consumer install test in Phase 08 |
@@ -43,7 +43,7 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 None currently blocking local progress. Docker/Podman is not installed on host; static mode and trusted-local mode are verified, and container sandbox requests fail closed with clear error as required.
 
 ## Next exact action
-Proceed to Phase 05 implementation:
-1. Build an automated SDK compatibility runner (`src/compatibility/runner.ts` / `tests/compatibility/`).
-2. Expand fixture portfolio: pure-function SDK, authenticated client SDK, barrel/re-export package, complex/generic types package, and malformed/empty package.
-3. Generate structured compatibility scorecard with transparent metrics.
+Proceed to Phase 06 implementation:
+1. Wire CLI `generate --ai` option to optional AI proposal layer with privacy disclosure.
+2. Ensure strict JSON schema validation and prompt injection defenses on AI responses.
+3. Validate that human overrides are required before AI suggestions enable operations or modify effect tiers.

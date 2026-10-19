@@ -1,0 +1,5 @@
+{
+  "name": "@fixture/empty-malformed-sdk",
+  "version": "1.0.0",
+  "main": "nonexistent-entry.js"
+}
