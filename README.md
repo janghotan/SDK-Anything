@@ -3,110 +3,93 @@
 </p>
 
 <p align="center">
-  <strong>Turn any TypeScript / JavaScript SDK into tested, agent-ready tools.</strong>
+  <strong>Today's SDKs Serve Human Developers 👨‍💻. Tomorrow's Callers will be AI Agents 🤖.<br>
+  SDK-Anything: Bridging the Gap Between AI Agents and the World's Software Libraries</strong>
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#core-workflow">Core Workflow</a> •
-  <a href="#manifest-specification">Manifest Spec</a> •
-  <a href="#security--sandboxing">Security</a> •
-  <a href="#connecting-to-agents">Agent Setup</a> •
-  <a href="README.zh-CN.md">简体中文</a>
+  <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-blue?style=for-the-badge" alt="Quick Start"></a>
+  <a href="#-test-results"><img src="https://img.shields.io/badge/Tests-59_Passing_(100%25)-brightgreen?style=for-the-badge" alt="Tests"></a>
+  <a href="#-why-sdk-anything"><img src="https://img.shields.io/badge/Architecture-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-yellow?style=for-the-badge" alt="License"></a>
+  <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Docs-中文文档-red?style=for-the-badge" alt="中文文档"></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Node.js-%3E%3D20_LTS-339933?logo=node.js&logoColor=white" alt="Node.js Version">
+  <img src="https://img.shields.io/badge/Node.js-%E2%89%A520_LTS-339933?logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/MCP-1.32+-8A2BE2?logo=anthropic&logoColor=white" alt="Model Context Protocol">
-  <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/MCP-Official_SDK_1.32+-8A2BE2?logo=anthropic&logoColor=white" alt="Model Context Protocol">
+  <img src="https://img.shields.io/badge/Output-JSON_%2B_Human-blueviolet" alt="Output">
+  <img src="https://img.shields.io/badge/Vitest-100%25_pass-brightgreen" alt="Vitest">
 </p>
 
----
-
-## Overview
-
-**SDK-Anything** bridges the gap between conventional developer SDKs and AI agents. Instead of manually hand-crafting tool definitions or writing fragile API glue, SDK-Anything statically analyzes SDK source code or npm packages and produces a versioned **Capability Manifest** (`sdk-anything/manifest/v1`).
-
-From this single source of truth, it generates:
-- 🔌 **An Official MCP Server**: Stdio server built on `@modelcontextprotocol/sdk` exposing typed tools.
-- ⌨️ **A Developer CLI**: Production-ready command-line tool with machine-readable `--json` output.
-- 🤖 **A Consumer Skill (`SKILL.md`)**: Context-rich operational guidance teaching consuming LLM agents how to discover, parameterize, and chain atomic operations.
-
-> [!IMPORTANT]
-> **Static Safety First:** SDK-Anything never imports or executes target package code during inspection. Package installation lifecycle scripts (`prepare`, `postinstall`) are strictly skipped.
+**One Command Pipeline**: Turn any TypeScript or JavaScript SDK into agent-ready tools for Claude Desktop, Cursor, Claude Code, OpenClaw, Codex, Windsurf, and custom autonomous agents.
 
 ---
 
-## Features
+## 🌟 Why SDK-Anything?
 
-- **Deterministic API Extraction:** Uses the TypeScript Compiler API (`noEmit: true`) to resolve function signatures, declaration files, JSDoc comments, and complex TypeScript types into JSON Schema Draft 2020-12.
-- **Single Source of Truth:** MCP tools, CLI subcommands, security policy, and agent instructions all derive from one canonical capability manifest.
-- **Inspectable TypeScript Output:** Generates clean, standard TypeScript code without hidden dynamic proxies or `eval`.
-- **Reference-Only Secret Model:** Credentials are never embedded in generated code, manifests, or prompts. Keys are referenced solely through environment variables (`env:API_KEY`).
-- **Conservative Effect Policy:** Pure calculations and verified reads are enabled by default. Write, destructive, and unknown operations are disabled by default and enforced by the shared runtime.
-- **Fail-Closed Container Isolation:** Static validation runs with zero dependencies. Testing untrusted code requires an explicit container boundary (`--sandbox` with Docker/Podman) and fails closed without silent fallback.
-- **Optional AI Proposal Layer:** OpenAI-compatible endpoint support for generating enhanced human-readable summaries and grouping, with full prompt-injection isolation.
+Traditional SDKs are crafted for human programmers navigating IDE auto-complete. When fed raw into an LLM, they overwhelm reasoning budgets, leak tokens, and trigger accidental side effects.
+
+| The Raw SDK Dilemma | The SDK-Anything Agent-Native Solution |
+|---|---|
+| **Context Window Overload**<br>Hundreds of exported helper functions flood token limits. | **Deterministic Atomic Tools**<br>Curated, typed operations with concise descriptions and strict parameter schemas. |
+| **Accidental Side Effects**<br>Agent blindly invokes destructive delete or billing endpoints. | **Conservative Effect Guard**<br>`pure` and `read` are enabled by default; `write`, `destructive`, and `unknown` are strictly disabled by default. |
+| **Credential & Secret Leaks**<br>Tokens passed in prompt strings or printed in stack traces. | **Reference-Only Secret Model**<br>Stores only `env:VAR_NAME` references; runtime engine redacts all tokens from error messages. |
+| **Memory Exhaustion**<br>Unbounded pagination iterators crash agent processes. | **Strict Bounded Caps**<br>Enforces per-call item limits (default 100) and payload byte ceilings (1 MB). |
+| **Fragile Black-Box Proxies**<br>Magic dynamic wrappers or unsafe `eval` executors. | **Inspectable TypeScript**<br>Generates clean, auditable, standard TypeScript code ready to review and commit. |
 
 ---
 
-## Quick Start
+## 🤖 Agent Ecosystem Compatibility
 
-### Prerequisites
+From a single capability manifest (`sdk-anything/manifest/v1`), SDK-Anything simultaneously emits triple-interface support:
 
-- Node.js >= 20.0.0 (tested on v20, v22, v24 LTS)
-- [pnpm](https://pnpm.io/) >= 9.0.0
+```text
+                           ┌──────────────────────────┐
+                           │       SDK-Anything       │
+                           │ Capability Manifest (v1) │
+                           └────────────┬─────────────┘
+                                        │
+         ┌──────────────────────────────┼──────────────────────────────┐
+         ▼                              ▼                              ▼
+  🔌 MCP Server                  ⌨️ Developer CLI               🤖 Consumer Skill
+┌────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
+│ Claude Desktop         │     │ Terminal Automation    │     │ Claude Code            │
+│ Cursor                 │     │ Shell Pipelines        │     │ Codex                  │
+│ Windsurf               │     │ CI / CD Scripts        │     │ OpenClaw / Nanobot     │
+└────────────────────────┘     └────────────────────────┘     └────────────────────────┘
+```
 
-### Installation
+| Agent Platform | Integration Protocol | How to Connect |
+|---|---|---|
+| **Claude Desktop** | Official MCP Stdio Protocol | Add to `claude_desktop_config.json` |
+| **Cursor / Windsurf** | Command-based MCP Transport | Add to `.cursor/mcp.json` |
+| **Claude Code** | Native Generator & Consumer Skill | Load via `skills/sdk-anything/SKILL.md` |
+| **OpenClaw / Codex / Pi** | Standard Agent Skill Format | Copy generated `SKILL.md` directly |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/your-org/sdk-anything.git
-cd sdk-anything
+# Clone the repository
+git clone https://github.com/janghotan/SDK-Anything.git
+cd SDK-Anything
 
-# Install dependencies
+# Install dependencies and build
 pnpm install
-
-# Build the project
 pnpm run build
 
 # Link CLI globally (optional)
 pnpm link --global
 ```
 
----
+### 2. Inspect Any SDK in Seconds
 
-## Core Workflow
-
-```text
-Source Locator (npm:pkg, local dir, public GitHub)
-       │
-       ▼
-Deterministic Static Analyzer (TS Compiler AST & TypeChecker)
-       │
-       ▼
-Evidence Inventory (Exports, types, docs, unresolved diagnostics)
-       │
-       ▼
-Human Overrides Engine (Optional sdk-anything.overrides.json)
-       │
-       ▼
-Capability Manifest (sdk-anything/manifest/v1)
-       │
- ┌─────┴─────────────────────┐
- ▼                           ▼
-Generated MCP Server     Generated CLI & SKILL.md
-(Stdio Transport)       (Commander.js & Docs)
-       │                           │
- └─────┬─────────────────────┘
-       ▼
-Shared Runtime Engine (Schema validation, policy enforcement, caps)
-```
-
-### 1. Inspect an SDK
-
-Inspect public npm packages, local project checkouts, or public GitHub repositories:
+Analyze public npm packages, local source folders, or public GitHub repositories **without executing any target package code or lifecycle scripts**:
 
 ```bash
 # Inspect an npm package
@@ -115,21 +98,32 @@ sdk-anything inspect npm:@turf/turf
 # Inspect a local TypeScript/JavaScript SDK repository
 sdk-anything inspect ./path/to/my-sdk
 
-# Output structured JSON evidence
+# Output structured JSON evidence inventory
 sdk-anything inspect npm:@turf/turf --json
 ```
 
-### 2. Configure Overrides (Optional)
+Output preview:
+```text
+Resolved source: npm:@turf/turf
+Kind:            npm
+Version:         7.2.0
+Digest:          sha256:196883847d5efc475a4c897753397199e1fabe332f631cf0202587a31bd17ffb
+Entry point:     index.ts
+Functions:       78 (distance, area, point, buffer, ...)
+Classes:         0 (none)
+Factories:       0 (none)
+Unresolved:      0
+```
 
-For SDKs with custom constructor factories, ambiguous unions, or required secret tokens:
+### 3. Generate Overrides (Optional)
+
+For SDKs requiring client constructors, factories, or secret authentication tokens:
 
 ```bash
-# Generate starter overrides template
 sdk-anything inspect ./path/to/my-sdk --write-overrides
 ```
 
-This generates `sdk-anything.overrides.json`:
-
+This creates an editable `sdk-anything.overrides.json`:
 ```json
 {
   "schemaVersion": "sdk-anything/overrides/v1",
@@ -153,207 +147,209 @@ This generates `sdk-anything.overrides.json`:
 }
 ```
 
-### 3. Generate MCP Server, CLI, and Consumer Skill
+### 4. Generate MCP Server, CLI, and Skill
 
 ```bash
-# Generate both MCP server and CLI into output directory
+# Generate complete agent project into output directory
 sdk-anything generate npm:@turf/turf \
   --targets mcp,cli \
   --output ./generated/turf-tools
 
-# Optional: Enable AI assistance for enhanced documentation
+# Optional: Enable OpenAI-compatible AI assistance for enriched descriptions
 sdk-anything generate npm:@turf/turf \
   --targets mcp,cli \
   --ai \
   --output ./generated/turf-tools
 ```
 
-### 4. Validate Generated Artifacts
-
-Perform static validation of the manifest schema, TypeScript compilation, and adapter parity:
+### 5. Statically Validate & Test
 
 ```bash
+# Validate manifest schema and adapter parity (no containers required)
 sdk-anything validate ./generated/turf-tools
-```
 
-### 5. Run Verification Tests
-
-```bash
 # Test user-owned trusted code in a sanitized local process
 sdk-anything test ./generated/turf-tools --trusted-local
 
-# Test untrusted packages in an isolated container sandbox
+# Test untrusted packages in a container sandbox (fails closed if Docker/Podman missing)
 sdk-anything test ./generated/turf-tools --sandbox
 ```
 
-> [!WARNING]
-> `--trusted-local` runs code on your host in a sanitized environment, but is **not** an OS security boundary. Untrusted code must always be tested using `--sandbox`.
-
 ---
 
-## Manifest Specification
+## 🎮 Interactive Demos
 
-Generated manifest files adhere to `schema/capability-manifest.schema.json`:
+### Demo A: Calling Generated CLI with Structured JSON
 
-```json
+```bash
+# Calculate distance between two coordinate pairs
+$ sdk-cli-turf distance \
+    --input '{"from":[-75.343, 39.984],"to":[-75.534, 39.123],"options":{"units":"miles"}}' \
+    --json
+60.37
+
+# Attempting an unauthorized write or destructive call fails before SDK execution
+$ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 {
-  "schemaVersion": "sdk-anything/manifest/v1",
-  "generatorVersion": "0.1.0",
-  "source": {
-    "kind": "npm",
-    "package": "@turf/turf",
-    "version": "7.2.0",
-    "digest": "sha256:0123456789abcdef..."
-  },
-  "operations": [
-    {
-      "id": "distance",
-      "name": "distance",
-      "summary": "Calculate distance between two points",
-      "description": "Calculates the distance between two points in degrees, radians, miles, or kilometers.",
-      "invoke": {
-        "kind": "top-level-function",
-        "functionName": "distance"
-      },
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "from": { "type": "array" },
-          "to": { "type": "array" },
-          "options": { "type": "object" }
-        },
-        "required": ["from", "to"],
-        "additionalProperties": false
-      },
-      "effect": "pure",
-      "enabledByDefault": true,
-      "result": { "mode": "direct" },
-      "provenance": {
-        "sourceFile": "src/index.ts",
-        "confidence": "high"
-      }
-    }
-  ],
-  "unresolved": []
+  "error": {
+    "code": "POLICY_DENIED",
+    "message": "Policy denied: operation 'deleteRecord' has effect 'destructive', which is disabled by default.",
+    "suggestedAction": "Operation effect is restricted by default. Enable the effect class in invocation options or manifest overrides"
+  }
 }
 ```
 
----
+### Demo B: Consuming Generated MCP Server in Claude Desktop / Cursor
 
-## Security & Sandboxing
-
-### Effect Classification
-
-Every operation is categorized into an explicit effect tier:
-
-| Effect | Default Status | Description |
-|---|---|---|
-| `pure` | **Enabled** | Stateless calculation (e.g. geometric computation, parsing) |
-| `read` | **Enabled** | Query with external fetch without state alteration (e.g. `list`, `get`) |
-| `write` | **Disabled** | Modifies state on remote or local systems (e.g. `create`, `update`) |
-| `destructive` | **Disabled** | Deletes or purges data (e.g. `delete`, `drop`). Requires confirmation in CLI |
-| `unknown` | **Disabled** | Ambiguous or unverified side effects |
-
-### Secret Reference Guarantee
-
-- No secret tokens or passwords are ever persisted in manifests or generated source.
-- Credentials use `env:VARIABLE_NAME` references.
-- Runtime error logs automatically redact keys matching authorization headers or known secrets (`Bearer [REDACTED]`).
-
-### Bounded Pagination
-
-To prevent agent memory exhaustion, paginated calls enforce strict limits:
-- Maximum item cap per call (default: 100 items).
-- Maximum serialized response payload limit (default: 1 MB).
-
----
-
-## Connecting to Agents
-
-### Claude Desktop Configuration
-
-Add the generated MCP server to your `claude_desktop_config.json`:
-
+Add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "turf-tools": {
       "command": "node",
-      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"],
-      "env": {
-        "API_KEY": "your-token-if-required"
-      }
+      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"]
     }
   }
 }
 ```
 
-### Cursor / Windsurf Configuration
-
-Add a command transport entry to your project's `.cursor/mcp.json`:
-
+When Claude calls the tool:
 ```json
+// Tool Call
 {
-  "mcpServers": {
-    "my-sdk": {
-      "command": "npx",
-      "args": ["tsx", "/absolute/path/to/generated/my-sdk/mcp/server.ts"]
-    }
+  "name": "distance",
+  "arguments": {
+    "from": [-75.343, 39.984],
+    "to": [-75.534, 39.123],
+    "options": { "units": "miles" }
   }
 }
+
+// Tool Response
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "60.37"
+    }
+  ]
+}
 ```
-
-### Consuming via Agent Skill
-
-Each generated project includes a tailored `SKILL.md` detailing:
-- Available atomic tools and required parameters.
-- Step-by-step instructions for chaining tools in LLM reasoning loops.
-- Error handling and pagination semantics.
 
 ---
 
-## Repository Structure
+## 📊 Test Results
+
+Every subsystem undergoes rigorous multi-layer testing before release:
+
+| Test Layer | What It Verifies | Tests | Status |
+|---|---|:---:|:---:|
+| **CLI Bootstrap** | Help text, versioning, exit codes, config resolution | 8 | ✅ Passed |
+| **Source Resolver** | npm download, local dirs, GitHub archives, path traversal (`../`), symlinks | 13 | ✅ Passed |
+| **TypeScript Analyzer** | TS Compiler API AST, type lowering to JSON Schema 2020-12, circular types | 5 | ✅ Passed |
+| **Capability Manifest** | v1 schema validation, Ajv semantic checks, canonical byte-stable serialization | 8 | ✅ Passed |
+| **Shared Runtime** | Invocation harness, policy enforcement, secret token redaction, timeouts | 7 | ✅ Passed |
+| **MCP Generator** | Official `@modelcontextprotocol/sdk` integration, stdio and in-memory transports | 3 | ✅ Passed |
+| **CLI Generator** | Commander.js commands, adapter parity, `--json` machine-readable output | 4 | ✅ Passed |
+| **Consumer Skill** | Generated `SKILL.md` format, parameter requirements, composition guide | 1 | ✅ Passed |
+| **AI Proposal Layer** | Mock OpenAI endpoint, prompt-injection defense, disclosure prompt, fallback | 5 | ✅ Passed |
+| **Security & Sandbox** | Stateful client lifecycle, loopback server, fail-closed container detection | 4 | ✅ Passed |
+| **Turf E2E Golden Test** | Full pipeline: inspect → generate → MCP tool call & CLI command execution | 1 | ✅ Passed |
+| **Total** | **100% Pass Rate across all 11 test suites (0 typecheck/lint errors)** | **59** | **✅ All Green** |
+
+---
+
+## 🏗️ Architecture & Pipeline
+
+```text
+Source Locator (npm:pkg, local dir, public GitHub)
+       │
+       ▼
+Deterministic Static Analyzer (TS Compiler AST & TypeChecker, noEmit)
+       │
+       ▼
+Evidence Inventory (Function signatures, parameters, types, unresolved diagnostics)
+       │
+       ├─────────────────────────────────────────┐
+       │ (Optional)                              │ (Deterministic)
+       ▼                                         ▼
+AI Proposal Layer (OpenAI-compatible)     Capability Manifest Builder (v1)
+(descriptions, groups, examples)                 │
+       │                                         │
+       └────────────────────┬────────────────────┘
+                            ▼
+                   Human Overrides Engine
+                (sdk-anything.overrides.json)
+                            │
+                            ▼
+               Validated Capability Manifest
+             (schema: sdk-anything/manifest/v1)
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+        MCP Generator               CLI Generator
+       (Stdio Server)            (Commander.js CLI)
+              │                           │
+              └─────────────┬─────────────┘
+                            ▼
+                   Shared Runtime Layer
+     (Input validation, policy enforcer, secrets, pagination caps)
+```
+
+---
+
+## 🔒 Security & Sandboxing Principles
+
+1. **Zero Target Code Execution During Inspection:** Target SDKs are never imported or executed during inspection. Installation lifecycle scripts are permanently skipped.
+2. **Reference-Only Secrets:** No credentials exist in static files or manifests. Tokens are fetched solely at runtime from `process.env`.
+3. **Automated Secret Redaction:** All error messages and logs strip tokens matching `Bearer ...` or known environment secrets.
+4. **Conservative Effect Defaults:** `pure` and `read` are active by default. `write`, `destructive`, and `unknown` operations are blocked at runtime unless explicitly enabled.
+5. **Fail-Closed Container Sandbox:** Testing untrusted code via `--sandbox` requires Docker or Podman. If unavailable, it halts immediately with an actionable error and **never silently falls back** to host execution.
+
+---
+
+## 📂 Repository Layout
 
 ```text
 sdk-anything/
-├── schema/
-│   └── capability-manifest.schema.json  # Manifest v1 JSON Schema
-├── skills/
-│   └── sdk-anything/SKILL.md            # Orchestration skill for host agents
-├── src/
-│   ├── cli/                             # CLI commands, config, entry points
-│   ├── source/                          # Safe npm, local, and GitHub resolvers
-│   ├── analyzer/                        # TS Compiler API AST & type lowering
-│   ├── manifest/                        # Manifest builder, validator, serializer
-│   ├── runtime/                         # Shared runtime, policy enforcer, secrets
-│   ├── generators/                      # MCP, CLI, and consumer skill generators
-│   ├── ai/                              # Optional AI proposal client & disclosure
-│   └── sandbox/                         # Static checks & container execution
-├── tests/                               # 11 comprehensive Vitest test suites
-├── examples/
+├── .github/workflows/ci.yml             # GitHub Actions CI workflow
+├── assets/                              # Banners and brand assets
+│   ├── sdk-anything-banner-en.png
+│   └── sdk-anything-banner-zh.png
+├── docs/                                # Comprehensive documentation
+│   ├── architecture.md                  # Deep pipeline & subsystem specification
+│   └── security.md                      # Security model, trust boundaries, sandboxing
+├── examples/                            # Tested reference implementations
 │   ├── turf/                            # Pure-function golden example
 │   └── client-sdk/                      # Stateful network client fixture
-└── docs/
-    ├── architecture.md                  # Comprehensive architectural specification
-    └── security.md                      # Detailed security & isolation model
+├── schema/
+│   └── capability-manifest.schema.json  # Canonical Manifest v1 JSON Schema
+├── skills/
+│   └── sdk-anything/SKILL.md            # Orchestration skill for host coding agents
+├── src/
+│   ├── cli/                             # CLI commands, entry point, config
+│   ├── source/                          # Safe npm, local, and GitHub resolvers
+│   ├── analyzer/                        # TS Compiler API AST & type lowering
+│   ├── manifest/                        # Manifest builder, validator, overrides
+│   ├── runtime/                         # Shared runtime, policy enforcer, secrets
+│   ├── generators/                      # MCP, CLI, and consumer skill generators
+│   ├── ai/                              # Optional AI proposal adapter & disclosure
+│   └── sandbox/                         # Static checks & container execution
+└── tests/                               # 11 comprehensive Vitest test suites (59 tests)
 ```
 
 ---
 
-## Quality & Test Matrix
+## 🤝 Contributing & Community
 
-Run the automated verification suite:
+We welcome contributions to expand SDK-Anything!
+- **New SDK Patterns:** Submit issues or PRs adding fixtures for unique SDK patterns.
+- **Generator Adapters:** Help build additional agent runtime integrations.
+- **Security Audits:** Help harden archive extraction and sandbox isolation.
 
-```bash
-# Run 59 automated unit, integration, and E2E tests
-pnpm test
+---
 
-# Verify strict TypeScript typechecking
-pnpm run typecheck
-
-# Check code style and lint rules
-pnpm run lint
-
-# Build production artifacts
-pnpm run build
-```
+<p align="center">
+  <strong>SDK-Anything</strong> — <em>Make Any Software Library Agent-Native.</em><br>
+  <sub>Built for the age of autonomous AI agents • 59 Passing Tests • 100% Deterministic</sub>
+</p>

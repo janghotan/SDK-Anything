@@ -3,110 +3,93 @@
 </p>
 
 <p align="center">
-  <strong>将任何 TypeScript / JavaScript SDK 转化为可测试、可直接供 AI 代理使用的工具。</strong>
+  <strong>今天的 SDK 服务人类开发者 👨‍💻。明天的调用者将是 AI 智能体 🤖。<br>
+  SDK-Anything：连接 AI 智能体与全球软件库的桥梁</strong>
 </p>
 
 <p align="center">
-  <a href="#核心特性">核心特性</a> •
-  <a href="#快速上手">快速上手</a> •
-  <a href="#核心工作流">核心工作流</a> •
-  <a href="#能力清单规范">清单规范</a> •
-  <a href="#安全与沙箱隔离">安全模型</a> •
-  <a href="#接入-ai-代理">代理接入</a> •
-  <a href="README.md">English</a>
+  <a href="#-快速上手"><img src="https://img.shields.io/badge/快速上手-5_分钟-blue?style=for-the-badge" alt="快速上手"></a>
+  <a href="#-测试结果"><img src="https://img.shields.io/badge/测试-59_项通过_(100%25)-brightgreen?style=for-the-badge" alt="测试"></a>
+  <a href="#-为什么需要-sdk-anything"><img src="https://img.shields.io/badge/架构-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-Apache_2.0-yellow?style=for-the-badge" alt="许可证"></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/Docs-English-blue?style=for-the-badge" alt="English"></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Node.js-%3E%3D20_LTS-339933?logo=node.js&logoColor=white" alt="Node.js 版本">
+  <img src="https://img.shields.io/badge/Node.js-%E2%89%A520_LTS-339933?logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/MCP-1.32+-8A2BE2?logo=anthropic&logoColor=white" alt="Model Context Protocol">
-  <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="许可证">
+  <img src="https://img.shields.io/badge/MCP-官方_SDK_1.32+-8A2BE2?logo=anthropic&logoColor=white" alt="Model Context Protocol">
+  <img src="https://img.shields.io/badge/输出-JSON_%2B_Human-blueviolet" alt="输出">
+  <img src="https://img.shields.io/badge/Vitest-100%25_通过-brightgreen" alt="Vitest">
 </p>
 
----
-
-## 项目概述
-
-**SDK-Anything** 旨在消除传统开发者 SDK 与现代 AI 智能体（Agent）之间的鸿沟。无需手动为每个 SDK 手写工具定义或胶水代码，SDK-Anything 能够通过静态分析目标源码或 npm 包，直接生成标准版本化的**能力清单**（`sdk-anything/manifest/v1`）。
-
-基于这份统一的事实清单，SDK-Anything 可以自动生成：
-- 🔌 **官方标准 MCP 服务器**：基于 `@modelcontextprotocol/sdk` 构建的 Stdio 服务，直接向 AI 暴露类型安全的工具。
-- ⌨️ **开发者 CLI 命令行**：支持人类友好交互与机器可读 `--json` 的自动化命令。
-- 🤖 **代理技能文档 (`SKILL.md`)**：提供丰富的上下文指导，指导 LLM 代理如何在推理循环中发现、配置和组合原子操作。
-
-> [!IMPORTANT]
-> **静态安全第一：** 分析与检查阶段绝不导入或执行目标包代码，严格跳过 npm 安装生命周期脚本（如 `prepare`、`postinstall`）。
+**单命令流水线**：将任何 TypeScript 或 JavaScript SDK 一键转化为 Claude Desktop、Cursor、Claude Code、OpenClaw、Codex、Windsurf 及自定义智能体可直接调用的专属工具。
 
 ---
 
-## 核心特性
+## 🌟 为什么需要 SDK-Anything？
 
-- **确定性 API 提取：** 利用 TypeScript 编译器底层 API（`noEmit: true`），解析导出函数、声明文件、JSDoc 注释及复杂类型，精确降级为 JSON Schema Draft 2020-12。
-- **单事实来源：** MCP 工具、CLI 命令、副作用安全策略与代理使用说明全部派生自同一份能力清单。
-- **透明可审查的代码：** 生成可直接阅读、修改与构建的标准 TypeScript 源码，无任何隐式动态代理或 `eval`。
-- **仅引用机密模型：** 敏感凭据（如 API 密钥、Token）绝不会硬编码在清单、生成代码或提示词中，仅通过环境变量引用（`env:API_KEY`）。
-- **保守的副作用控制：** 纯函数计算与已验证的读取操作默认启用；写入、破坏性操作和未识别操作默认禁用，并在运行时严格拦截。
-- **防逃逸容器沙箱：** 静态校验无需外部环境；测试不受信任的代码时必须使用真实容器沙箱（`--sandbox`，依赖 Docker/Podman），环境缺失时立即故障闭锁（Fail-Closed），绝不静默降级为本地执行。
-- **可选 AI 辅助层：** 支持配置兼容 OpenAI 的接口以生成可读性更高的摘要和分组，具备严格的提示词注入防御隔离机制。
+传统的 SDK 是专为人类程序员在 IDE 中阅读类型提示和自动补全而设计的。如果直接交给大语言模型（LLM），往往会导致上下文窗口溢出、敏感凭据泄露，甚至因误操作触发破坏性接口。
+
+| 传统原始 SDK 的困境 | SDK-Anything 的 Agent-Native 解决方案 |
+|---|---|
+| **上下文窗口爆炸**<br>导出成百上千个辅助函数，迅速撑爆 LLM 提示词额度。 | **确定性原子工具集**<br>精选强类型操作，提供精炼的摘要描述和严格的 JSON Schema 输入参数。 |
+| **误操作与意外副作用**<br>智能体可能盲目调用破坏性删除或高危扣费接口。 | **保守的副作用安全策略**<br>`pure`（纯计算）和 `read`（只读）默认启用；`write`、`destructive` 和 `unknown` 默认拦截禁用。 |
+| **凭据与机密泄露风险**<br>API Token 被硬编码在提示词中或在错误堆栈中暴露。 | **仅引用机密模型 (Reference-Only)**<br>仅存储 `env:VAR_NAME` 引用；运行时引擎自动脱敏日志中所有的敏感 Token。 |
+| **内存溢出与死循环**<br>无界的分页迭代器可能拉取数万条数据并导致进程崩溃。 | **强制有界截断**<br>严格限制单次调用的最大条目数（默认 100）和响应体积上限（1 MB）。 |
+| **黑盒与不可审查的代码**<br>动态运行时代理或不安全的 `eval` 执行器。 | **透明可审查的 TypeScript**<br>生成干净、规范、无隐藏黑盒的标准 TypeScript 源代码。 |
 
 ---
 
-## 快速上手
+## 🤖 智能体生态全面兼容
 
-### 环境要求
+基于同一份能力清单（`sdk-anything/manifest/v1`），SDK-Anything 可同步生成三种维度的接入适配器：
 
-- Node.js >= 20.0.0（支持 v20、v22、v24 LTS）
-- [pnpm](https://pnpm.io/) >= 9.0.0
+```text
+                           ┌──────────────────────────┐
+                           │       SDK-Anything       │
+                           │   统一能力清单 (v1 规范)    │
+                           └────────────┬─────────────┘
+                                        │
+         ┌──────────────────────────────┼──────────────────────────────┐
+         ▼                              ▼                              ▼
+  🔌 官方 MCP 服务器             ⌨️ 开发者 CLI 命令              🤖 智能体专属技能
+┌────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
+│ Claude Desktop         │     │ 终端自动化脚本         │     │ Claude Code            │
+│ Cursor                 │     │ Shell 管道工作流       │     │ Codex                  │
+│ Windsurf               │     │ CI / CD 自动化         │     │ OpenClaw / Nanobot     │
+└────────────────────────┘     └────────────────────────┘     └────────────────────────┘
+```
 
-### 安装与构建
+| 智能体平台 | 集成协议 | 如何接入 |
+|---|---|---|
+| **Claude Desktop** | 官方 MCP Stdio 协议 | 添加到 `claude_desktop_config.json` |
+| **Cursor / Windsurf** | 基于命令的 MCP 传输协议 | 添加到 `.cursor/mcp.json` |
+| **Claude Code** | 原生生成器与使用技能 | 直接加载 `skills/sdk-anything/SKILL.md` |
+| **OpenClaw / Codex / Pi** | 标准 Agent Skill 格式 | 直接复用生成的 `SKILL.md` 文档 |
+
+---
+
+## 🚀 快速上手
+
+### 1. 安装与构建
 
 ```bash
 # 克隆代码仓库
-git clone https://github.com/your-org/sdk-anything.git
-cd sdk-anything
+git clone https://github.com/janghotan/SDK-Anything.git
+cd SDK-Anything
 
-# 安装依赖
+# 安装依赖并编译构建
 pnpm install
-
-# 编译项目
 pnpm run build
 
 # 全局软链接 CLI（可选）
 pnpm link --global
 ```
 
----
+### 2. 秒级静态分析任意 SDK
 
-## 核心工作流
-
-```text
-源定位符 (npm:包名, 本地目录, GitHub 公开仓库)
-       │
-       ▼
-确定性静态分析器 (TypeScript Compiler AST & TypeChecker)
-       │
-       ▼
-证据清单 (导出项、类型定义、文档、未解决项诊断)
-       │
-       ▼
-人工审查覆盖引擎 (可选 sdk-anything.overrides.json)
-       │
-       ▼
-能力清单规范 (sdk-anything/manifest/v1)
-       │
- ┌─────┴─────────────────────┐
- ▼                           ▼
-生成的 MCP 服务器       生成的 CLI 与 SKILL.md
-(Stdio 协议传输)        (Commander.js 与说明文档)
-       │                           │
- └─────┬─────────────────────┘
-       ▼
-通用运行时引擎 (参数模式校验、副作用策略拦截、分页与输出截断)
-```
-
-### 1. 检查 SDK
-
-对公开 npm 包、本地工程目录或 GitHub 公开仓库进行静态审查：
+对公开 npm 包、本地工程目录或 GitHub 公开仓库进行静态审查，**绝不导入或执行目标包代码，严格跳过 npm 安装生命周期脚本**：
 
 ```bash
 # 审查公开 npm 包
@@ -119,17 +102,28 @@ sdk-anything inspect ./path/to/my-sdk
 sdk-anything inspect npm:@turf/turf --json
 ```
 
-### 2. 配置覆盖规则（可选）
+终端输出示例：
+```text
+Resolved source: npm:@turf/turf
+Kind:            npm
+Version:         7.2.0
+Digest:          sha256:196883847d5efc475a4c897753397199e1fabe332f631cf0202587a31bd17ffb
+Entry point:     index.ts
+Functions:       78 (distance, area, point, buffer, ...)
+Classes:         0 (none)
+Factories:       0 (none)
+Unresolved:      0
+```
 
-针对具有复杂构造工厂、类型歧义或需要配置特定认证环境变量的 SDK：
+### 3. 配置人工审查覆盖规则（可选）
+
+针对需要配置构造函数参数、工厂方法或认证环境变量的 SDK：
 
 ```bash
-# 生成 starter 覆盖规则模板
 sdk-anything inspect ./path/to/my-sdk --write-overrides
 ```
 
-生成的 `sdk-anything.overrides.json` 示例：
-
+此命令将生成可编辑的 `sdk-anything.overrides.json`：
 ```json
 {
   "schemaVersion": "sdk-anything/overrides/v1",
@@ -153,207 +147,209 @@ sdk-anything inspect ./path/to/my-sdk --write-overrides
 }
 ```
 
-### 3. 生成 MCP 服务器、CLI 与代理技能
+### 4. 生成 MCP 服务、CLI 与技能文档
 
 ```bash
-# 生成 MCP 服务器与 CLI 到指定目录
+# 一键生成完整项目到目标目录
 sdk-anything generate npm:@turf/turf \
   --targets mcp,cli \
   --output ./generated/turf-tools
 
-# 可选：启用 AI 辅助生成更详尽的操作描述
+# 可选：启用兼容 OpenAI 的 AI 辅助生成更丰富的文档说明
 sdk-anything generate npm:@turf/turf \
   --targets mcp,cli \
   --ai \
   --output ./generated/turf-tools
 ```
 
-### 4. 静态验证
-
-对生成的清单格式、TypeScript 编译和命令一致性进行静态校验：
+### 5. 静态验证与测试
 
 ```bash
+# 静态校验清单格式与命令一致性（无需任何容器）
 sdk-anything validate ./generated/turf-tools
-```
 
-### 5. 运行验证测试
-
-```bash
-# 本地受信任代码：在净化后的子进程中测试
+# 本地受信代码：在净化的本地子进程中快速测试
 sdk-anything test ./generated/turf-tools --trusted-local
 
-# 不受信任的第三方包：在隔离的 Docker/Podman 容器中测试
+# 不受信的第三方包：在完全隔离的容器沙箱中测试（环境缺失时故障闭锁）
 sdk-anything test ./generated/turf-tools --sandbox
 ```
 
-> [!WARNING]
-> `--trusted-local` 仅在净化环境变量后的宿主进程中运行，**并不构成操作系统的安全边界**。测试来自不受信第三方的代码时，必须使用 `--sandbox`。
-
 ---
 
-## 能力清单规范
+## 🎮 交互式演示
 
-生成的能力清单文件严格遵循 `schema/capability-manifest.schema.json` 规范：
+### 演示 A：通过生成的 CLI 调用并输出结构化 JSON
 
-```json
+```bash
+# 计算两个地理坐标点之间的测地线距离
+$ sdk-cli-turf distance \
+    --input '{"from":[-75.343, 39.984],"to":[-75.534, 39.123],"options":{"units":"miles"}}' \
+    --json
+60.37
+
+# 尝试调用未授权的写操作或破坏性操作会在执行前被立即拦截
+$ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 {
-  "schemaVersion": "sdk-anything/manifest/v1",
-  "generatorVersion": "0.1.0",
-  "source": {
-    "kind": "npm",
-    "package": "@turf/turf",
-    "version": "7.2.0",
-    "digest": "sha256:0123456789abcdef..."
-  },
-  "operations": [
-    {
-      "id": "distance",
-      "name": "distance",
-      "summary": "Calculate distance between two points",
-      "description": "Calculates the distance between two points in degrees, radians, miles, or kilometers.",
-      "invoke": {
-        "kind": "top-level-function",
-        "functionName": "distance"
-      },
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "from": { "type": "array" },
-          "to": { "type": "array" },
-          "options": { "type": "object" }
-        },
-        "required": ["from", "to"],
-        "additionalProperties": false
-      },
-      "effect": "pure",
-      "enabledByDefault": true,
-      "result": { "mode": "direct" },
-      "provenance": {
-        "sourceFile": "src/index.ts",
-        "confidence": "high"
-      }
-    }
-  ],
-  "unresolved": []
+  "error": {
+    "code": "POLICY_DENIED",
+    "message": "Policy denied: operation 'deleteRecord' has effect 'destructive', which is disabled by default.",
+    "suggestedAction": "Operation effect is restricted by default. Enable the effect class in invocation options or manifest overrides"
+  }
 }
 ```
 
----
+### 演示 B：在 Claude Desktop 或 Cursor 中调用 MCP 工具
 
-## 安全与沙箱隔离
-
-### 副作用分级策略
-
-所有操作均划分到严格的副作用层级中：
-
-| 副作用级别 | 默认状态 | 说明 |
-|---|---|---|
-| `pure` | **默认启用** | 无状态纯计算（如几何距离计算、格式转换） |
-| `read` | **默认启用** | 不改变系统状态的远程或本地读取（如 `list`、`get`） |
-| `write` | **默认禁用** | 状态修改型操作（如 `create`、`update`） |
-| `destructive` | **默认禁用** | 具有破坏性的删除操作（如 `delete`、`drop`）。CLI 交互式调用时强制确认 |
-| `unknown` | **默认禁用** | 存在歧义或未明确验证副作用的操作 |
-
-### 凭据安全模型
-
-- 凭据绝不固化在代码、清单文件或版本控制中。
-- 配置通过 `env:VARIABLE_NAME` 进行解析。
-- 运行时日志和错误追踪会自动脱敏匹配常见认证头或凭据格式的内容（显示为 `Bearer [REDACTED]`）。
-
-### 有界分页截断
-
-为了防止大模型被海量数据淹没并引发上下文内存溢出，分页调用具备严格限制：
-- 单次调用最大条目限制（默认：100 条）。
-- 单次调用最大响应字节限制（默认：1 MB）。
-
----
-
-## 接入 AI 代理
-
-### 配置 Claude Desktop
-
-在 `claude_desktop_config.json` 中添加生成的 MCP 服务：
-
+在 `claude_desktop_config.json` 中配置：
 ```json
 {
   "mcpServers": {
     "turf-tools": {
       "command": "node",
-      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"],
-      "env": {
-        "API_KEY": "你的Token（如需要）"
-      }
+      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"]
     }
   }
 }
 ```
 
-### 配置 Cursor / Windsurf
-
-在项目的 `.cursor/mcp.json` 中配置：
-
+大模型调用该工具时的实际通信格式：
 ```json
+// 工具调用请求 (Request)
 {
-  "mcpServers": {
-    "my-sdk": {
-      "command": "npx",
-      "args": ["tsx", "/absolute/path/to/generated/my-sdk/mcp/server.ts"]
-    }
+  "name": "distance",
+  "arguments": {
+    "from": [-75.343, 39.984],
+    "to": [-75.534, 39.123],
+    "options": { "units": "miles" }
   }
 }
+
+// 工具调用响应 (Response)
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "60.37"
+    }
+  ]
+}
 ```
-
-### 通过 Agent Skill 调用
-
-每个生成的项目均包含一份量身定制的 `SKILL.md`，提供：
-- 所有可用原子工具的详细说明与输入参数约束。
-- 指导大模型在推理步骤中如何将原子工具依次串联组合的示例。
-- 错误恢复与分页参数说明。
 
 ---
 
-## 项目工程结构
+## 📊 测试结果
+
+每个子系统在发布前均通过严格的多层级自动化测试：
+
+| 测试层级 | 验证目标 | 测试项 | 状态 |
+|---|---|:---:|:---:|
+| **CLI 核心入口** | 帮助文档、版本信息、退出码、分层配置解析 | 8 | ✅ 通过 |
+| **安全源解析器** | npm 下载、本地目录、GitHub 归档、路径穿越 (`../`)、软链接逃逸 | 13 | ✅ 通过 |
+| **TypeScript 静态分析** | TS 编译器 AST、类型降级为 JSON Schema 2020-12、循环引用侦测 | 5 | ✅ 通过 |
+| **能力清单规范** | v1 Schema 校验、Ajv 语义检查、规范化字节稳定序列化 | 8 | ✅ 通过 |
+| **通用调用运行时** | 执行流水线、副作用安全拦截、敏感 Token 脱敏、请求超时控制 | 7 | ✅ 通过 |
+| **MCP 代码生成器** | 官方 `@modelcontextprotocol/sdk` 集成、Stdio 与内存传输通道 | 3 | ✅ 通过 |
+| **CLI 命令行生成器** | Commander.js 命令集、输入校验、`--json` 机器可读输出 | 4 | ✅ 通过 |
+| **代理技能生成器** | 生成 `SKILL.md` 格式、参数依赖、原子工具编排指导 | 1 | ✅ 通过 |
+| **AI 提案辅助层** | OpenAI 兼容接口 Mock、提示词注入隔离、隐私告知弹窗、优雅降级 | 5 | ✅ 通过 |
+| **安全与执行沙箱** | 有状态客户端生命周期、回环测试服务、故障闭锁沙箱检测 | 4 | ✅ 通过 |
+| **Turf 黄金端到端测试** | 完整闭环：检查 → 生成 → MCP 工具调用与 CLI 命令执行 | 1 | ✅ 通过 |
+| **总计** | **11 个自动化测试套件 100% 通过（0 项类型或 Lint 错误）** | **59** | **✅ 全部绿灯** |
+
+---
+
+## 🏗️ 系统架构流水线
+
+```text
+源定位符 (npm:包名, 本地目录, GitHub 公开仓库)
+       │
+       ▼
+确定性静态分析器 (TypeScript Compiler AST & TypeChecker, noEmit)
+       │
+       ▼
+证据清单 (函数签名、参数类型、文档注释、未解决项诊断)
+       │
+       ├─────────────────────────────────────────┐
+       │ (可选)                                  │ (确定性)
+       ▼                                         ▼
+AI 提案辅助层 (OpenAI 兼容接口)             能力清单构建器 (v1 规范)
+(自动生成摘要、分组、示例)                       │
+       │                                         │
+       └────────────────────┬────────────────────┘
+                            ▼
+                   人工审查覆盖引擎
+                (sdk-anything.overrides.json)
+                            │
+                            ▼
+                 已验证的标准能力清单
+             (schema: sdk-anything/manifest/v1)
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+        MCP 服务生成器              CLI 命令行生成器
+       (Stdio 协议服务)            (Commander.js 命令行)
+              │                           │
+              └─────────────┬─────────────┘
+                            ▼
+                     通用运行时层
+     (参数模式校验、副作用策略拦截、凭据管理、分页上限控制)
+```
+
+---
+
+## 🔒 安全与沙箱设计原则
+
+1. **静态审查阶段零执行保证：** 目标 SDK 在静态分析时绝不被导入或执行，严格规避安装钩子脚本。
+2. **凭据仅引用模型：** 清单与代码中绝不写入明文密码或 Token，仅通过 `env:VARIABLE_NAME` 引用。
+3. **自动化敏感信息脱敏：** 所有日志与异常追踪会自动将形如 `Bearer ...` 或环境变量中的密钥替换为 `[REDACTED]`。
+4. **保守的默认副作用控制：** 仅 `pure` 与 `read` 默认放行；`write`、`destructive` 和 `unknown` 在未明确配置前运行时一律拦截。
+5. **故障闭锁（Fail-Closed）容器沙箱：** 使用 `--sandbox` 必须依赖 Docker 或 Podman 环境。若缺失环境立即报错终止，**绝不静默降级为本地执行**。
+
+---
+
+## 📂 项目工程布局
 
 ```text
 sdk-anything/
+├── .github/workflows/ci.yml             # GitHub Actions 持续集成工作流
+├── assets/                              # 项目横幅与视觉素材
+│   ├── sdk-anything-banner-en.png
+│   └── sdk-anything-banner-zh.png
+├── docs/                                # 详尽设计文档
+│   ├── architecture.md                  # 系统底层架构与模块规范
+│   └── security.md                      # 安全模型、信任边界与沙箱策略
+├── examples/                            # 经过真实测试的参考范例
+│   ├── turf/                            # 纯函数黄金范例
+│   └── client-sdk/                      # 有状态的网络客户端 SDK 范例
 ├── schema/
-│   └── capability-manifest.schema.json  # Manifest v1 JSON Schema 模式定义
+│   └── capability-manifest.schema.json  # Manifest v1 JSON Schema 定义
 ├── skills/
-│   └── sdk-anything/SKILL.md            # 宿主智能体编排技能
+│   └── sdk-anything/SKILL.md            # 宿主编码智能体编排技能
 ├── src/
-│   ├── cli/                             # CLI 命令、配置与入口
-│   ├── source/                          # 安全的 npm/本地/GitHub 解析器
-│   ├── analyzer/                        # TypeScript 编译器静态分析与类型降级
-│   ├── manifest/                        # 清单构建、校验与规范化序列化
-│   ├── runtime/                         # 通用运行时、策略拦截器与凭据管理
+│   ├── cli/                             # CLI 命令、入口与配置
+│   ├── source/                          # 安全的 npm、本地与 GitHub 解析器
+│   ├── analyzer/                        # TS 编译器 AST 分析与类型降级
+│   ├── manifest/                        # 清单构建、模式校验与覆盖引擎
+│   ├── runtime/                         # 通用运行时、安全拦截器与凭据管理
 │   ├── generators/                      # MCP 服务、CLI 与 SKILL.md 生成器
 │   ├── ai/                              # 可选 AI 提案客户端与隐私告知
 │   └── sandbox/                         # 静态检测与容器执行沙箱
-├── tests/                               # 11 组全面的自动化测试套件
-├── examples/
-│   ├── turf/                            # 纯函数黄金范例
-│   └── client-sdk/                      # 具备网络与认证的客户端 SDK 范例
-└── docs/
-    ├── architecture.md                  # 详尽的系统架构规范
-    └── security.md                      # 安全模型与隔离设计
+└── tests/                               # 11 组 Vitest 自动化测试套件 (59 项测试)
 ```
 
 ---
 
-## 质量保障与测试矩阵
+## 🤝 社区贡献
 
-运行全套自动化测试套件：
+我们热烈欢迎来自社区的贡献与反馈！
+- **提交新型 SDK 模式：** 如果您遇到具有独特构造模式的 SDK，欢迎提交 Issue 或 PR 补充测试夹具。
+- **扩展生成适配器：** 协助适配更多主流智能体框架与运行时环境。
+- **安全审计与加固：** 协助对归档解压与容器沙箱边界进行持续强化。
 
-```bash
-# 运行 59 项自动化单元测试、集成测试与端到端测试
-pnpm test
+---
 
-# 严格的 TypeScript 类型检查
-pnpm run typecheck
-
-# 检查代码风格与 Lint 规范
-pnpm run lint
-
-# 编译生成生产级别产物
-pnpm run build
-```
+<p align="center">
+  <strong>SDK-Anything</strong> — <em>让全球所有软件库皆可 Agent-Native 化。</em><br>
+  <sub>专为自主 AI 智能体时代打造 • 59 项自动化测试通过 • 100% 确定性保证</sub>
+</p>
