@@ -2,12 +2,29 @@ import { describe, it, expect } from "vitest";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import * as os from "node:os";
-import { execSync } from "node:child_process";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { createCli } from "../../src/cli/index.js";
 import { generateArtifacts } from "../../src/generators/index.js";
 import { buildManifest } from "../../src/manifest/index.js";
 import { analyzeSourceSnapshot } from "../../src/analyzer/index.js";
 import { runDoctorCheck } from "../../src/cli/doctor.js";
+
+const execFileAsync = promisify(execFile);
+const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+
+async function run(
+  command: string,
+  args: string[],
+  options: { cwd?: string } = {},
+): Promise<string> {
+  const { stdout } = await execFileAsync(command, args, {
+    cwd: options.cwd,
+    encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024,
+  });
+  return stdout;
+}
 
 describe("Phase 08: Installable Deliverables & Package Distribution", () => {
   const turfSourceDir = path.resolve("examples/turf");
@@ -80,11 +97,10 @@ describe("Phase 08: Installable Deliverables & Package Distribution", () => {
     }
   });
 
-  it("verifies package tarball contents contain all necessary runtime files", () => {
+  it("verifies package tarball contents contain all necessary runtime files", async () => {
     const repoRoot = path.resolve(".");
-    const dryRunOutput = execSync("npm pack --dry-run --json", {
+    const dryRunOutput = await run(npmBin, ["pack", "--dry-run", "--json"], {
       cwd: repoRoot,
-      encoding: "utf8",
     });
 
     const packData = JSON.parse(dryRunOutput);
@@ -106,5 +122,51 @@ describe("Phase 08: Installable Deliverables & Package Distribution", () => {
     expect(files.some((f: string) => f.startsWith("tests/"))).toBe(false);
     expect(files.some((f: string) => f.startsWith("examples/"))).toBe(false);
     expect(files.some((f: string) => f.startsWith("prompts/"))).toBe(false);
-  });
+  }, 120000);
+
+  it("extracts packed tarball into an isolated directory and executes binary independently", async () => {
+    const repoRoot = path.resolve(".");
+    const tempConsumerDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-tarball-install-"),
+    );
+
+    try {
+      // 1. Pack tarball into temp directory
+      await run(npmBin, ["pack", "--pack-destination", tempConsumerDir], {
+        cwd: repoRoot,
+      });
+
+      const tarballName = fs
+        .readdirSync(tempConsumerDir)
+        .find((entry) => entry.endsWith(".tgz"));
+      expect(tarballName).toBeTruthy();
+      const tarballPath = path.join(tempConsumerDir, tarballName!);
+      expect(fs.existsSync(tarballPath)).toBe(true);
+
+      // 2. Install tarball into clean consumer workspace via npm install
+      fs.writeFileSync(
+        path.join(tempConsumerDir, "package.json"),
+        JSON.stringify({ name: "tarball-consumer", private: true }),
+      );
+      await run(
+        npmBin,
+        ["install", tarballPath, "--prefer-offline", "--no-audit", "--no-fund"],
+        { cwd: tempConsumerDir },
+      );
+
+      // 3. Execute binary directly via npx sdk-anything
+      const helpOutput = await run("npx", ["sdk-anything", "--help"], {
+        cwd: tempConsumerDir,
+      });
+
+      expect(helpOutput).toContain("sdk-anything [options] [command]");
+      expect(helpOutput).toContain("inspect");
+      expect(helpOutput).toContain("generate");
+      expect(helpOutput).toContain("validate");
+      expect(helpOutput).toContain("test");
+      expect(helpOutput).toContain("doctor");
+    } finally {
+      fs.rmSync(tempConsumerDir, { recursive: true, force: true });
+    }
+  }, 180000);
 });
