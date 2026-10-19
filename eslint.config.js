@@ -11,6 +11,6 @@ export default tseslint.config(
     }
   },
   {
-    ignores: ['dist/**', 'node_modules/**', '.pnpm-store/**', 'generated/**', 'tmp/**', 'examples/**']
+    ignores: ['dist/**', 'node_modules/**', '.pnpm-store/**', 'generated/**', 'tmp/**', 'examples/**', 'tests/fixtures/**']
   }
 );

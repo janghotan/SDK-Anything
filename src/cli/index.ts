@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { resolveSource } from '../source/index.js';
+import { analyzeSourceSnapshot } from '../analyzer/index.js';
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -34,8 +35,10 @@ export function createCli(options: CreateCliOptions = {}): Command {
     .action(async (source: string, cmdOptions: { writeOverrides?: boolean; json?: boolean }) => {
       try {
         const snapshot = await resolveSource(source);
+        const evidence = await analyzeSourceSnapshot(snapshot);
+
         if (cmdOptions.json) {
-          const out = JSON.stringify(snapshot, null, 2);
+          const out = JSON.stringify(evidence, null, 2);
           if (options.writeOut) options.writeOut(out + '\n');
           else console.log(out);
         } else {
@@ -44,8 +47,16 @@ export function createCli(options: CreateCliOptions = {}): Command {
             `Kind:            ${snapshot.kind}`,
             `Version:         ${snapshot.version}`,
             `Digest:          ${snapshot.digest}`,
-            `Snapshot path:   ${snapshot.snapshotPath}`,
+            `Entry point:     ${evidence.entryPoint}`,
+            `Functions:       ${evidence.functions.length} (${evidence.functions.map(f => f.name).join(', ') || 'none'})`,
+            `Classes:         ${evidence.classes.length} (${evidence.classes.map(c => c.name).join(', ') || 'none'})`,
+            `Factories:       ${evidence.factories.length} (${evidence.factories.map(f => f.name).join(', ') || 'none'})`,
+            `Unresolved:      ${evidence.unresolved.length}`,
           ];
+          if (evidence.unresolved.length > 0) {
+            lines.push(`Unresolved symbols:`);
+            evidence.unresolved.forEach(u => lines.push(`  - ${u.symbolName}: ${u.reason}`));
+          }
           if (snapshot.warnings.length > 0) {
             lines.push(`Warnings:`);
             snapshot.warnings.forEach(w => lines.push(`  - ${w}`));

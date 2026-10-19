@@ -78,9 +78,10 @@ describe('CLI bootstrap and config resolution', () => {
 
     await cli.parseAsync(['node', 'sdk-anything', 'inspect', './tests/fixtures/sample-local-sdk', '--json']);
     const parsed = JSON.parse(output);
-    expect(parsed.kind).toBe('local');
-    expect(parsed.version).toBe('1.0.0');
-    expect(parsed.digest).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(parsed.source.kind).toBe('local');
+    expect(parsed.source.version).toBe('1.0.0');
+    expect(parsed.source.digest).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(parsed.functions).toBeDefined();
   });
 
   it('resolves configuration with defaults', () => {
