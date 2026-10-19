@@ -72,7 +72,32 @@
 
 ## 🚀 快速上手
 
-### 1. 安装与构建
+### 1. 安装
+
+使用你惯用的包管理器安装已发布的 npm 包：
+
+```bash
+# npm
+npm install -g sdk-anything
+
+# pnpm
+pnpm add -g sdk-anything
+
+# Yarn Classic (v1)
+yarn global add sdk-anything
+
+# Yarn Berry (v2+)——无需全局安装即可运行
+yarn dlx sdk-anything --help
+```
+
+也可以不全局安装，直接临时运行：
+
+```bash
+npx sdk-anything --help
+```
+
+<details>
+<summary>或从源码构建</summary>
 
 ```bash
 # 克隆代码仓库
@@ -86,6 +111,8 @@ pnpm run build
 # 全局软链接 CLI（可选）
 pnpm link --global
 ```
+
+</details>
 
 ### 2. 秒级静态分析任意 SDK
 
