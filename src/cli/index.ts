@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { resolveSource } from '../source/index.js';
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -30,8 +31,39 @@ export function createCli(options: CreateCliOptions = {}): Command {
     .description('Inspect an npm package, local directory, or public GitHub repo statically')
     .option('--write-overrides', 'Emit starter sdk-anything.overrides.json for ambiguous types/lifecycle')
     .option('--json', 'Output results in JSON format')
-    .action(async (_source, _cmdOptions) => {
-      // Stub for Phase 01; full implementation in subsequent phases
+    .action(async (source: string, cmdOptions: { writeOverrides?: boolean; json?: boolean }) => {
+      try {
+        const snapshot = await resolveSource(source);
+        if (cmdOptions.json) {
+          const out = JSON.stringify(snapshot, null, 2);
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        } else {
+          const lines = [
+            `Resolved source: ${snapshot.identifier}`,
+            `Kind:            ${snapshot.kind}`,
+            `Version:         ${snapshot.version}`,
+            `Digest:          ${snapshot.digest}`,
+            `Snapshot path:   ${snapshot.snapshotPath}`,
+          ];
+          if (snapshot.warnings.length > 0) {
+            lines.push(`Warnings:`);
+            snapshot.warnings.forEach(w => lines.push(`  - ${w}`));
+          }
+          const out = lines.join('\n');
+          if (options.writeOut) options.writeOut(out + '\n');
+          else console.log(out);
+        }
+      } catch (err: unknown) {
+        const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+        if (options.writeErr) options.writeErr(errMsg + '\n');
+        else console.error(errMsg);
+        if (options.exitOverride) {
+          throw err;
+        } else {
+          process.exit(1);
+        }
+      }
     });
 
   program

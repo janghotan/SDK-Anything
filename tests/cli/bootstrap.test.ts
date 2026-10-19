@@ -54,6 +54,35 @@ describe('CLI bootstrap and config resolution', () => {
     expect(errOutput).toBeDefined();
   });
 
+  it('inspects local source directory and prints information', async () => {
+    let output = '';
+    const cli = createCli({
+      writeOut: (str: string) => { output += str; },
+      writeErr: () => {},
+      exitOverride: true,
+    });
+
+    await cli.parseAsync(['node', 'sdk-anything', 'inspect', './tests/fixtures/sample-local-sdk']);
+    expect(output).toContain('Resolved source:');
+    expect(output).toContain('sample-local-sdk');
+    expect(output).toContain('Digest:');
+  });
+
+  it('inspects local source directory and outputs JSON when --json is provided', async () => {
+    let output = '';
+    const cli = createCli({
+      writeOut: (str: string) => { output += str; },
+      writeErr: () => {},
+      exitOverride: true,
+    });
+
+    await cli.parseAsync(['node', 'sdk-anything', 'inspect', './tests/fixtures/sample-local-sdk', '--json']);
+    const parsed = JSON.parse(output);
+    expect(parsed.kind).toBe('local');
+    expect(parsed.version).toBe('1.0.0');
+    expect(parsed.digest).toMatch(/^sha256:[a-f0-9]{64}$/);
+  });
+
   it('resolves configuration with defaults', () => {
     const config = resolveConfig();
     expect(config.targets).toEqual(['mcp', 'cli']);
