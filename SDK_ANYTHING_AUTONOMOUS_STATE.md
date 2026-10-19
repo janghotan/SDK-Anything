@@ -2,12 +2,12 @@
 
 - Project: SDK-Anything
 - Spec: `spec/SDK-Anything-Design-Revised.md` (canonical repository copy at `docs/superpowers/specs/2026-10-18-sdk-anything-design-revised.md`)
-- Current phase: Phase 04 — Manifest Schema, Overrides, and Policy Model
-- Current plan task: Task 4 — Manifest Schema, Overrides Engine, and Policy Model
+- Current phase: Phase 05 — Shared Runtime, Client Lifecycle, and Policy Enforcement
+- Current plan task: Task 5 — Shared Invocation Runtime, Client Lifecycle, and Runtime Policy
 - Current branch: feat/sdk-anything-v0.1
 - Remote push target: none (push blocked: no remote configured)
-- Last known green commit: 730a2dc
-- Last verification command/result: pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build (26 tests passed)
+- Last known green commit: 76fe346
+- Last verification command/result: pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build (34 tests passed)
 - Pending blocker: none (local execution proceeding autonomously)
 
 ## Phase ledger
@@ -18,7 +18,8 @@
 | 01 Bootstrap and quality gates | completed | 09379c6 | 6 tests passed, typecheck/lint/build clean | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | CLI shell, Commander.js, Vitest, TypeScript, ESLint |
 | 02 Source resolution | completed | ec33c1b | 21 tests passed (13 source tests + 8 cli tests) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Safe npm, local dir, public GitHub resolver, path traversal protection |
 | 03 Static analyzer and evidence | completed | 730a2dc | 26 tests passed (5 analyzer tests + 21 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | TypeScript Compiler API, type lowering to JSON Schema, unresolved diagnostics |
-| 04 Manifest and overrides | in_progress | pending | — | — | — |
+| 04 Manifest and overrides | completed | 76fe346 | 34 tests passed (8 manifest tests + 26 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Manifest v1 JSON Schema, Ajv validator, canonical serializer, overrides |
+| 05 Shared runtime and policy | in_progress | pending | — | — | — |
 | 02 Source resolution | pending | — | — | — | — |
 | 03 Static analyzer and evidence | pending | — | — | — | — |
 | 04 Manifest and overrides | pending | — | — | — | — |

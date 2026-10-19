@@ -14,6 +14,27 @@
 
 ---
 
+## Phase 04 — Manifest Schema, Overrides, and Policy Model
+
+- **Date**: 2026-10-18
+- **Goal**: Define and validate `sdk-anything/manifest/v1`, with stable serialization, client descriptors, operation schemas, pagination, effect classes, and human-editable overrides.
+- **Status**: completed
+- **Commit**: `76fe346` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Published canonical JSON Schema `schema/capability-manifest.schema.json` defining strict structure for v1 capability manifests.
+  - Implemented typed TypeScript model interfaces in `src/manifest/types.ts`.
+  - Implemented Ajv 2020 validator with custom semantic checks in `src/manifest/validator.ts` ensuring:
+    - Unique operation IDs.
+    - Secret configuration options use environment references (`env:VAR_NAME`) and never raw secret strings.
+    - Write/destructive/unknown operations are strictly disabled by default unless explicitly approved in override provenance.
+  - Implemented `buildManifest` in `src/manifest/builder.ts` converting `EvidenceInventory` into versioned `CapabilityManifest`.
+  - Implemented `serializeCanonicalManifest` and `computeManifestDigest` in `src/manifest/serializer.ts` with deterministic key and operation sorting and no volatile timestamps.
+  - Implemented `applyOverrides` and `generateStarterOverrides` in `src/manifest/overrides.ts` supporting `sdk-anything.overrides.json`.
+  - Integrated `validate` command and `--write-overrides` in CLI.
+  - Verified 34/34 tests pass across all test suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 03 — TypeScript/JavaScript Analyzer and Evidence Inventory
 
 - **Date**: 2026-10-18
