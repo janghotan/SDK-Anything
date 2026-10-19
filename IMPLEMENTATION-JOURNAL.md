@@ -96,3 +96,13 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/compatibility/compatibility-lab.test.ts`: Added suite executing compatibility runner across all fixtures with 100% pass rate (2/2 passing).
   - Full test suite: 82/82 tests passing across 17 test files.
 - **Next Action:** Move to Phase 06: AI-Assisted Analysis as Optional, Evidence-Bounded Augmentation.
+
+## 2026-10-19: Phase 06 — AI-Assisted Analysis as Optional, Evidence-Bounded Augmentation
+- **Delivered Changes:**
+  1. `src/cli/index.ts`: Wired CLI `generate --ai` option to `requestAiProposals` and `checkAndRecordDisclosure`.
+  2. Privacy disclosure: Prominently displayed before any transmission; only minimal signatures sent, never full source, environment variables, credentials, or private paths.
+  3. Non-elevation constraint: AI proposals only augment documentation (summary, description); AI cannot elevate destructive or unknown effects to pure/read, and cannot enable disabled operations without human review.
+- **Test Evidence:**
+  - `tests/ai/ai-proposal.test.ts`: Added test verifying CLI `generate --ai` privacy disclosure and clean fallback on missing credentials (6/6 passing).
+  - Full test suite: 83/83 tests passing across 17 test files.
+- **Next Action:** Move to Phase 07: Security, Trust Boundaries and Honest Sandbox Guarantees.

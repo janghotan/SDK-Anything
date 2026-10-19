@@ -11,6 +11,10 @@ import {
 } from "../manifest/index.js";
 import { generateArtifacts } from "../generators/index.js";
 import { runProjectTests } from "../sandbox/index.js";
+import {
+  checkAndRecordDisclosure,
+  requestAiProposals,
+} from "../ai/index.js";
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -187,6 +191,43 @@ export function createCli(options: CreateCliOptions = {}): Command {
               fs.readFileSync(overridesPath, "utf8"),
             );
             manifest = applyOverrides(manifest, rawOverrides);
+          }
+
+          // Optional AI-assisted enrichment
+          if (cmdOptions.ai) {
+            const disclosure = checkAndRecordDisclosure(evidence);
+            if (!cmdOptions.json) {
+              const discMsg = disclosure.notice;
+              if (options.writeOut) options.writeOut(discMsg + "\n");
+              else console.log(discMsg);
+            }
+
+            const aiResult = await requestAiProposals(evidence);
+            if (aiResult.fallback) {
+              const warnMsg = `AI Notice: Falling back to deterministic generation (${aiResult.warnings.join("; ")})`;
+              if (options.writeErr) options.writeErr(warnMsg + "\n");
+              else console.warn(warnMsg);
+            } else {
+              for (const proposal of aiResult.proposals) {
+                const op = manifest.operations.find(
+                  (o) => o.id === proposal.operationId,
+                );
+                if (op) {
+                  if (proposal.summary) op.summary = proposal.summary;
+                  if (proposal.description)
+                    op.description = proposal.description;
+                  if (!op.provenance.overridesApplied) {
+                    op.provenance.overridesApplied = [];
+                  }
+                  op.provenance.overridesApplied.push("ai-summary");
+                }
+              }
+              if (!cmdOptions.json) {
+                const successMsg = `Applied AI-enhanced descriptions for ${aiResult.proposals.length} operations.`;
+                if (options.writeOut) options.writeOut(successMsg + "\n");
+                else console.log(successMsg);
+              }
+            }
           }
 
           const targets = (cmdOptions.targets ?? "mcp,cli")

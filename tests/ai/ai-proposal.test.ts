@@ -167,4 +167,43 @@ describe("AI Proposal Layer", () => {
     expect(result.fallback).toBe(true);
     expect(result.warnings.some((w) => /malformed/i.test(w))).toBe(true);
   });
+
+  it("integrates with CLI generate --ai: displays privacy notice and falls back gracefully", async () => {
+    const { createCli } = await import("../../src/cli/index.js");
+    let output = "";
+    let errOutput = "";
+
+    const cli = createCli({
+      writeOut: (str: string) => {
+        output += str;
+      },
+      writeErr: (str: string) => {
+        errOutput += str;
+      },
+      exitOverride: true,
+    });
+
+    const tempDir = (await import("node:os")).tmpdir();
+    const outPath = (await import("node:path")).join(tempDir, `sdk-ai-test-${Date.now()}`);
+
+    try {
+      await cli.parseAsync([
+        "node",
+        "sdk-anything",
+        "generate",
+        "./examples/turf",
+        "--output",
+        outPath,
+        "--ai",
+      ]);
+
+      // Verify privacy notice was shown
+      expect(output).toContain("AI Assistance Privacy Disclosure");
+      expect(output).toContain("Minimal source summary");
+      // Verify clean fallback since no OPENAI_API_KEY was provided
+      expect(errOutput).toContain("Falling back to deterministic generation");
+    } finally {
+      (await import("node:fs")).rmSync(outPath, { recursive: true, force: true });
+    }
+  });
 });
