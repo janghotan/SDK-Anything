@@ -12,10 +12,10 @@
   - `pnpm run lint`: exit 0 (68 warnings, 0 errors)
   - `pnpm test`: 60/60 passing tests across 11 test files, exit 0
   - `pnpm run build`: exit 0
-- Active phase: Phase 04 — Quality Gates and CI
-- Active task: Task 4 — Packaging Hygiene and Quality Gates
-- Last verified commit: 6474216
-- Last verified commands and outcomes: tsc, eslint, vitest (67/67 pass), tsc build (exit 0)
+- Active phase: Phase 05 — Documentation and User Journey
+- Active task: Task 5 — Documentation Verification and Release Candidate Report
+- Last verified commit: 2fcd9db
+- Last verified commands and outcomes: tsc, eslint, prettier, vitest (67/67 pass), tsc build, npm pack --dry-run (182 files, 363.2 kB, 0 errors)
 - Known failures / root-cause evidence: none
 - Tests skipped and why: live OpenAI provider test skipped (mocked fixtures used); Docker/Podman container tests skipped because neither is installed on host (fail-closed behavior verified)
 - Phase commits:
@@ -23,6 +23,7 @@
   - `cb827a0` (Phase 01: standalone project independence tests outside repo)
   - `320b21a` (Phase 02: re-export resolution, default/named export tests, override promotions)
   - `6474216` (Phase 03: fail-closed non-interactive destructive policy and output path confinement)
+  - `2fcd9db` (Phase 04: files whitelist in package.json, npm pack dry-run, expanded multi-node CI)
 - Push status / destination: chore/sdk-anything-v0.1-finish (local commits, ready to push when authorized)
-- Next concrete action: Configure explicit files whitelist in package.json and verify npm pack dry-run
+- Next concrete action: Compile v0.1 release-candidate readiness report and update final docs
 - Known limitations / risk accepted: Docker/Podman absent on host; static validation and trusted-local child process verified

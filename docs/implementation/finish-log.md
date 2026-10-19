@@ -69,3 +69,15 @@
   - Added path traversal escape validation in `src/generators/index.ts` ensuring all generated files remain confined within `resolvedOutDir`.
   - All 67 tests passing.
 
+---
+
+## Phase 04 — Quality Gates and CI
+
+- **Status**: completed
+- **Commit**: `2fcd9db` on `chore/sdk-anything-v0.1-finish`
+- **Actions**:
+  - Configured explicit `files` whitelist in `package.json` covering `dist/`, `schema/`, `skills/`, `README.md`, `README.zh-CN.md`, and `LICENSE`.
+  - Verified `npm pack --dry-run` packages cleanly (182 files, 82.5 kB compressed, 363.2 kB unpacked) without leaking tests, internal docs, or fixtures.
+  - Expanded GitHub Actions CI workflow in `.github/workflows/ci.yml` across Node 20 and Node 22 LTS, covering formatting, typecheck, lint, full tests, build, and package dry-run.
+  - All local quality gates verified: `pnpm run format`, `pnpm run typecheck`, `pnpm run lint`, `pnpm test`, `pnpm run build`.
+
