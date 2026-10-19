@@ -5,3 +5,4 @@ export * from './analyzer/index.js';
 export * from './manifest/index.js';
 export * from './runtime/index.js';
 export * from './generators/index.js';
+export * from './ai/index.js';
