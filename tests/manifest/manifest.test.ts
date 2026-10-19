@@ -61,6 +61,27 @@ describe("Capability Manifest Builder and Validator", () => {
     expect(deleteOp?.enabledByDefault).toBe(false);
   });
 
+  it("discovers operations from factory-produced client objects", async () => {
+    const factoryPath = path.resolve("tests/fixtures/factory-sdk");
+    const evidence = await analyzeSourceSnapshot(factoryPath);
+    const manifest = buildManifest(evidence);
+
+    expect(manifest.client?.construction).toBe("factory");
+    expect(manifest.client?.export).toBe("createServiceClient");
+    expect(
+      manifest.operations.some(
+        (o) => o.id === "createserviceclient.fetchStatus",
+      ),
+    ).toBe(true);
+    const calculate = manifest.operations.find(
+      (o) => o.id === "createserviceclient.calculate",
+    );
+    expect(calculate?.effect).toBe("pure");
+    expect(calculate?.enabledByDefault).toBe(true);
+    expect(manifest.unresolved).toHaveLength(0);
+    expect(validateManifest(manifest).valid).toBe(true);
+  });
+
   it("rejects manifest if write/destructive operation is enabledByDefault without override approval", () => {
     const invalidManifest: CapabilityManifest = {
       schemaVersion: "sdk-anything/manifest/v1",

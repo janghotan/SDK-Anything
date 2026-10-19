@@ -77,4 +77,53 @@ describe("Consumer SKILL.md Generator", () => {
     expect(markdown).toContain("Atomic Operation Composition");
     expect(markdown).toContain("records.delete"); // mentions disabled tools
   });
+
+  it("ensures every tool and command in SKILL.md is consistent with manifest operations", () => {
+    const markdown = generateConsumerSkill(sampleManifest);
+
+    // Extract table rows from Available Atomic Tools
+    const toolsSectionMatch = markdown.match(
+      /## Available Atomic Tools[\s\S]*?##/,
+    );
+    expect(toolsSectionMatch).not.toBeNull();
+    const toolsSection = toolsSectionMatch![0];
+
+    for (const op of sampleManifest.operations.filter(
+      (o) => o.enabledByDefault,
+    )) {
+      expect(toolsSection).toContain(op.summary);
+    }
+
+    // Disabled operations must explain how to authorize them explicitly.
+    expect(markdown).toContain("--allow-effects write");
+    expect(markdown).toContain("SDK_ANYTHING_ALLOWED_EFFECTS");
+    expect(markdown).toContain("SDK_ANYTHING_ALLOW_DESTRUCTIVE");
+  });
+
+  it("uses the same collision-safe names as the generated CLI and MCP surfaces", () => {
+    const collidingManifest: CapabilityManifest = {
+      ...sampleManifest,
+      operations: [
+        sampleManifest.operations[0],
+        {
+          ...sampleManifest.operations[0],
+          id: "math/add",
+          summary: "Add numbers via slash id",
+        },
+        {
+          ...sampleManifest.operations[0],
+          id: "math:add",
+          summary: "Add numbers via colon id",
+        },
+      ],
+    };
+
+    const markdown = generateConsumerSkill(collidingManifest);
+    expect(markdown).toContain("math_add");
+    expect(markdown).toContain("math_add_2");
+    expect(markdown).toContain("math_add_3");
+    expect(markdown).toContain("math-add");
+    expect(markdown).toContain("math-add-2");
+    expect(markdown).toContain("math-add-3");
+  });
 });

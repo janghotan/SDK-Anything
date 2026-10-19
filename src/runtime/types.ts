@@ -30,6 +30,7 @@ export interface InvocationContext {
   confirmDestructive?: (opId: string) => Promise<boolean>;
   sdkInstance?: unknown;
   sdkModule?: any;
+  signal?: AbortSignal;
 }
 
 export interface InvocationResult {

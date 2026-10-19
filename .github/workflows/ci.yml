@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # Run once per change instead of twice: feature branches are verified through
+  # their pull request, while pushes to main are verified directly. Previously
+  # `push: [main, feat/*, chore/*]` plus `pull_request: [main]` created two
+  # identical runs for every push to a feature branch with an open PR.
   push:
-    branches: [main, feat/*, chore/*]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -12,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [20, 22, 24]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

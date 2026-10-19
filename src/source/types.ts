@@ -38,4 +38,6 @@ export interface ResolveSourceOptions {
   maxFileCount?: number;
   timeoutMs?: number;
   fetchFn?: typeof fetch;
+  /** Retrieve declared npm dependencies into the snapshot node_modules. */
+  fetchDependencies?: boolean;
 }

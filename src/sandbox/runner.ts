@@ -71,6 +71,15 @@ export async function runProjectTests(
   const staticChecksPassed = true;
 
   // 2. Execution Testing Modes
+  const currentEnv = {
+    runtime: "node",
+    os: `${process.platform}-${process.arch}`,
+    nodeVersion: process.version,
+  };
+
+  const executedTasks: string[] = ["static manifest validation"];
+  const skippedTasks: string[] = [];
+
   if (mode === "sandbox") {
     const runtime = detectContainerRuntime();
     if (!runtime) {
@@ -103,6 +112,8 @@ export async function runProjectTests(
       timeout: options.timeoutMs ?? 60000,
     });
 
+    executedTasks.push(`container test execution (${runtime})`);
+
     if (proc.status !== 0) {
       throw new Error(
         `Sandbox test execution failed (exit code ${proc.status}): ${proc.stderr || proc.stdout}`,
@@ -116,6 +127,13 @@ export async function runProjectTests(
       staticChecksPassed: true,
       testExecutionPassed: true,
       durationMs: Date.now() - startTime,
+      environment: {
+        runtime,
+        os: `${process.platform}-${process.arch}`,
+        nodeVersion: process.version,
+      },
+      executedTasks,
+      skippedTasks,
       logs,
       warnings,
     };
@@ -126,14 +144,35 @@ export async function runProjectTests(
       "Running tests in --trusted-local mode (sanitized child process environment, NOT a security sandbox)...",
     );
 
-    // Run test script if package.json has test
-    const pkgPath = path.join(resolvedPath, "package.json");
-    let testPassed = true;
+    // Locate candidate package.json files
+    const candidateDirs: string[] = [];
+    if (fs.existsSync(path.join(resolvedPath, "package.json"))) {
+      candidateDirs.push(resolvedPath);
+    }
+    for (const sub of ["cli", "mcp"]) {
+      const subDir = path.join(resolvedPath, sub);
+      if (fs.existsSync(path.join(subDir, "package.json"))) {
+        candidateDirs.push(subDir);
+      }
+    }
 
-    if (fs.existsSync(pkgPath)) {
+    let testPassed = true;
+    let anyTestRun = false;
+
+    for (const dir of candidateDirs) {
+      const pkgPath = path.join(dir, "package.json");
       try {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
         if (pkg.scripts?.test) {
+          anyTestRun = true;
+          const targetLabel = path.relative(resolvedPath, dir) || "root";
+          if (!fs.existsSync(path.join(dir, "node_modules"))) {
+            warnings.push(
+              `node_modules not found in ${targetLabel}; run npm install before executing tests`,
+            );
+          }
+          executedTasks.push(`npm test (${targetLabel})`);
+
           const sanitizedEnv: Record<string, string> = {
             PATH: process.env.PATH || "",
             NODE_ENV: "test",
@@ -142,23 +181,29 @@ export async function runProjectTests(
           };
 
           const proc = spawnSync("npm", ["test"], {
-            cwd: resolvedPath,
+            cwd: dir,
             env: sanitizedEnv,
             encoding: "utf8",
             timeout: options.timeoutMs ?? 30000,
           });
 
           if (proc.status !== 0) {
-            logs.push(`Test command output: ${proc.stdout}\n${proc.stderr}`);
-            // If test failed or exited with non-zero
+            logs.push(
+              `Test command output (${targetLabel}): ${proc.stdout}\n${proc.stderr}`,
+            );
             testPassed = false;
           } else {
-            logs.push("Test command passed.");
+            logs.push(`Test command passed for ${targetLabel}.`);
           }
         }
-      } catch {
-        warnings.push("Could not execute npm test in trusted local directory");
+      } catch (err: any) {
+        warnings.push(`Could not execute npm test in ${dir}: ${err.message}`);
       }
+    }
+
+    if (!anyTestRun) {
+      warnings.push("No test scripts found in project or subprojects");
+      skippedTasks.push("npm test (no test scripts declared)");
     }
 
     return {
@@ -167,18 +212,25 @@ export async function runProjectTests(
       staticChecksPassed: true,
       testExecutionPassed: testPassed,
       durationMs: Date.now() - startTime,
+      environment: currentEnv,
+      executedTasks,
+      skippedTasks,
       logs,
       warnings,
     };
   }
 
   // mode === 'static'
+  skippedTasks.push("child process test execution (static mode)");
   return {
     mode: "static",
     isSecuritySandbox: false,
     staticChecksPassed,
     testExecutionPassed: undefined,
     durationMs: Date.now() - startTime,
+    environment: currentEnv,
+    executedTasks,
+    skippedTasks,
     logs,
     warnings,
   };

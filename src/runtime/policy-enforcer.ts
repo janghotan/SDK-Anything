@@ -8,10 +8,18 @@ export async function enforceOperationPolicy(
   op: OperationDescriptor,
   context: InvocationContext,
 ): Promise<void> {
-  const allowedEffects: OperationEffect[] = context.allowedEffects ?? [
-    "pure",
-    "read",
+  const allowedEffects: OperationEffect[] = [
+    ...(context.allowedEffects ?? ["pure", "read"]),
   ];
+
+  if (
+    context.allowDestructive ||
+    context.allowedOperationIds?.includes(op.id)
+  ) {
+    if (!allowedEffects.includes("destructive")) {
+      allowedEffects.push("destructive");
+    }
+  }
 
   // Check allowlist if provided
   if (
@@ -23,18 +31,23 @@ export async function enforceOperationPolicy(
     );
   }
 
-  // Check effect permissions
-  if (!allowedEffects.includes(op.effect)) {
+  // Check effect permissions. An explicit per-operation allowlist entry is a
+  // stronger grant than the effect tier list and authorizes that operation.
+  const explicitlyAllowed =
+    context.allowedOperationIds?.includes(op.id) === true;
+  if (!explicitlyAllowed && !allowedEffects.includes(op.effect)) {
     throw new Error(
       `Policy denied: operation '${op.id}' has effect '${op.effect}', which is disabled by default. Permitted effects: [${allowedEffects.join(", ")}]`,
     );
   }
 
-  // If operation is marked disabled in manifest and no explicit override in allowedEffects
-  if (
-    !op.enabledByDefault &&
-    (!context.allowedEffects || !context.allowedEffects.includes(op.effect))
-  ) {
+  // If operation is marked disabled in manifest and no explicit override in allowedEffects/authorization
+  const isExplicitlyAuthorized =
+    (context.allowedEffects && context.allowedEffects.includes(op.effect)) ||
+    (op.effect === "destructive" && context.allowDestructive) ||
+    context.allowedOperationIds?.includes(op.id);
+
+  if (!op.enabledByDefault && !isExplicitlyAuthorized) {
     throw new Error(
       `Policy denied: operation '${op.id}' is disabled by default in manifest. Must be enabled via policy configuration or overrides.`,
     );

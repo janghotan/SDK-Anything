@@ -80,7 +80,9 @@ describe("CLI Generator and MCP/CLI Parity", () => {
     const cliCode = files["cli.ts"];
     expect(cliCode).toContain("commander");
     expect(cliCode).toContain("math-add");
-    expect(cliCode).not.toContain("records-delete"); // disabled by default
+    // Disabled operations remain discoverable but are labelled and fail closed.
+    expect(cliCode).toContain("records-delete");
+    expect(cliCode).toContain("disabled by default");
     expect(cliCode).toContain("--json");
   });
 
@@ -159,5 +161,204 @@ describe("CLI Generator and MCP/CLI Parity", () => {
     ).rejects.toThrow();
 
     expect(stderr).toContain("INVALID_INPUT");
+  });
+
+  it("disambiguates colliding command names deterministically and provides invoke escape hatch", async () => {
+    const collidingManifest: CapabilityManifest = {
+      schemaVersion: "sdk-anything/manifest/v1",
+      generatorVersion: "0.1.0",
+      source: {
+        kind: "local",
+        package: "colliding-sdk",
+        version: "1.0.0",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      },
+      operations: [
+        {
+          id: "billing.charge",
+          name: "charge",
+          summary: "Charge billing",
+          description: "Charge billing account",
+          invoke: { kind: "top-level-function", functionName: "charge" },
+          inputSchema: {
+            type: "object",
+            properties: { amount: { type: "number" } },
+          },
+          effect: "pure",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+        {
+          id: "billing/charge",
+          name: "charge",
+          summary: "Charge billing slash",
+          description: "Charge billing account via slash id",
+          invoke: { kind: "top-level-function", functionName: "charge" },
+          inputSchema: {
+            type: "object",
+            properties: { amount: { type: "number" } },
+          },
+          effect: "pure",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+      ],
+      unresolved: [],
+    };
+
+    let stdout = "";
+    const mockModule = {
+      charge: vi.fn((amount: any) => ({
+        charged: typeof amount === "object" ? amount.amount : amount,
+      })),
+    };
+
+    const cli = createGeneratedCli(collidingManifest, {
+      sdkModule: mockModule,
+      writeOut: (str: string) => {
+        stdout += str;
+      },
+      writeErr: () => {},
+      exitOverride: true,
+    });
+
+    // Both colliding IDs normalise to `billing-charge`; the second must get a
+    // deterministic numeric suffix instead of silently overwriting the first.
+    const commandNames = cli.commands.map((c) => c.name());
+    expect(commandNames).toContain("billing-charge");
+    expect(commandNames).toContain("billing-charge-2");
+    expect(new Set(commandNames).size).toBe(commandNames.length);
+
+    // Test list command to verify both operations exist
+    await cli.parseAsync(["node", "cli", "list", "--json"]);
+    const list = JSON.parse(stdout);
+    expect(list.length).toBe(2);
+
+    // Test canonical escape hatch invoke <operationId>
+    stdout = "";
+    await cli.parseAsync([
+      "node",
+      "cli",
+      "invoke",
+      "billing/charge",
+      "--input",
+      JSON.stringify({ amount: 15 }),
+      "--json",
+    ]);
+
+    const result = JSON.parse(stdout);
+    expect(result).toEqual({ charged: 15 });
+  });
+
+  it("fails closed on destructive operations and permits them only with explicit authorization", async () => {
+    let stdout = "";
+    let stderr = "";
+    const cli = createGeneratedCli(sampleManifest, {
+      sdkModule: mockSdk,
+      interactive: false,
+      writeOut: (str: string) => {
+        stdout += str;
+      },
+      writeErr: (str: string) => {
+        stderr += str;
+      },
+      exitOverride: true,
+    });
+
+    // Denied by default
+    await expect(
+      cli.parseAsync([
+        "node",
+        "cli",
+        "records-delete",
+        "--input",
+        JSON.stringify({ id: "x" }),
+        "--json",
+      ]),
+    ).rejects.toThrow();
+    expect(stderr).toContain("POLICY_DENIED");
+    expect(mockSdk.deleteRecord).not.toHaveBeenCalled();
+
+    // Explicit authorization
+    mockSdk.deleteRecord.mockClear();
+    stdout = "";
+    stderr = "";
+    await cli.parseAsync([
+      "node",
+      "cli",
+      "records-delete",
+      "--input",
+      JSON.stringify({ id: "x" }),
+      "--allow-destructive",
+      "--json",
+    ]);
+    expect(mockSdk.deleteRecord).toHaveBeenCalled();
+    expect(JSON.parse(stdout)).toEqual({ deleted: true });
+  });
+
+  it("permits write operations only when the write effect is explicitly authorized", async () => {
+    const writeManifest: CapabilityManifest = {
+      ...sampleManifest,
+      operations: [
+        ...sampleManifest.operations,
+        {
+          id: "records.create",
+          name: "createRecord",
+          summary: "Create record",
+          description: "Create a record",
+          invoke: { kind: "top-level-function", functionName: "add" },
+          inputSchema: {
+            type: "object",
+            properties: { x: { type: "number" }, y: { type: "number" } },
+          },
+          effect: "write",
+          enabledByDefault: false,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+      ],
+    };
+
+    let stdout = "";
+    let stderr = "";
+    const cli = createGeneratedCli(writeManifest, {
+      sdkModule: mockSdk,
+      interactive: false,
+      writeOut: (str: string) => {
+        stdout += str;
+      },
+      writeErr: (str: string) => {
+        stderr += str;
+      },
+      exitOverride: true,
+    });
+
+    await expect(
+      cli.parseAsync([
+        "node",
+        "cli",
+        "records-create",
+        "--input",
+        JSON.stringify({ x: 1, y: 2 }),
+      ]),
+    ).rejects.toThrow();
+    expect(stderr).toContain("POLICY_DENIED");
+
+    stdout = "";
+    stderr = "";
+    await cli.parseAsync([
+      "node",
+      "cli",
+      "records-create",
+      "--input",
+      JSON.stringify({ x: 1, y: 2 }),
+      "--allow-effects",
+      "write",
+      "--json",
+    ]);
+    expect(JSON.parse(stdout)).toBe(3);
   });
 });

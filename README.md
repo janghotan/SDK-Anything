@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-blue?style=for-the-badge" alt="Quick Start"></a>
-  <a href="#-test-results"><img src="https://img.shields.io/badge/Tests-59_Passing_(100%25)-brightgreen?style=for-the-badge" alt="Tests"></a>
+  <a href="#-test-results"><img src="https://img.shields.io/badge/Tests-121_Passing_(100%25)-brightgreen?style=for-the-badge" alt="Tests"></a>
   <a href="#-why-sdk-anything"><img src="https://img.shields.io/badge/Architecture-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-yellow?style=for-the-badge" alt="License"></a>
   <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Docs-中文文档-red?style=for-the-badge" alt="中文文档"></a>
@@ -160,13 +160,33 @@ sdk-anything generate npm:@turf/turf \
   --targets mcp,cli \
   --ai \
   --output ./generated/turf-tools
+
+# Standalone output for an unpublished or locally built SDK: copy the built
+# package into the generated project and install it with a relative file: spec
+sdk-anything generate ./path/to/my-sdk \
+  --vendor-sdk ./path/to/my-sdk-dist \
+  --output ./generated/my-sdk-tools
+
+# Or pin the dependency specifier explicitly
+sdk-anything generate ./path/to/my-sdk \
+  --sdk-dependency "file:../my-sdk-dist" \
+  --output ./generated/my-sdk-tools
 ```
 
-### 5. Statically Validate & Test
+All discovered operations are exposed by both adapters. Pure/read operations run by default;
+write, destructive, and unknown operations are discoverable but **fail closed** until explicitly
+authorized (`--allow-effects`, `--allow-operations`, or `--allow-destructive` on the CLI;
+`SDK_ANYTHING_ALLOWED_EFFECTS`, `SDK_ANYTHING_ALLOWED_OPERATIONS`, and
+`SDK_ANYTHING_ALLOW_DESTRUCTIVE` on MCP).
+
+### 5. Statically Validate, Test & Run Doctor
 
 ```bash
 # Validate manifest schema and adapter parity (no containers required)
 sdk-anything validate ./generated/turf-tools
+
+# Verify bundle integrity, checksums, and environment readiness
+sdk-anything doctor ./generated/turf-tools
 
 # Test user-owned trusted code in a sanitized local process
 sdk-anything test ./generated/turf-tools --trusted-local
@@ -175,17 +195,38 @@ sdk-anything test ./generated/turf-tools --trusted-local
 sdk-anything test ./generated/turf-tools --sandbox
 ```
 
+### 6. Safe Regeneration & Drift Detection
+
+```bash
+# Check if generated project has drifted from source without writing files
+sdk-anything generate npm:@turf/turf --output ./generated/turf-tools --check
+
+# Regenerate safely; hand-edited files are protected from accidental overwrite
+sdk-anything generate npm:@turf/turf --output ./generated/turf-tools
+
+# Explicitly overwrite user edits if desired
+sdk-anything generate npm:@turf/turf --output ./generated/turf-tools --force
+```
+
 ---
 
 ## 🎮 Interactive Demos
 
-### Demo A: Calling Generated CLI with Structured JSON
+### Demo A: Calling Generated CLI with Structured JSON or Stdin
 
 ```bash
 # Calculate distance between two coordinate pairs
 $ sdk-cli-turf distance \
     --input '{"from":[-75.343, 39.984],"to":[-75.534, 39.123],"options":{"units":"miles"}}' \
     --json
+60.37
+
+# Pipe input JSON directly via stdin
+$ echo '{"from":[-75.343, 39.984],"to":[-75.534, 39.123],"options":{"units":"miles"}}' | sdk-cli-turf distance --json
+60.37
+
+# Canonical escape hatch: invoke any operation by its unique canonical ID
+$ sdk-cli-turf invoke distance --input '{"from":[-75.343, 39.984],"to":[-75.534, 39.123]}' --json
 60.37
 
 # Attempting an unauthorized write or destructive call fails before SDK execution
@@ -201,13 +242,13 @@ $ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 
 ### Demo B: Consuming Generated MCP Server in Claude Desktop / Cursor
 
-Add to your `claude_desktop_config.json`:
+Every generated MCP bundle includes an auto-configured `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "turf-tools": {
       "command": "node",
-      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"]
+      "args": ["./dist/server.js"]
     }
   }
 }
@@ -240,22 +281,32 @@ When Claude calls the tool:
 
 ## 📊 Test Results
 
-Every subsystem undergoes rigorous multi-layer testing before release:
+Every subsystem undergoes rigorous multi-layer testing across 21 groups (23 Vitest files):
 
 | Test Layer | What It Verifies | Tests | Status |
 |---|---|:---:|:---:|
 | **CLI Bootstrap** | Help text, versioning, exit codes, config resolution | 8 | ✅ Passed |
 | **Source Resolver** | npm download, local dirs, GitHub archives, path traversal (`../`), symlinks | 13 | ✅ Passed |
-| **TypeScript Analyzer** | TS Compiler API AST, type lowering to JSON Schema 2020-12, circular types | 5 | ✅ Passed |
-| **Capability Manifest** | v1 schema validation, Ajv semantic checks, canonical byte-stable serialization | 8 | ✅ Passed |
-| **Shared Runtime** | Invocation harness, policy enforcement, secret token redaction, timeouts | 7 | ✅ Passed |
-| **MCP Generator** | Official `@modelcontextprotocol/sdk` integration, stdio and in-memory transports | 3 | ✅ Passed |
-| **CLI Generator** | Commander.js commands, adapter parity, `--json` machine-readable output | 4 | ✅ Passed |
-| **Consumer Skill** | Generated `SKILL.md` format, parameter requirements, composition guide | 1 | ✅ Passed |
-| **AI Proposal Layer** | Mock OpenAI endpoint, prompt-injection defense, disclosure prompt, fallback | 5 | ✅ Passed |
-| **Security & Sandbox** | Stateful client lifecycle, loopback server, fail-closed container detection | 4 | ✅ Passed |
-| **Turf E2E Golden Test** | Full pipeline: inspect → generate → MCP tool call & CLI command execution | 1 | ✅ Passed |
-| **Total** | **100% Pass Rate across all 11 test suites (0 typecheck/lint errors)** | **59** | **✅ All Green** |
+| **Dependency Resolution** | Re-exports, default exports, aggregate packages, override promotions | 4 | ✅ Passed |
+| **Dependency Retrieval** | Bounded, script-free npm dependency graph materialisation and semver resolution | 6 | ✅ Passed |
+| **TypeScript Analyzer** | TS Compiler API AST, type lowering, enums, index signatures, utility types | 6 | ✅ Passed |
+| **Capability Manifest** | v1 schema validation, Ajv checks, canonical byte-stable serialization, overrides, factory clients | 9 | ✅ Passed |
+| **Manifest Regeneration** | Checksum inventory, `--check` drift detection, user-edit conflict protection | 5 | ✅ Passed |
+| **Shared Runtime** | Invocation harness, policy enforcement, secret token redaction, timeouts | 8 | ✅ Passed |
+| **MCP Generator** | Official `@modelcontextprotocol/sdk`, instructions, collision disambiguation, env policy | 5 | ✅ Passed |
+| **CLI Generator** | Commander.js commands, adapter parity, stdin piping, policy flags, `invoke` escape hatch | 8 | ✅ Passed |
+| **Consumer Skill** | Generated `SKILL.md` format, doc/command consistency, disabled-operation guidance | 3 | ✅ Passed |
+| **Vendor SDK Packaging** | Project-root `vendor/`, relative dependency specs, package-name validation, Node 20-safe manifest loading | 3 | ✅ Passed |
+| **AI Proposal Layer** | Mock OpenAI endpoint, prompt-injection defense, privacy disclosure, fallback | 6 | ✅ Passed |
+| **Security & Sandbox** | Stateful client lifecycle, loopback server, fail-closed container detection | 5 | ✅ Passed |
+| **Adversarial Security** | Tarball traversal, symlinks, bombs, URL secret redaction, pagination loop guards | 9 | ✅ Passed |
+| **Compatibility Lab** | 6 multi-shape fixtures (pure, authenticated, barrel, types, factory, malformed) | 2 | ✅ Passed |
+| **Core Journey & E2E** | inspect → manifest → atomic generation → CLI/MCP verification, including Turf golden runs | 5 | ✅ Passed |
+| **Independence & Golden** | Zero repo back-references, independent compilation of generated runtime | 2 | ✅ Passed |
+| **Package Distribution** | Tarball whitelist, installed-binary execution, `doctor`, relocatable bundles | 4 | ✅ Passed |
+| **Performance & Determinism** | Coarse budgets, byte-identical serialization, AbortSignal cancellation | 4 | ✅ Passed |
+| **External Generated Project** | Installed tarball → vendored SDK → `npm install`/build → real CLI process + stdio MCP client | 6 | ✅ Passed |
+| **Total** | **100% Pass Rate across 23 test files (0 typecheck/lint errors)** | **121** | **✅ All Green** |
 
 ---
 
@@ -335,7 +386,7 @@ sdk-anything/
 │   ├── generators/                      # MCP, CLI, and consumer skill generators
 │   ├── ai/                              # Optional AI proposal adapter & disclosure
 │   └── sandbox/                         # Static checks & container execution
-└── tests/                               # 11 comprehensive Vitest test suites (59 tests)
+└── tests/                               # 23 comprehensive Vitest test suites (121 tests)
 ```
 
 ---
@@ -351,5 +402,5 @@ We welcome contributions to expand SDK-Anything!
 
 <p align="center">
   <strong>SDK-Anything</strong> — <em>Make Any Software Library Agent-Native.</em><br>
-  <sub>Built for the age of autonomous AI agents • 59 Passing Tests • 100% Deterministic</sub>
+  <sub>Built for the age of autonomous AI agents • 121 Passing Tests • 100% Deterministic</sub>
 </p>

@@ -10,7 +10,10 @@ import {
   applyOverrides,
 } from "../manifest/index.js";
 import { generateArtifacts } from "../generators/index.js";
+import { computeSha256 } from "../generators/inventory.js";
 import { runProjectTests } from "../sandbox/index.js";
+import { checkAndRecordDisclosure, requestAiProposals } from "../ai/index.js";
+import { runDoctorCheck } from "./doctor.js";
 
 export interface CreateCliOptions {
   writeOut?: (str: string) => void;
@@ -77,6 +80,26 @@ export function createCli(options: CreateCliOptions = {}): Command {
             if (options.writeOut) options.writeOut(out + "\n");
             else console.log(out);
           } else {
+            const manifest = buildManifest(evidence);
+            const pureOps = manifest.operations.filter(
+              (o) => o.effect === "pure",
+            ).length;
+            const readOps = manifest.operations.filter(
+              (o) => o.effect === "read",
+            ).length;
+            const writeOps = manifest.operations.filter(
+              (o) => o.effect === "write",
+            ).length;
+            const destructiveOps = manifest.operations.filter(
+              (o) => o.effect === "destructive",
+            ).length;
+            const unknownOps = manifest.operations.filter(
+              (o) => o.effect === "unknown",
+            ).length;
+            const enabledOps = manifest.operations.filter(
+              (o) => o.enabledByDefault,
+            ).length;
+
             const lines = [
               `Resolved source: ${snapshot.identifier}`,
               `Kind:            ${snapshot.kind}`,
@@ -86,12 +109,15 @@ export function createCli(options: CreateCliOptions = {}): Command {
               `Functions:       ${evidence.functions.length} (${evidence.functions.map((f) => f.name).join(", ") || "none"})`,
               `Classes:         ${evidence.classes.length} (${evidence.classes.map((c) => c.name).join(", ") || "none"})`,
               `Factories:       ${evidence.factories.length} (${evidence.factories.map((f) => f.name).join(", ") || "none"})`,
+              `Operations:      ${manifest.operations.length} (${enabledOps} enabled by default; pure: ${pureOps}, read: ${readOps}, write: ${writeOps}, destructive: ${destructiveOps}, unknown: ${unknownOps})`,
               `Unresolved:      ${evidence.unresolved.length}`,
             ];
             if (evidence.unresolved.length > 0) {
               lines.push(`Unresolved symbols:`);
               evidence.unresolved.forEach((u) =>
-                lines.push(`  - ${u.symbolName}: ${u.reason}`),
+                lines.push(
+                  `  - ${u.symbolName}: [${u.reason}] ${u.suggestedAction || ""}`,
+                ),
               );
             }
             if (snapshot.warnings.length > 0) {
@@ -134,6 +160,19 @@ export function createCli(options: CreateCliOptions = {}): Command {
       "--ai",
       "Enable optional AI-assisted descriptions and operation selection",
     )
+    .option("--check", "Check for drift without writing files to disk")
+    .option(
+      "--force",
+      "Overwrite existing user-modified files without confirmation",
+    )
+    .option(
+      "--sdk-dependency <specifier>",
+      "Override the target SDK dependency specifier in generated package.json (for example file:./vendor/sdk or a tarball path)",
+    )
+    .option(
+      "--vendor-sdk <path>",
+      "Copy a built SDK package directory into the generated project and depend on it with a relative file: specifier",
+    )
     .option("--json", "Output results in JSON format")
     .action(
       async (
@@ -142,6 +181,10 @@ export function createCli(options: CreateCliOptions = {}): Command {
           targets?: string;
           output?: string;
           ai?: boolean;
+          check?: boolean;
+          force?: boolean;
+          sdkDependency?: string;
+          vendorSdk?: string;
           json?: boolean;
         },
       ) => {
@@ -159,6 +202,43 @@ export function createCli(options: CreateCliOptions = {}): Command {
             manifest = applyOverrides(manifest, rawOverrides);
           }
 
+          // Optional AI-assisted enrichment
+          if (cmdOptions.ai) {
+            const disclosure = checkAndRecordDisclosure(evidence);
+            if (!cmdOptions.json) {
+              const discMsg = disclosure.notice;
+              if (options.writeOut) options.writeOut(discMsg + "\n");
+              else console.log(discMsg);
+            }
+
+            const aiResult = await requestAiProposals(evidence);
+            if (aiResult.fallback) {
+              const warnMsg = `AI Notice: Falling back to deterministic generation (${aiResult.warnings.join("; ")})`;
+              if (options.writeErr) options.writeErr(warnMsg + "\n");
+              else console.warn(warnMsg);
+            } else {
+              for (const proposal of aiResult.proposals) {
+                const op = manifest.operations.find(
+                  (o) => o.id === proposal.operationId,
+                );
+                if (op) {
+                  if (proposal.summary) op.summary = proposal.summary;
+                  if (proposal.description)
+                    op.description = proposal.description;
+                  if (!op.provenance.overridesApplied) {
+                    op.provenance.overridesApplied = [];
+                  }
+                  op.provenance.overridesApplied.push("ai-summary");
+                }
+              }
+              if (!cmdOptions.json) {
+                const successMsg = `Applied AI-enhanced descriptions for ${aiResult.proposals.length} operations.`;
+                if (options.writeOut) options.writeOut(successMsg + "\n");
+                else console.log(successMsg);
+              }
+            }
+          }
+
           const targets = (cmdOptions.targets ?? "mcp,cli")
             .split(",")
             .map((t) => t.trim())
@@ -169,7 +249,21 @@ export function createCli(options: CreateCliOptions = {}): Command {
             manifest,
             targets,
             outputDir,
+            {
+              check: !!cmdOptions.check,
+              force: !!cmdOptions.force,
+              sdkDependencySpec: cmdOptions.sdkDependency,
+              vendorSdkPath: cmdOptions.vendorSdk,
+            },
           );
+
+          if (cmdOptions.check) {
+            const checkMsg =
+              "No drift detected; generated project is up to date.";
+            if (options.writeOut) options.writeOut(checkMsg + "\n");
+            else console.log(checkMsg);
+            return;
+          }
 
           if (cmdOptions.json) {
             const out = JSON.stringify(
@@ -250,24 +344,98 @@ export function createCli(options: CreateCliOptions = {}): Command {
         const manifest = JSON.parse(raw);
         const result = validateManifest(manifest);
 
+        // When validating a generated project directory, also verify artifact
+        // inventory integrity and required adapters. Surface drift instead of
+        // silently claiming the whole project is valid.
+        const projectChecks: string[] = [];
+        const projectErrors: string[] = [];
+        const targetResolved = path.resolve(targetPath);
+        if (
+          fs.existsSync(targetResolved) &&
+          fs.statSync(targetResolved).isDirectory()
+        ) {
+          const inventoryPath = path.join(
+            targetResolved,
+            ".sdk-anything-inventory.json",
+          );
+          if (fs.existsSync(inventoryPath)) {
+            try {
+              const inventory = JSON.parse(
+                fs.readFileSync(inventoryPath, "utf8"),
+              );
+              let checked = 0;
+              for (const entry of inventory.files ?? []) {
+                const filePath = path.join(targetResolved, entry.path);
+                if (!fs.existsSync(filePath)) {
+                  projectErrors.push(`Missing generated file: ${entry.path}`);
+                  continue;
+                }
+                const hash = computeSha256(fs.readFileSync(filePath, "utf8"));
+                if (hash !== entry.sha256) {
+                  projectErrors.push(
+                    `Generated file checksum mismatch (possible drift): ${entry.path}`,
+                  );
+                }
+                checked += 1;
+              }
+              projectChecks.push(
+                `Artifact inventory: ${checked}/${inventory.files?.length ?? 0} files verified`,
+              );
+            } catch (err: unknown) {
+              projectErrors.push(
+                `Could not read artifact inventory: ${err instanceof Error ? err.message : String(err)}`,
+              );
+            }
+          } else {
+            projectChecks.push(
+              "Artifact inventory: not present (skipping checksum verification)",
+            );
+          }
+
+          const cliPresent = fs.existsSync(
+            path.join(targetResolved, "cli", "cli.ts"),
+          );
+          const mcpPresent = fs.existsSync(
+            path.join(targetResolved, "mcp", "server.ts"),
+          );
+          projectChecks.push(
+            `Adapters: ${cliPresent ? "cli" : ""}${cliPresent && mcpPresent ? ", " : ""}${mcpPresent ? "mcp" : ""}${!cliPresent && !mcpPresent ? "none" : ""}`,
+          );
+        }
+
         if (cmdOptions.json) {
-          const out = JSON.stringify(result, null, 2);
+          const out = JSON.stringify(
+            {
+              ...result,
+              valid: result.valid && projectErrors.length === 0,
+              errors: [...result.errors, ...projectErrors],
+              projectChecks,
+            },
+            null,
+            2,
+          );
           if (options.writeOut) options.writeOut(out + "\n");
           else console.log(out);
         } else {
-          if (result.valid) {
-            const msg = `Manifest is valid: ${manifest.schemaVersion} (${manifest.operations?.length ?? 0} operations)`;
-            if (options.writeOut) options.writeOut(msg + "\n");
-            else console.log(msg);
+          if (result.valid && projectErrors.length === 0) {
+            const msgs = [
+              `Manifest is valid: ${manifest.schemaVersion} (${manifest.operations?.length ?? 0} operations)`,
+              ...projectChecks,
+            ];
+            const out = msgs.join("\n");
+            if (options.writeOut) options.writeOut(out + "\n");
+            else console.log(out);
           } else {
             const lines = [`Manifest validation failed:`];
-            result.errors.forEach((e) => lines.push(`  - ${e}`));
+            [...result.errors, ...projectErrors].forEach((e) =>
+              lines.push(`  - ${e}`),
+            );
             const out = lines.join("\n");
             if (options.writeErr) options.writeErr(out + "\n");
             else console.error(out);
             if (options.exitOverride) {
               throw new Error(
-                `Manifest validation failed with ${result.errors.length} errors`,
+                `Manifest validation failed with ${result.errors.length + projectErrors.length} errors`,
               );
             } else {
               process.exit(1);
@@ -328,6 +496,9 @@ export function createCli(options: CreateCliOptions = {}): Command {
               `Security Sandbox:    ${report.isSecuritySandbox ? "YES (container isolated)" : "NO (not a sandbox boundary)"}`,
               `Static checks:       ${report.staticChecksPassed ? "PASSED" : "FAILED"}`,
               `Test execution:      ${report.testExecutionPassed === undefined ? "SKIPPED (static mode)" : report.testExecutionPassed ? "PASSED" : "FAILED"}`,
+              `Environment:         ${report.environment ? `${report.environment.runtime} (${report.environment.nodeVersion}) on ${report.environment.os}` : "unknown"}`,
+              `Executed tasks:      ${report.executedTasks?.join(", ") || "none"}`,
+              `Skipped tasks:       ${report.skippedTasks?.join(", ") || "none"}`,
               `Duration:            ${report.durationMs}ms`,
             ];
             if (report.warnings.length > 0) {
@@ -337,6 +508,68 @@ export function createCli(options: CreateCliOptions = {}): Command {
             const out = lines.join("\n");
             if (options.writeOut) options.writeOut(out + "\n");
             else console.log(out);
+          }
+        } catch (err: unknown) {
+          const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+          if (options.writeErr) options.writeErr(errMsg + "\n");
+          else console.error(errMsg);
+          if (options.exitOverride) {
+            throw err;
+          } else {
+            process.exit(1);
+          }
+        }
+      },
+    );
+
+  program
+    .command("doctor [path]")
+    .description(
+      "Verify environment, dependencies, and generated project health",
+    )
+    .option("--json", "Output results in JSON format")
+    .action(
+      async (targetPath: string = ".", cmdOptions: { json?: boolean }) => {
+        try {
+          const report = runDoctorCheck(targetPath);
+          if (cmdOptions.json) {
+            const out = JSON.stringify(report, null, 2);
+            if (options.writeOut) options.writeOut(out + "\n");
+            else console.log(out);
+          } else {
+            const lines = [
+              `SDK-Anything Doctor Report for: ${report.targetPath}`,
+              `Status:             ${report.healthy ? "HEALTHY" : "ISSUES FOUND"}`,
+              `Target SDK:         ${report.packageName ? `${report.packageName}@${report.packageVersion}` : "Not a generated project directory"}`,
+              `Source Digest:      ${report.digest ?? "none"}`,
+              `Manifest Version:   ${report.manifestVersion ?? "none"}`,
+              `Generator Version:  ${report.generatorVersion ?? "none"}`,
+              `Inventory:          ${report.inventoryValid ? `VALID (${report.totalFiles} files verified)` : "UNVERIFIED"}`,
+              `Node Runtime:       ${report.nodeVersion}`,
+              `Container Runtime:  ${report.containerRuntime ?? "none"}`,
+              `Policy:             ${report.policySummary.enabledOperations} enabled, ${report.policySummary.disabledOperations} disabled`,
+            ];
+            if (report.warnings.length > 0) {
+              lines.push("Warnings:");
+              report.warnings.forEach((w) => lines.push(`  - ${w}`));
+            }
+            if (report.errors.length > 0) {
+              lines.push("Errors:");
+              report.errors.forEach((e) => lines.push(`  - ${e}`));
+            }
+            const out = lines.join("\n");
+            if (options.writeOut) options.writeOut(out + "\n");
+            else console.log(out);
+          }
+
+          if (!report.healthy) {
+            if (options.exitOverride) {
+              throw new Error(
+                `Doctor check found ${report.errors.length} errors`,
+              );
+            } else {
+              process.exit(1);
+            }
           }
         } catch (err: unknown) {
           const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;

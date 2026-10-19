@@ -63,6 +63,23 @@ export async function resolveLocalSource(
   // Copy directory excluding .git and node_modules
   copyDirFilter(resolvedPath, snapshotDir);
 
+  // If the local SDK already has dependencies installed, expose them to the
+  // analyzer through a read-only node_modules symlink. We never execute target
+  // package code; this only lets TypeScript resolve re-exported declarations.
+  const localNodeModules = path.join(resolvedPath, "node_modules");
+  const snapshotNodeModules = path.join(snapshotDir, "node_modules");
+  if (fs.existsSync(localNodeModules) && !fs.existsSync(snapshotNodeModules)) {
+    try {
+      fs.symlinkSync(
+        localNodeModules,
+        snapshotNodeModules,
+        process.platform === "win32" ? "junction" : "dir",
+      );
+    } catch {
+      // Non-fatal: analysis proceeds and reports unresolved symbols.
+    }
+  }
+
   const snapshotPkgJson = path.join(snapshotDir, "package.json");
 
   return {

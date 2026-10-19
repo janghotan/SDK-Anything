@@ -11,6 +11,7 @@ import {
   extractTarballSafely,
   computeTreeDigest,
 } from "./archive-extractor.js";
+import { fetchDeclaredDependencies } from "./dependency-fetcher.js";
 
 export async function resolveNpmSource(
   locator: NpmLocator,
@@ -124,6 +125,15 @@ async function downloadAndExtractNpm(
   const digest = computeTreeDigest(snapshotDir);
   const pkgJsonPath = path.join(snapshotDir, "package.json");
 
+  let warnings: string[] = [];
+  if (options.fetchDependencies !== false) {
+    const dependencyReport = await fetchDeclaredDependencies(snapshotDir, {
+      fetchFn: options.fetchFn,
+      timeoutMs: options.timeoutMs,
+    });
+    warnings = dependencyReport.warnings;
+  }
+
   return {
     kind: "npm",
     identifier: `npm:${locator.packageName}${locator.versionOrTag ? `@${locator.versionOrTag}` : ""}`,
@@ -131,7 +141,7 @@ async function downloadAndExtractNpm(
     version: resolvedVersion,
     snapshotPath: snapshotDir,
     digest,
-    warnings: [],
+    warnings,
     manifestPath: fs.existsSync(pkgJsonPath) ? pkgJsonPath : undefined,
   };
 }

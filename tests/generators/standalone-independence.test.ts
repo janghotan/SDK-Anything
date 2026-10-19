@@ -45,8 +45,20 @@ describe("Phase 01: Generated Project Independence", () => {
         );
       }
 
-      // Verify generated runtime.ts compiles cleanly with TypeScript Compiler API
+      // Verify generated runtime.ts compiles cleanly with TypeScript Compiler API.
+      // The runtime imports its declared npm dependencies (ajv, ajv-formats);
+      // expose the repository's installed packages so the check reflects the
+      // real generated-project build rather than missing dependencies.
       const mcpRuntimePath = path.join(tempDir, "mcp/runtime.ts");
+      try {
+        fs.symlinkSync(
+          path.resolve("node_modules"),
+          path.join(tempDir, "node_modules"),
+          process.platform === "win32" ? "junction" : "dir",
+        );
+      } catch {
+        // Non-fatal: diagnostics will report any genuinely missing modules.
+      }
       const program = ts.createProgram([mcpRuntimePath], {
         target: ts.ScriptTarget.ES2022,
         module: ts.ModuleKind.NodeNext,

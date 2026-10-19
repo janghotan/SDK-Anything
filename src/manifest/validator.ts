@@ -1,11 +1,31 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import type { CapabilityManifest, ManifestValidationResult } from "./types.js";
 
 let ajvInstance: any = null;
 let validateFn: any = null;
+
+function resolveSchemaPath(): string {
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(currentDir, "../../schema/capability-manifest.schema.json"),
+    path.resolve(currentDir, "../../../schema/capability-manifest.schema.json"),
+    path.resolve(process.cwd(), "schema/capability-manifest.schema.json"),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(
+    `Capability manifest schema not found. Searched candidates: ${candidates.join(", ")}`,
+  );
+}
 
 function getValidator() {
   if (!validateFn) {
@@ -14,10 +34,7 @@ function getValidator() {
     const addFormatsFn = (addFormats as any).default ?? addFormats;
     addFormatsFn(ajvInstance);
 
-    const schemaPath = path.resolve("schema/capability-manifest.schema.json");
-    if (!fs.existsSync(schemaPath)) {
-      throw new Error(`Capability manifest schema not found at ${schemaPath}`);
-    }
+    const schemaPath = resolveSchemaPath();
     const schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
     validateFn = ajvInstance.compile(schema);
   }
@@ -42,6 +59,12 @@ export function validateManifest(
   // 2. Semantic validation
   if (!manifest || typeof manifest !== "object") {
     return { valid: false, errors: ["Manifest must be an object"] };
+  }
+
+  if (manifest.schemaVersion !== "sdk-anything/manifest/v1") {
+    errors.push(
+      `Unsupported schema version '${manifest.schemaVersion}'. Supported version is 'sdk-anything/manifest/v1'. Please regenerate with SDK-Anything v${manifest.generatorVersion || "0.1.0"} or run migration.`,
+    );
   }
 
   // Operation IDs uniqueness

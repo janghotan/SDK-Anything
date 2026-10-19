@@ -1,0 +1,6 @@
+{
+  "name": "@fixture/factory-sdk",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts"
+}

@@ -175,6 +175,56 @@ export function buildManifest(
     }
   }
 
+  // Build operations from factory-produced client methods. This keeps
+  // factory-style SDKs (createClient() -> { method() }) first-class instead of
+  // silently producing zero operations.
+  if (evidence.classes.length === 0 && evidence.factories.length > 0) {
+    for (const factory of evidence.factories) {
+      for (const method of factory.methods) {
+        if (operations.some((op) => op.id === method.id)) continue;
+        const effect: OperationEffect = inferMethodEffect(method.name);
+        const enabledByDefault = effect === "pure" || effect === "read";
+        const isPaginated =
+          method.name.startsWith("list") || method.name.startsWith("search");
+
+        operations.push({
+          id: method.id,
+          name: method.name,
+          summary: extractSummary(method.description, method.name),
+          description:
+            method.description ||
+            `Execute ${factory.name}().${method.name} (factory client)`,
+          invoke: {
+            kind: "instance-method",
+            receiver: factory.exportName,
+            method: method.name,
+          },
+          inputSchema: method.inputSchema,
+          outputSchema: method.outputSchema,
+          effect,
+          enabledByDefault,
+          result: {
+            mode: isPaginated ? "paginated" : "direct",
+            pagination: isPaginated
+              ? {
+                  type: "cursor",
+                  cursorParam: "cursor",
+                  responseItemsField: "items",
+                  responseNextCursorField: "nextCursor",
+                  maxItems: 100,
+                  maxBytes: 1048576,
+                }
+              : undefined,
+          },
+          provenance: {
+            sourceFile: method.sourceLocation.filePath,
+            confidence: method.confidence,
+          },
+        });
+      }
+    }
+  }
+
   // Map unresolved
   const unresolved: UnresolvedDescriptor[] = evidence.unresolved.map((u) => ({
     id: u.symbolName,
@@ -220,6 +270,16 @@ function inferFunctionEffect(name: string): OperationEffect {
 
 function inferMethodEffect(name: string): OperationEffect {
   const lower = name.toLowerCase();
+  if (
+    lower.startsWith("calculate") ||
+    lower.startsWith("compute") ||
+    lower.startsWith("format") ||
+    lower.startsWith("parse") ||
+    lower.startsWith("is") ||
+    lower.startsWith("has")
+  ) {
+    return "pure";
+  }
   if (
     lower.startsWith("get") ||
     lower.startsWith("list") ||
