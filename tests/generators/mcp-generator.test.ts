@@ -83,8 +83,9 @@ describe("MCP Server Generator", () => {
     expect(serverCode).toContain("@modelcontextprotocol/sdk/server/index.js");
     expect(serverCode).toContain("StdioServerTransport");
     expect(serverCode).toContain("math_add");
-    // Disabled operations must not be exposed in tool list
-    expect(serverCode).not.toContain("records_delete");
+    // Disabled operations remain discoverable but are labelled and fail closed.
+    expect(serverCode).toContain("records_delete");
+    expect(serverCode).toContain("disabled by default");
     // Ensure no dynamic eval
     expect(serverCode).not.toContain("eval(");
 
@@ -109,11 +110,15 @@ describe("MCP Server Generator", () => {
       client.connect(clientTransport),
     ]);
 
-    // 1. List tools
+    // 1. List tools: both enabled and disabled are discoverable
     const toolsResult = await client.listTools();
     const toolNames = toolsResult.tools.map((t) => t.name);
     expect(toolNames).toContain("math_add");
-    expect(toolNames).not.toContain("records_delete");
+    expect(toolNames).toContain("records_delete");
+    const deleteTool = toolsResult.tools.find(
+      (t) => t.name === "records_delete",
+    );
+    expect(deleteTool?.description).toContain("disabled by default");
 
     // 2. Call tool successfully
     mockSdk.add.mockClear();
@@ -133,6 +138,44 @@ describe("MCP Server Generator", () => {
     })) as any;
     expect(invalidRes.isError).toBe(true);
     expect(invalidRes.content[0].text).toContain("INVALID_INPUT");
+
+    // 4. Disabled destructive tool fails closed
+    const deniedRes = (await client.callTool({
+      name: "records_delete",
+      arguments: { id: "r1" },
+    })) as any;
+    expect(deniedRes.isError).toBe(true);
+    expect(deniedRes.content[0].text).toContain("POLICY_DENIED");
+    expect(mockSdk.deleteRecord).not.toHaveBeenCalled();
+
+    await Promise.all([client.close(), server.close()]);
+  });
+
+  it("permits disabled tools when the caller supplies explicit policy", async () => {
+    const server = createMcpServer(sampleManifest, {
+      sdkModule: mockSdk,
+      interactive: false,
+      allowedEffects: ["pure", "read", "destructive"],
+      allowDestructive: true,
+    });
+    const client = new Client(
+      { name: "test-mcp-policy-client", version: "0.1.0" },
+      { capabilities: {} },
+    );
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+
+    mockSdk.deleteRecord.mockClear();
+    const res = (await client.callTool({
+      name: "records_delete",
+      arguments: { id: "r1" },
+    })) as any;
+    expect(res.isError).toBeFalsy();
+    expect(mockSdk.deleteRecord).toHaveBeenCalled();
 
     await Promise.all([client.close(), server.close()]);
   });
@@ -165,10 +208,10 @@ describe("MCP Server Generator", () => {
           provenance: { sourceFile: "index.ts", confidence: "high" },
         },
         {
-          id: "shipping.charge",
+          id: "billing/charge",
           name: "charge",
-          summary: "Charge shipping",
-          description: "Charge shipping fee",
+          summary: "Charge billing slash",
+          description: "Charge billing account via slash id",
           invoke: { kind: "top-level-function", functionName: "charge" },
           inputSchema: {
             type: "object",
@@ -199,9 +242,11 @@ describe("MCP Server Generator", () => {
 
     const toolsResult = await client.listTools();
     const toolNames = toolsResult.tools.map((t) => t.name);
-    // Must contain 2 distinct tool names
+    // Must contain 2 distinct tool names; colliding base names get a suffix.
     expect(toolNames.length).toBe(2);
     expect(new Set(toolNames).size).toBe(2);
+    expect(toolNames).toContain("billing_charge");
+    expect(toolNames).toContain("billing_charge_2");
 
     await Promise.all([client.close(), server.close()]);
   });

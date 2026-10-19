@@ -1,12 +1,14 @@
 import type { CapabilityManifest } from "../../manifest/types.js";
-import { toMcpToolName } from "../mcp/generator.js";
-import { toCliCommandName } from "../cli/generator.js";
+import { buildMcpToolNames } from "../naming.js";
+import { buildCliCommandNames } from "../naming.js";
 
 export function generateConsumerSkill(manifest: CapabilityManifest): string {
   const pkg = manifest.source.package;
   const version = manifest.source.version;
   const digest = manifest.source.digest;
 
+  const mcpNames = buildMcpToolNames(manifest.operations);
+  const cliNames = buildCliCommandNames(manifest.operations);
   const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
   const disabledOps = manifest.operations.filter((op) => !op.enabledByDefault);
 
@@ -60,8 +62,8 @@ export function generateConsumerSkill(manifest: CapabilityManifest): string {
   lines.push("| MCP Tool Name | CLI Command | Effect | Description |");
   lines.push("|---|---|---|---|");
   for (const op of enabledOps) {
-    const mcpName = toMcpToolName(op.id);
-    const cliName = toCliCommandName(op.id);
+    const mcpName = mcpNames.get(op.id)!;
+    const cliName = cliNames.get(op.id)!;
     lines.push(
       `| \`${mcpName}\` | \`${cliName}\` | \`${op.effect}\` | ${op.summary} |`,
     );
@@ -106,16 +108,28 @@ export function generateConsumerSkill(manifest: CapabilityManifest): string {
     lines.push("## Disabled Operations");
     lines.push("");
     lines.push(
-      "The following operations were discovered but are disabled by default according to SDK-Anything security policy (write, destructive, or unknown effect):",
+      "The following operations were discovered but are disabled by default according to SDK-Anything security policy (write, destructive, or unknown effect). They are still visible in the generated CLI/MCP surface so an agent can plan around them, but calls fail closed until explicit policy is supplied.",
     );
     lines.push("");
-    lines.push("| Operation ID | Effect | Default Status | How to Enable |");
-    lines.push("|---|---|---|---|");
+    lines.push(
+      "| Operation ID | MCP Tool | CLI Command | Effect | How to Enable |",
+    );
+    lines.push("|---|---|---|---|---|");
     for (const op of disabledOps) {
+      const enableHint =
+        op.effect === "destructive"
+          ? "`--allow-destructive` (CLI) or `SDK_ANYTHING_ALLOWED_EFFECTS=destructive SDK_ANYTHING_ALLOW_DESTRUCTIVE=true` (MCP)"
+          : op.effect === "write"
+            ? "`--allow-effects write` (CLI) or `SDK_ANYTHING_ALLOWED_EFFECTS=read,write` (MCP)"
+            : "`--allow-effects unknown` (CLI) or `SDK_ANYTHING_ALLOWED_EFFECTS=read,unknown` (MCP)";
       lines.push(
-        `| \`${op.id}\` | \`${op.effect}\` | Disabled | Enable in policy configuration or \`sdk-anything.overrides.json\` |`,
+        `| \`${op.id}\` | \`${mcpNames.get(op.id)!}\` | \`${cliNames.get(op.id)!}\` | \`${op.effect}\` | ${enableHint} |`,
       );
     }
+    lines.push("");
+    lines.push(
+      "Enabling an effect class is an explicit safety decision. Confirm with the user before authorizing destructive or write operations, and prefer read-only discovery first.",
+    );
     lines.push("");
   }
 
@@ -139,13 +153,19 @@ export function generateConsumerSkill(manifest: CapabilityManifest): string {
   lines.push("");
   lines.push("- **Pure & Read:** Available by default.");
   lines.push(
-    "- **Write & Destructive:** Blocked at runtime unless explicitly enabled.",
+    "- **Write & Destructive:** Blocked at runtime unless explicitly enabled. CLI: `--allow-effects write` or `--allow-destructive`. MCP: start the server with `SDK_ANYTHING_ALLOWED_EFFECTS` and (for destructive effects) `SDK_ANYTHING_ALLOW_DESTRUCTIVE=true`.",
+  );
+  lines.push(
+    "- **Per-operation allowlist:** CLI `--allow-operations id1,id2`; MCP `SDK_ANYTHING_ALLOWED_OPERATIONS=id1,id2`.",
   );
   lines.push(
     "- **Credentials:** Managed strictly via environment variable references; never pass secret values directly in tool arguments.",
   );
   lines.push(
-    "- **Pagination:** Results are strictly bounded by count and response byte limits to prevent memory exhaustion.",
+    "- **Pagination:** Results are bounded by count and response byte limits. Cursor-based operations return the SDK's cursor/next-cursor fields; call again with the returned cursor for the next page.",
+  );
+  lines.push(
+    "- **Errors:** Errors use stable codes (`POLICY_DENIED`, `AUTH_REQUIRED`, `INVALID_INPUT`, `NOT_FOUND`, `RATE_LIMITED`, `TIMEOUT`, `SDK_ERROR`) and redact credentials from messages.",
   );
   lines.push("");
 

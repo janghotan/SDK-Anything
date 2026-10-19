@@ -4,12 +4,57 @@ import { serializeCanonicalManifest } from "../../manifest/serializer.js";
 import { invokeOperation } from "../../runtime/invoker.js";
 import type { InvocationContext } from "../../runtime/types.js";
 import { getStandaloneRuntimeSource } from "../runtime-template.js";
+import type { OperationEffect } from "../../manifest/types.js";
+import { buildCliCommandNames } from "../naming.js";
 
-export function toCliCommandName(operationId: string): string {
-  return operationId
-    .replace(/[^a-zA-Z0-9_-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
+export { toCliCommandName } from "../naming.js";
+
+function parseEffectList(raw?: string): OperationEffect[] | undefined {
+  if (!raw) return undefined;
+  const valid: OperationEffect[] = [
+    "pure",
+    "read",
+    "write",
+    "destructive",
+    "unknown",
+  ];
+  const parsed = raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  for (const value of parsed) {
+    if (!valid.includes(value as OperationEffect)) {
+      throw new Error(
+        `INVALID_INPUT: Unknown effect '${value}'. Valid effects: ${valid.join(", ")}`,
+      );
+    }
+  }
+  return parsed as OperationEffect[];
+}
+
+function buildPolicyContext<T extends GeneratedCliContext>(
+  cmdOptions: {
+    allowDestructive?: boolean;
+    allowEffects?: string;
+    allowOperations?: string;
+  },
+  base: T,
+): T {
+  const next: T = { ...base };
+  const allowedEffects = parseEffectList(cmdOptions.allowEffects);
+  if (allowedEffects) {
+    next.allowedEffects = allowedEffects;
+  }
+  if (cmdOptions.allowOperations) {
+    next.allowedOperationIds = cmdOptions.allowOperations
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+  }
+  if (cmdOptions.allowDestructive) {
+    next.allowDestructive = true;
+  }
+  return next;
 }
 
 export interface GeneratedCliContext extends InvocationContext {
@@ -97,9 +142,11 @@ export function createGeneratedCli(
       else console.log(out);
     });
 
-  // Register commands for enabled operations
-  const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
-  const seenCmdNames = new Set<string>(["info", "list", "invoke"]);
+  // Register commands for every discovered operation. Disabled operations are
+  // still discoverable but fail closed unless the caller explicitly opts in
+  // with --allow-effects / --allow-operations / --allow-destructive.
+  const commandOps = manifest.operations;
+  const commandNames = buildCliCommandNames(commandOps);
 
   // Helper for stdin reading
   async function readStdin(): Promise<string> {
@@ -125,22 +172,25 @@ export function createGeneratedCli(
     });
   }
 
-  for (const op of enabledOps) {
-    let cmdName = toCliCommandName(op.id);
-    if (seenCmdNames.has(cmdName)) {
-      cmdName = op.id
-        .replace(/[^a-zA-Z0-9_-]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+|-+$/g, "");
-    }
-    seenCmdNames.add(cmdName);
+  for (const op of commandOps) {
+    const cmdName = commandNames.get(op.id)!;
 
     program
       .command(cmdName)
-      .description(`${op.summary} [Effect: ${op.effect}]`)
+      .description(
+        `${op.summary} [Effect: ${op.effect}${op.enabledByDefault ? "" : "; disabled by default"}]`,
+      )
       .option(
         "--input <json>",
         "JSON string payload representing input arguments",
+      )
+      .option(
+        "--allow-effects <effects>",
+        "Comma-separated effect tiers to authorize (pure,read,write,destructive,unknown)",
+      )
+      .option(
+        "--allow-operations <ids>",
+        "Comma-separated operation IDs to authorize explicitly",
       )
       .option(
         "--allow-destructive",
@@ -152,6 +202,8 @@ export function createGeneratedCli(
           input?: string;
           json?: boolean;
           allowDestructive?: boolean;
+          allowEffects?: string;
+          allowOperations?: string;
         }) => {
           try {
             let rawInput = cmdOpts.input;
@@ -169,11 +221,12 @@ export function createGeneratedCli(
               }
             }
 
-            const result = await invokeOperation(manifest, op.id, inputData, {
-              ...context,
-              allowDestructive:
-                cmdOpts.allowDestructive ?? context.allowDestructive,
-            });
+            const result = await invokeOperation(
+              manifest,
+              op.id,
+              inputData,
+              buildPolicyContext(cmdOpts, context),
+            );
 
             if (result.success) {
               const outText = cmdOpts.json
@@ -229,6 +282,14 @@ export function createGeneratedCli(
       "JSON string payload representing input arguments",
     )
     .option(
+      "--allow-effects <effects>",
+      "Comma-separated effect tiers to authorize (pure,read,write,destructive,unknown)",
+    )
+    .option(
+      "--allow-operations <ids>",
+      "Comma-separated operation IDs to authorize explicitly",
+    )
+    .option(
       "--allow-destructive",
       "Explicitly authorize execution of destructive operations in non-interactive environments",
     )
@@ -240,6 +301,8 @@ export function createGeneratedCli(
           input?: string;
           json?: boolean;
           allowDestructive?: boolean;
+          allowEffects?: string;
+          allowOperations?: string;
         },
       ) => {
         try {
@@ -262,11 +325,7 @@ export function createGeneratedCli(
             manifest,
             operationId,
             inputData,
-            {
-              ...context,
-              allowDestructive:
-                cmdOpts.allowDestructive ?? context.allowDestructive,
-            },
+            buildPolicyContext(cmdOpts, context),
           );
 
           if (result.success) {
@@ -318,6 +377,7 @@ export function createGeneratedCli(
 
 export interface GenerateCliOptions {
   sdkDependencyVersion?: string;
+  sdkDependencySpec?: string;
 }
 
 export function generateCliProject(
@@ -325,34 +385,28 @@ export function generateCliProject(
   options: GenerateCliOptions = {},
 ): Record<string, string> {
   const canonicalManifestJson = serializeCanonicalManifest(manifest);
-  const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
+  const commandOps = manifest.operations;
+  const commandNames = buildCliCommandNames(commandOps);
 
   const sdkPkgName = manifest.source.package;
-  const sdkPkgVersion = options.sdkDependencyVersion ?? manifest.source.version;
+  const sdkPkgVersion =
+    options.sdkDependencySpec ??
+    options.sdkDependencyVersion ??
+    manifest.source.version;
   const safePkgName = manifest.source.package
     .replace(/[^a-zA-Z0-9_-]/g, "-")
     .toLowerCase();
 
-  const seenTemplateCmdNames = new Set<string>(["info", "list", "invoke"]);
-  const mappedTemplateOps = enabledOps.map((op) => {
-    let cmdName = toCliCommandName(op.id);
-    if (seenTemplateCmdNames.has(cmdName)) {
-      cmdName = op.id
-        .replace(/[^a-zA-Z0-9_-]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+|-+$/g, "");
-    }
-    seenTemplateCmdNames.add(cmdName);
-    return {
-      id: op.id,
-      cmdName,
-      name: op.name,
-      summary: op.summary,
-      description: op.description,
-      effect: op.effect,
-      inputSchema: op.inputSchema,
-    };
-  });
+  const mappedTemplateOps = commandOps.map((op) => ({
+    id: op.id,
+    cmdName: commandNames.get(op.id)!,
+    name: op.name,
+    summary: op.summary,
+    description: op.description,
+    effect: op.effect,
+    enabledByDefault: op.enabledByDefault,
+    inputSchema: op.inputSchema,
+  }));
 
   const cliTs = `// Generated by SDK-Anything v${manifest.generatorVersion}
 // Manifest schema: ${manifest.schemaVersion}
@@ -361,10 +415,9 @@ export function generateCliProject(
 
 import { Command } from 'commander';
 import * as targetSdk from '${sdkPkgName}';
-import manifestData from './capability-manifest.json' with { type: 'json' };
-import { invokeOperation } from './runtime.js';
+import { invokeOperation, loadManifest } from './runtime.js';
 
-const manifest = manifestData as any;
+const manifest = loadManifest();
 
 async function readStdin(): Promise<string> {
   if (typeof process === 'undefined' || !process.stdin || process.stdin.isTTY) {
@@ -385,7 +438,38 @@ async function readStdin(): Promise<string> {
   });
 }
 
-const enabledOperations = ${JSON.stringify(mappedTemplateOps, null, 2)};
+const commandOperations = ${JSON.stringify(mappedTemplateOps, null, 2)};
+
+const EFFECT_NAMES = ['pure', 'read', 'write', 'destructive', 'unknown'];
+
+function buildInvocationOptions(cmdOpts: {
+  allowDestructive?: boolean;
+  allowEffects?: string;
+  allowOperations?: string;
+}) {
+  const opts: any = {
+    sdkModule: targetSdk,
+    env: process.env,
+    interactive: process.stdout.isTTY,
+  };
+  if (cmdOpts.allowEffects) {
+    const effects = cmdOpts.allowEffects.split(',').map((value: string) => value.trim()).filter(Boolean);
+    for (const effect of effects) {
+      if (!EFFECT_NAMES.includes(effect)) {
+        console.error(\`INVALID_INPUT: Unknown effect '\${effect}'. Valid effects: \${EFFECT_NAMES.join(', ')}\`);
+        process.exit(2);
+      }
+    }
+    opts.allowedEffects = effects;
+  }
+  if (cmdOpts.allowOperations) {
+    opts.allowedOperationIds = cmdOpts.allowOperations.split(',').map((value: string) => value.trim()).filter(Boolean);
+  }
+  if (cmdOpts.allowDestructive) {
+    opts.allowDestructive = true;
+  }
+  return opts;
+}
 
 const program = new Command();
 program
@@ -434,14 +518,16 @@ program
     }
   });
 
-for (const op of enabledOperations) {
+for (const op of commandOperations) {
   program
     .command(op.cmdName)
-    .description(\`\${op.summary} [Effect: \${op.effect}]\`)
+    .description(\`\${op.summary} [Effect: \${op.effect}\${op.enabledByDefault ? '' : '; disabled by default'}]\`)
     .option('--input <json>', 'JSON string payload representing input arguments')
+    .option('--allow-effects <effects>', 'Comma-separated effect tiers to authorize (pure,read,write,destructive,unknown)')
+    .option('--allow-operations <ids>', 'Comma-separated operation IDs to authorize explicitly')
     .option('--allow-destructive', 'Explicitly authorize execution of destructive operations in non-interactive environments')
     .option('--json', 'Output result in JSON format')
-    .action(async (cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
+    .action(async (cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean; allowEffects?: string; allowOperations?: string }) => {
       try {
         let rawInput = cmdOpts.input;
         if (!rawInput) {
@@ -457,12 +543,7 @@ for (const op of enabledOperations) {
           }
         }
 
-        const result = await invokeOperation(manifest, op.id, input, {
-          sdkModule: targetSdk,
-          env: process.env,
-          interactive: process.stdout.isTTY,
-          allowDestructive: !!cmdOpts.allowDestructive,
-        });
+        const result = await invokeOperation(manifest, op.id, input, buildInvocationOptions(cmdOpts));
 
         if (result.success) {
           if (cmdOpts.json) {
@@ -486,9 +567,11 @@ program
   .command('invoke <operationId>')
   .description('Direct invocation of any operation by its unique canonical ID')
   .option('--input <json>', 'JSON string payload representing input arguments')
+  .option('--allow-effects <effects>', 'Comma-separated effect tiers to authorize (pure,read,write,destructive,unknown)')
+  .option('--allow-operations <ids>', 'Comma-separated operation IDs to authorize explicitly')
   .option('--allow-destructive', 'Explicitly authorize execution of destructive operations in non-interactive environments')
   .option('--json', 'Output result in JSON format')
-  .action(async (operationId: string, cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
+  .action(async (operationId: string, cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean; allowEffects?: string; allowOperations?: string }) => {
     try {
       let rawInput = cmdOpts.input;
       if (!rawInput) {
@@ -504,12 +587,7 @@ program
         }
       }
 
-      const result = await invokeOperation(manifest, operationId, input, {
-        sdkModule: targetSdk,
-        env: process.env,
-        interactive: process.stdout.isTTY,
-        allowDestructive: !!cmdOpts.allowDestructive,
-      });
+      const result = await invokeOperation(manifest, operationId, input, buildInvocationOptions(cmdOpts));
 
       if (result.success) {
         if (cmdOpts.json) {
@@ -543,12 +621,15 @@ program.parseAsync(process.argv).catch((err: unknown) => {
         [`sdk-cli-${safePkgName}`]: "./dist/cli.js",
       },
       scripts: {
-        build: "tsc",
+        build:
+          "tsc && node -e \"require('node:fs').copyFileSync('capability-manifest.json','dist/capability-manifest.json')\"",
         start: "node dist/cli.js",
         test: "tsc --noEmit",
       },
       dependencies: {
         commander: "^15.0.0",
+        ajv: "^8.20.0",
+        "ajv-formats": "^3.0.1",
         [sdkPkgName]: sdkPkgVersion,
       },
       devDependencies: {
