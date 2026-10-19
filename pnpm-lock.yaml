@@ -178,6 +178,12 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
+      semver:
+        specifier: ^7.8.5
+        version: 7.8.5
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.5
@@ -185,6 +191,9 @@ importers:
       '@types/node':
         specifier: ^24.19.2
         version: 24.19.2
+      '@types/semver':
+        specifier: ^7.8.0
+        version: 7.8.0
       eslint:
         specifier: ^9.39.5
         version: 9.39.5(supports-color@7.2.0)
@@ -194,9 +203,6 @@ importers:
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
       typescript-eslint:
         specifier: ^8.71.2
         version: 8.71.2(eslint@9.39.5(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
@@ -598,6 +604,9 @@ packages:
 
   '@types/node@24.19.2':
     resolution: {integrity: sha512-93d49wCWJkCyN87MxLpNN6KXPCwFw7bVUg79mGUV1OS40JGWwVCr8n61DXCSqz7CV6/VfPkb7xec7uP2M+QHWQ==}
+
+  '@types/semver@7.8.0':
+    resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
 
   '@typescript-eslint/eslint-plugin@8.71.2':
     resolution: {integrity: sha512-K72/pvT7qpm8q3k8G5u93NCSN1RcLxX5h7Gw0bQpbMXviBHeY6Nx1WEwmk9wP+eKTSQ8ecxvcgt/ZX/rB938xQ==}
@@ -1800,6 +1809,8 @@ snapshots:
   '@types/node@24.19.2':
     dependencies:
       undici-types: 7.24.6
+
+  '@types/semver@7.8.0': {}
 
   '@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3))(eslint@9.39.5(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':
     dependencies:
