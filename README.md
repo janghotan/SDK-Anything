@@ -1,115 +1,201 @@
-# SDK-Anything
+<p align="center">
+  <img src="assets/sdk-anything-banner-en.png" alt="SDK-Anything Banner" width="100%">
+</p>
 
-> Turn TypeScript/JavaScript SDKs into inspectable, testable, agent-friendly MCP tools and CLIs.
+<p align="center">
+  <strong>Turn any TypeScript / JavaScript SDK into tested, agent-ready tools.</strong>
+</p>
 
-SDK-Anything is an open-source developer tool that analyzes TypeScript/JavaScript SDKs and generates clean, inspectable, typed interfaces for AI agents and developers.
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#core-workflow">Core Workflow</a> •
+  <a href="#manifest-specification">Manifest Spec</a> •
+  <a href="#security--sandboxing">Security</a> •
+  <a href="#connecting-to-agents">Agent Setup</a> •
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-From a single SDK analysis and one versioned capability manifest (`sdk-anything/manifest/v1`), it generates:
-- **Model Context Protocol (MCP) Server:** Stdio server using the official `@modelcontextprotocol/sdk`.
-- **Command-Line Interface (CLI):** Machine-readable JSON and human-readable CLI powered by Commander.js.
-- **Consumer Skill (`SKILL.md`):** Usage guidance teaching AI agents how to discover, configure, and compose atomic operations.
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D20_LTS-339933?logo=node.js&logoColor=white" alt="Node.js Version">
+  <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/MCP-1.32+-8A2BE2?logo=anthropic&logoColor=white" alt="Model Context Protocol">
+  <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License">
+</p>
+
+---
+
+## Overview
+
+**SDK-Anything** bridges the gap between conventional developer SDKs and AI agents. Instead of manually hand-crafting tool definitions or writing fragile API glue, SDK-Anything statically analyzes SDK source code or npm packages and produces a versioned **Capability Manifest** (`sdk-anything/manifest/v1`).
+
+From this single source of truth, it generates:
+- 🔌 **An Official MCP Server**: Stdio server built on `@modelcontextprotocol/sdk` exposing typed tools.
+- ⌨️ **A Developer CLI**: Production-ready command-line tool with machine-readable `--json` output.
+- 🤖 **A Consumer Skill (`SKILL.md`)**: Context-rich operational guidance teaching consuming LLM agents how to discover, parameterize, and chain atomic operations.
+
+> [!IMPORTANT]
+> **Static Safety First:** SDK-Anything never imports or executes target package code during inspection. Package installation lifecycle scripts (`prepare`, `postinstall`) are strictly skipped.
+
+---
+
+## Features
+
+- **Deterministic API Extraction:** Uses the TypeScript Compiler API (`noEmit: true`) to resolve function signatures, declaration files, JSDoc comments, and complex TypeScript types into JSON Schema Draft 2020-12.
+- **Single Source of Truth:** MCP tools, CLI subcommands, security policy, and agent instructions all derive from one canonical capability manifest.
+- **Inspectable TypeScript Output:** Generates clean, standard TypeScript code without hidden dynamic proxies or `eval`.
+- **Reference-Only Secret Model:** Credentials are never embedded in generated code, manifests, or prompts. Keys are referenced solely through environment variables (`env:API_KEY`).
+- **Conservative Effect Policy:** Pure calculations and verified reads are enabled by default. Write, destructive, and unknown operations are disabled by default and enforced by the shared runtime.
+- **Fail-Closed Container Isolation:** Static validation runs with zero dependencies. Testing untrusted code requires an explicit container boundary (`--sandbox` with Docker/Podman) and fails closed without silent fallback.
+- **Optional AI Proposal Layer:** OpenAI-compatible endpoint support for generating enhanced human-readable summaries and grouping, with full prompt-injection isolation.
 
 ---
 
 ## Quick Start
 
-### Installation & Build
+### Prerequisites
 
-\`\`\`bash
+- Node.js >= 20.0.0 (tested on v20, v22, v24 LTS)
+- [pnpm](https://pnpm.io/) >= 9.0.0
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/your-org/sdk-anything.git
+cd sdk-anything
+
 # Install dependencies
 pnpm install
 
 # Build the project
 pnpm run build
 
-# Link CLI locally
+# Link CLI globally (optional)
 pnpm link --global
-\`\`\`
+```
+
+---
+
+## Core Workflow
+
+```text
+Source Locator (npm:pkg, local dir, public GitHub)
+       │
+       ▼
+Deterministic Static Analyzer (TS Compiler AST & TypeChecker)
+       │
+       ▼
+Evidence Inventory (Exports, types, docs, unresolved diagnostics)
+       │
+       ▼
+Human Overrides Engine (Optional sdk-anything.overrides.json)
+       │
+       ▼
+Capability Manifest (sdk-anything/manifest/v1)
+       │
+ ┌─────┴─────────────────────┐
+ ▼                           ▼
+Generated MCP Server     Generated CLI & SKILL.md
+(Stdio Transport)       (Commander.js & Docs)
+       │                           │
+ └─────┬─────────────────────┘
+       ▼
+Shared Runtime Engine (Schema validation, policy enforcement, caps)
+```
 
 ### 1. Inspect an SDK
 
-Inspect an npm package, a local directory, or a public GitHub repository without executing any target code or lifecycle scripts:
+Inspect public npm packages, local project checkouts, or public GitHub repositories:
 
-\`\`\`bash
+```bash
 # Inspect an npm package
 sdk-anything inspect npm:@turf/turf
 
-# Inspect a local SDK directory
+# Inspect a local TypeScript/JavaScript SDK repository
 sdk-anything inspect ./path/to/my-sdk
 
 # Output structured JSON evidence
 sdk-anything inspect npm:@turf/turf --json
-\`\`\`
+```
 
-### 2. Generate Human Overrides (Optional)
+### 2. Configure Overrides (Optional)
 
-If an SDK has ambiguous constructor parameters, complex types, or needs custom credential references:
+For SDKs with custom constructor factories, ambiguous unions, or required secret tokens:
 
-\`\`\`bash
+```bash
+# Generate starter overrides template
 sdk-anything inspect ./path/to/my-sdk --write-overrides
-\`\`\`
+```
 
-This generates a starter `sdk-anything.overrides.json` where you can review effect classifications, map credential references like `env:API_KEY`, or resolve schemas.
+This generates `sdk-anything.overrides.json`:
 
-### 3. Generate MCP and CLI Outputs
+```json
+{
+  "schemaVersion": "sdk-anything/overrides/v1",
+  "client": {
+    "construction": "class",
+    "export": "ApiClient",
+    "options": {
+      "apiKey": {
+        "type": "secret",
+        "source": "env:MY_SERVICE_API_KEY",
+        "required": true
+      }
+    }
+  },
+  "operations": {
+    "records.delete": {
+      "effect": "destructive",
+      "enabledByDefault": false
+    }
+  }
+}
+```
 
-\`\`\`bash
-# Generate both MCP server and CLI
-sdk-anything generate npm:@turf/turf --targets mcp,cli --output ./generated/turf-tools
+### 3. Generate MCP Server, CLI, and Consumer Skill
 
-# Optional: enable AI assistance for enhanced descriptions
-sdk-anything generate npm:@turf/turf --targets mcp,cli --ai --output ./generated/turf-tools
-\`\`\`
+```bash
+# Generate both MCP server and CLI into output directory
+sdk-anything generate npm:@turf/turf \
+  --targets mcp,cli \
+  --output ./generated/turf-tools
 
-### 4. Statically Validate
+# Optional: Enable AI assistance for enhanced documentation
+sdk-anything generate npm:@turf/turf \
+  --targets mcp,cli \
+  --ai \
+  --output ./generated/turf-tools
+```
 
-\`\`\`bash
+### 4. Validate Generated Artifacts
+
+Perform static validation of the manifest schema, TypeScript compilation, and adapter parity:
+
+```bash
 sdk-anything validate ./generated/turf-tools
-\`\`\`
+```
 
 ### 5. Run Verification Tests
 
-\`\`\`bash
-# Run tests for user-owned code in a sanitized local process
+```bash
+# Test user-owned trusted code in a sanitized local process
 sdk-anything test ./generated/turf-tools --trusted-local
 
-# Run tests in an isolated Docker/Podman container (fails closed if container runtime is missing)
+# Test untrusted packages in an isolated container sandbox
 sdk-anything test ./generated/turf-tools --sandbox
-\`\`\`
+```
+
+> [!WARNING]
+> `--trusted-local` runs code on your host in a sanitized environment, but is **not** an OS security boundary. Untrusted code must always be tested using `--sandbox`.
 
 ---
 
-## Supported Inputs
+## Manifest Specification
 
-- **npm packages:** `npm:<package>` or `npm:<package>@<version>`. Safely downloads and extracts tarballs without running `prepare` or `postinstall` lifecycle scripts.
-- **Local directories:** `./path/to/sdk`. Statically inspects source and declaration files without importing target modules into the generator process.
-- **Public GitHub repositories:** `https://github.com/<owner>/<repo>`. Downloads repository source archives over HTTPS without executing arbitrary build steps.
+Generated manifest files adhere to `schema/capability-manifest.schema.json`:
 
----
-
-## Core Product Invariants
-
-1. **Deterministic Static Analysis:** Functions, signatures, parameters, and types are extracted deterministically via the TypeScript Compiler API. AI never invents executable types or call signatures.
-2. **One Source of Truth:** MCP tools, CLI commands, policy enforcement, and documentation derive from a single canonical manifest (`capability-manifest.json`).
-3. **Inspectable Output:** Generates readable, compiling TypeScript source. No dynamic proxies, hidden runtime dependencies, or `eval`.
-4. **Safe by Default:**
-   - Static inspection never executes target code.
-   - Pure and verified read operations are enabled by default.
-   - Write, destructive, and unknown effects are **disabled by default** and enforced by the shared runtime.
-5. **Secret Reference Model:** Credentials are only ever stored as environment variable references (e.g. `env:GITHUB_TOKEN`). Secret values never enter manifests, generated source, test fixtures, AI prompts, or logs.
-6. **Atomic Operations Only:** Generated operations represent atomic SDK calls. Multi-step executable workflows are composed by the consuming agent at runtime.
-7. **Strict Sandbox Tiers:**
-   - Static validation requires no container runtime.
-   - Untrusted-code execution requires a container sandbox (`--sandbox`) and **fails closed** without silent fallback.
-   - `--trusted-local` is labelled as trusted-code execution and is never represented as a security sandbox.
-
----
-
-## Capability Manifest Schema (`sdk-anything/manifest/v1`)
-
-The manifest is validated against `schema/capability-manifest.schema.json` using Ajv 2020:
-
-\`\`\`json
+```json
 {
   "schemaVersion": "sdk-anything/manifest/v1",
   "generatorVersion": "0.1.0",
@@ -117,7 +203,7 @@ The manifest is validated against `schema/capability-manifest.schema.json` using
     "kind": "npm",
     "package": "@turf/turf",
     "version": "7.2.0",
-    "digest": "sha256:..."
+    "digest": "sha256:0123456789abcdef..."
   },
   "operations": [
     {
@@ -136,92 +222,138 @@ The manifest is validated against `schema/capability-manifest.schema.json` using
           "to": { "type": "array" },
           "options": { "type": "object" }
         },
-        "required": ["from", "to"]
+        "required": ["from", "to"],
+        "additionalProperties": false
       },
       "effect": "pure",
       "enabledByDefault": true,
       "result": { "mode": "direct" },
-      "provenance": { "sourceFile": "src/index.ts", "confidence": "high" }
+      "provenance": {
+        "sourceFile": "src/index.ts",
+        "confidence": "high"
+      }
     }
   ],
   "unresolved": []
 }
-\`\`\`
+```
 
 ---
 
-## Project Structure
+## Security & Sandboxing
 
-\`\`\`text
+### Effect Classification
+
+Every operation is categorized into an explicit effect tier:
+
+| Effect | Default Status | Description |
+|---|---|---|
+| `pure` | **Enabled** | Stateless calculation (e.g. geometric computation, parsing) |
+| `read` | **Enabled** | Query with external fetch without state alteration (e.g. `list`, `get`) |
+| `write` | **Disabled** | Modifies state on remote or local systems (e.g. `create`, `update`) |
+| `destructive` | **Disabled** | Deletes or purges data (e.g. `delete`, `drop`). Requires confirmation in CLI |
+| `unknown` | **Disabled** | Ambiguous or unverified side effects |
+
+### Secret Reference Guarantee
+
+- No secret tokens or passwords are ever persisted in manifests or generated source.
+- Credentials use `env:VARIABLE_NAME` references.
+- Runtime error logs automatically redact keys matching authorization headers or known secrets (`Bearer [REDACTED]`).
+
+### Bounded Pagination
+
+To prevent agent memory exhaustion, paginated calls enforce strict limits:
+- Maximum item cap per call (default: 100 items).
+- Maximum serialized response payload limit (default: 1 MB).
+
+---
+
+## Connecting to Agents
+
+### Claude Desktop Configuration
+
+Add the generated MCP server to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "turf-tools": {
+      "command": "node",
+      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"],
+      "env": {
+        "API_KEY": "your-token-if-required"
+      }
+    }
+  }
+}
+```
+
+### Cursor / Windsurf Configuration
+
+Add a command transport entry to your project's `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "my-sdk": {
+      "command": "npx",
+      "args": ["tsx", "/absolute/path/to/generated/my-sdk/mcp/server.ts"]
+    }
+  }
+}
+```
+
+### Consuming via Agent Skill
+
+Each generated project includes a tailored `SKILL.md` detailing:
+- Available atomic tools and required parameters.
+- Step-by-step instructions for chaining tools in LLM reasoning loops.
+- Error handling and pagination semantics.
+
+---
+
+## Repository Structure
+
+```text
 sdk-anything/
-├── README.md
-├── LICENSE (Apache-2.0)
-├── package.json
-├── tsconfig.json
 ├── schema/
-│   └── capability-manifest.schema.json
+│   └── capability-manifest.schema.json  # Manifest v1 JSON Schema
 ├── skills/
-│   └── sdk-anything/
-│       └── SKILL.md
+│   └── sdk-anything/SKILL.md            # Orchestration skill for host agents
 ├── src/
-│   ├── cli/             # CLI commands, argument parsing, config
-│   ├── source/          # Safe npm, local, and GitHub resolvers
-│   ├── analyzer/        # TypeScript Compiler API static analysis
-│   ├── manifest/        # Manifest v1 schema, validation, canonical serializer, overrides
-│   ├── runtime/         # Shared invocation runtime, client lifecycle, policy enforcer, pagination
-│   ├── generators/      # MCP server, CLI, and consumer skill generators
-│   ├── ai/              # Optional OpenAI-compatible proposal adapter & disclosure
-│   └── sandbox/         # Static verification, container sandbox runner, trusted local runner
-├── tests/
-│   ├── cli/             # CLI bootstrap tests
-│   ├── source/          # Resolver and path traversal security tests
-│   ├── analyzer/        # Static analysis & type lowering tests
-│   ├── manifest/        # Manifest building, validation, canonical serialization tests
-│   ├── runtime/         # Invocation runtime, policy enforcement, secret redaction tests
-│   ├── generators/      # MCP and CLI generator parity tests
-│   ├── ai/              # AI proposal parser and mock endpoint tests
-│   ├── security/        # Client-SDK fixture and sandbox fail-close tests
-│   ├── e2e/             # Turf end-to-end golden test
-│   └── fixtures/        # Test fixtures (sample SDKs, client SDK with loopback server)
+│   ├── cli/                             # CLI commands, config, entry points
+│   ├── source/                          # Safe npm, local, and GitHub resolvers
+│   ├── analyzer/                        # TS Compiler API AST & type lowering
+│   ├── manifest/                        # Manifest builder, validator, serializer
+│   ├── runtime/                         # Shared runtime, policy enforcer, secrets
+│   ├── generators/                      # MCP, CLI, and consumer skill generators
+│   ├── ai/                              # Optional AI proposal client & disclosure
+│   └── sandbox/                         # Static checks & container execution
+├── tests/                               # 11 comprehensive Vitest test suites
 ├── examples/
-│   ├── turf/            # Pure function golden example
-│   └── client-sdk/      # Stateful network client fixture example
+│   ├── turf/                            # Pure-function golden example
+│   └── client-sdk/                      # Stateful network client fixture
 └── docs/
-    ├── architecture.md  # Detailed pipeline and module specifications
-    └── security.md      # Security model, trust boundaries, effect policy
-\`\`\`
+    ├── architecture.md                  # Comprehensive architectural specification
+    └── security.md                      # Detailed security & isolation model
+```
 
 ---
 
-## Testing & Quality Gates
+## Quality & Test Matrix
 
-Run the automated test suite:
+Run the automated verification suite:
 
-\`\`\`bash
-# Run all unit, integration, and E2E tests
+```bash
+# Run 59 automated unit, integration, and E2E tests
 pnpm test
 
-# Run TypeScript type checking
+# Verify strict TypeScript typechecking
 pnpm run typecheck
 
-# Run linter
+# Check code style and lint rules
 pnpm run lint
 
-# Build the project
+# Build production artifacts
 pnpm run build
-\`\`\`
-
----
-
-## Limitations (v0.1)
-
-- **Language scope:** TypeScript and JavaScript SDKs only.
-- **Workflow model:** Atomic operations only. Multi-step executable composites are deferred to future versions.
-- **Client lifecycle:** Supports standard class and factory constructor patterns; unusual dynamic metamethods or metaprogramming require overrides.
-- **Sandboxed execution:** Container isolation requires local Docker or Podman. When absent, `--sandbox` fails closed to protect against untrusted code execution.
-
----
-
-## License
-
-Apache-2.0
+```
