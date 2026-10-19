@@ -10,6 +10,7 @@ import {
   applyOverrides,
 } from "../manifest/index.js";
 import { generateArtifacts } from "../generators/index.js";
+import { computeSha256 } from "../generators/inventory.js";
 import { runProjectTests } from "../sandbox/index.js";
 import { checkAndRecordDisclosure, requestAiProposals } from "../ai/index.js";
 import { runDoctorCheck } from "./doctor.js";
@@ -164,6 +165,14 @@ export function createCli(options: CreateCliOptions = {}): Command {
       "--force",
       "Overwrite existing user-modified files without confirmation",
     )
+    .option(
+      "--sdk-dependency <specifier>",
+      "Override the target SDK dependency specifier in generated package.json (for example file:./vendor/sdk or a tarball path)",
+    )
+    .option(
+      "--vendor-sdk <path>",
+      "Copy a built SDK package directory into the generated project and depend on it with a relative file: specifier",
+    )
     .option("--json", "Output results in JSON format")
     .action(
       async (
@@ -174,6 +183,8 @@ export function createCli(options: CreateCliOptions = {}): Command {
           ai?: boolean;
           check?: boolean;
           force?: boolean;
+          sdkDependency?: string;
+          vendorSdk?: string;
           json?: boolean;
         },
       ) => {
@@ -241,6 +252,8 @@ export function createCli(options: CreateCliOptions = {}): Command {
             {
               check: !!cmdOptions.check,
               force: !!cmdOptions.force,
+              sdkDependencySpec: cmdOptions.sdkDependency,
+              vendorSdkPath: cmdOptions.vendorSdk,
             },
           );
 
@@ -331,24 +344,98 @@ export function createCli(options: CreateCliOptions = {}): Command {
         const manifest = JSON.parse(raw);
         const result = validateManifest(manifest);
 
+        // When validating a generated project directory, also verify artifact
+        // inventory integrity and required adapters. Surface drift instead of
+        // silently claiming the whole project is valid.
+        const projectChecks: string[] = [];
+        const projectErrors: string[] = [];
+        const targetResolved = path.resolve(targetPath);
+        if (
+          fs.existsSync(targetResolved) &&
+          fs.statSync(targetResolved).isDirectory()
+        ) {
+          const inventoryPath = path.join(
+            targetResolved,
+            ".sdk-anything-inventory.json",
+          );
+          if (fs.existsSync(inventoryPath)) {
+            try {
+              const inventory = JSON.parse(
+                fs.readFileSync(inventoryPath, "utf8"),
+              );
+              let checked = 0;
+              for (const entry of inventory.files ?? []) {
+                const filePath = path.join(targetResolved, entry.path);
+                if (!fs.existsSync(filePath)) {
+                  projectErrors.push(`Missing generated file: ${entry.path}`);
+                  continue;
+                }
+                const hash = computeSha256(fs.readFileSync(filePath, "utf8"));
+                if (hash !== entry.sha256) {
+                  projectErrors.push(
+                    `Generated file checksum mismatch (possible drift): ${entry.path}`,
+                  );
+                }
+                checked += 1;
+              }
+              projectChecks.push(
+                `Artifact inventory: ${checked}/${inventory.files?.length ?? 0} files verified`,
+              );
+            } catch (err: unknown) {
+              projectErrors.push(
+                `Could not read artifact inventory: ${err instanceof Error ? err.message : String(err)}`,
+              );
+            }
+          } else {
+            projectChecks.push(
+              "Artifact inventory: not present (skipping checksum verification)",
+            );
+          }
+
+          const cliPresent = fs.existsSync(
+            path.join(targetResolved, "cli", "cli.ts"),
+          );
+          const mcpPresent = fs.existsSync(
+            path.join(targetResolved, "mcp", "server.ts"),
+          );
+          projectChecks.push(
+            `Adapters: ${cliPresent ? "cli" : ""}${cliPresent && mcpPresent ? ", " : ""}${mcpPresent ? "mcp" : ""}${!cliPresent && !mcpPresent ? "none" : ""}`,
+          );
+        }
+
         if (cmdOptions.json) {
-          const out = JSON.stringify(result, null, 2);
+          const out = JSON.stringify(
+            {
+              ...result,
+              valid: result.valid && projectErrors.length === 0,
+              errors: [...result.errors, ...projectErrors],
+              projectChecks,
+            },
+            null,
+            2,
+          );
           if (options.writeOut) options.writeOut(out + "\n");
           else console.log(out);
         } else {
-          if (result.valid) {
-            const msg = `Manifest is valid: ${manifest.schemaVersion} (${manifest.operations?.length ?? 0} operations)`;
-            if (options.writeOut) options.writeOut(msg + "\n");
-            else console.log(msg);
+          if (result.valid && projectErrors.length === 0) {
+            const msgs = [
+              `Manifest is valid: ${manifest.schemaVersion} (${manifest.operations?.length ?? 0} operations)`,
+              ...projectChecks,
+            ];
+            const out = msgs.join("\n");
+            if (options.writeOut) options.writeOut(out + "\n");
+            else console.log(out);
           } else {
             const lines = [`Manifest validation failed:`];
-            result.errors.forEach((e) => lines.push(`  - ${e}`));
+            [...result.errors, ...projectErrors].forEach((e) =>
+              lines.push(`  - ${e}`),
+            );
             const out = lines.join("\n");
             if (options.writeErr) options.writeErr(out + "\n");
             else console.error(out);
             if (options.exitOverride) {
               throw new Error(
-                `Manifest validation failed with ${result.errors.length} errors`,
+                `Manifest validation failed with ${result.errors.length + projectErrors.length} errors`,
               );
             } else {
               process.exit(1);

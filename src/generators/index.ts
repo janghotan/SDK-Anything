@@ -12,11 +12,32 @@ export * from "./mcp/index.js";
 export * from "./cli/index.js";
 export * from "./consumer-skill/index.js";
 export * from "./inventory.js";
+export * from "./naming.js";
 
 export interface GenerateArtifactsOptions {
   sdkDependencyVersion?: string;
+  /** Explicit npm dependency specifier for the target SDK, e.g. file:./vendor/sdk. */
+  sdkDependencySpec?: string;
+  /** Copy a built SDK package directory into the generated project for standalone use. */
+  vendorSdkPath?: string;
   force?: boolean;
   check?: boolean;
+}
+
+function copyDirectoryFiltered(src: string, dest: string): void {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    if (entry.name === ".git" || entry.name === "node_modules") {
+      continue;
+    }
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirectoryFiltered(srcPath, destPath);
+    } else if (entry.isFile()) {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
 }
 
 export function generateProjectReadme(
@@ -142,6 +163,62 @@ export function generateArtifacts(
   // Staging map of relativeFilePath -> fileContent
   const fileMap = new Map<string, string>();
 
+  const safeSdkName = manifest.source.package
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .toLowerCase();
+
+  let vendorRelDir: string | undefined;
+  let sdkDependencySpec = options.sdkDependencySpec;
+  if (options.vendorSdkPath) {
+    const vendorSrc = path.resolve(options.vendorSdkPath);
+    if (!fs.existsSync(vendorSrc) || !fs.statSync(vendorSrc).isDirectory()) {
+      throw new Error(
+        `Vendored SDK path does not exist or is not a directory: ${vendorSrc}`,
+      );
+    }
+    const vendorPkgJsonPath = path.join(vendorSrc, "package.json");
+    if (!fs.existsSync(vendorPkgJsonPath)) {
+      throw new Error(
+        `Vendored SDK directory is missing package.json: ${vendorSrc}`,
+      );
+    }
+    let vendorPackageName: string | undefined;
+    try {
+      vendorPackageName = JSON.parse(
+        fs.readFileSync(vendorPkgJsonPath, "utf8"),
+      ).name;
+    } catch (err: unknown) {
+      throw new Error(
+        `Could not read vendored SDK package.json: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    if (vendorPackageName !== manifest.source.package) {
+      throw new Error(
+        `Vendored SDK package name '${vendorPackageName ?? "<missing>"}' does not match manifest source package '${manifest.source.package}'`,
+      );
+    }
+    vendorRelDir = path.join("vendor", safeSdkName);
+    const vendorTarget = path.resolve(resolvedOutDir, vendorRelDir);
+    if (
+      !vendorTarget.startsWith(resolvedOutDir + path.sep) &&
+      vendorTarget !== resolvedOutDir
+    ) {
+      throw new Error(
+        `Path traversal detected: vendored SDK target '${vendorTarget}' escapes output directory '${resolvedOutDir}'`,
+      );
+    }
+    sdkDependencySpec =
+      sdkDependencySpec ??
+      // Adapter package.json files live under `cli/` and `mcp/`, so the
+      // project-root `vendor/` directory is one level up.
+      `file:../${vendorRelDir.replace(/\\/g, "/")}`;
+  }
+
+  const generatorOptions = {
+    ...options,
+    sdkDependencySpec,
+  };
+
   // 1. capability-manifest.json
   fileMap.set("capability-manifest.json", JSON.stringify(manifest, null, 2));
 
@@ -153,7 +230,7 @@ export function generateArtifacts(
 
   // 4. MCP Adapter
   if (targets.includes("mcp")) {
-    const mcpFiles = generateMcpProject(manifest, options);
+    const mcpFiles = generateMcpProject(manifest, generatorOptions);
     for (const [relPath, content] of Object.entries(mcpFiles)) {
       fileMap.set(path.join("mcp", relPath), content);
     }
@@ -161,7 +238,7 @@ export function generateArtifacts(
 
   // 5. CLI Adapter
   if (targets.includes("cli")) {
-    const cliFiles = generateCliProject(manifest, options);
+    const cliFiles = generateCliProject(manifest, generatorOptions);
     for (const [relPath, content] of Object.entries(cliFiles)) {
       fileMap.set(path.join("cli", relPath), content);
     }
@@ -195,6 +272,14 @@ export function generateArtifacts(
   const drift = checkDrift(resolvedOutDir, fileMap);
 
   if (options.check) {
+    if (vendorRelDir) {
+      const vendorTarget = path.join(resolvedOutDir, vendorRelDir);
+      if (!fs.existsSync(vendorTarget)) {
+        throw new Error(
+          `Drift detected in generated project at ${resolvedOutDir}:\n  Missing vendored SDK directory: ${vendorRelDir}`,
+        );
+      }
+    }
     if (drift.hasDrift) {
       const details = [
         drift.addedFiles.length > 0
@@ -247,6 +332,13 @@ export function generateArtifacts(
       fs.mkdirSync(path.dirname(destFilePath), { recursive: true });
       fs.writeFileSync(destFilePath, content, "utf8");
       writtenFiles.push(destFilePath);
+    }
+
+    // Copy the vendored SDK package alongside the generated adapters so the
+    // project can be installed and built without access to the source checkout.
+    if (options.vendorSdkPath && vendorRelDir) {
+      const vendorDest = path.join(resolvedOutDir, vendorRelDir);
+      copyDirectoryFiltered(path.resolve(options.vendorSdkPath), vendorDest);
     }
   } finally {
     try {
