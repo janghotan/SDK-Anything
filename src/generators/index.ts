@@ -42,7 +42,10 @@ export function generateArtifacts(
     fs.mkdirSync(mcpDir, { recursive: true });
     const mcpFiles = generateMcpProject(manifest, options);
     for (const [relPath, content] of Object.entries(mcpFiles)) {
-      const fullPath = path.join(mcpDir, relPath);
+      const fullPath = path.resolve(mcpDir, relPath);
+      if (!fullPath.startsWith(resolvedOutDir + path.sep)) {
+        throw new Error(`Path traversal detected: generated path '${fullPath}' escapes output directory '${resolvedOutDir}'`);
+      }
       fs.mkdirSync(path.dirname(fullPath), { recursive: true });
       fs.writeFileSync(fullPath, content, "utf8");
       writtenFiles.push(fullPath);
@@ -55,7 +58,10 @@ export function generateArtifacts(
     fs.mkdirSync(cliDir, { recursive: true });
     const cliFiles = generateCliProject(manifest, options);
     for (const [relPath, content] of Object.entries(cliFiles)) {
-      const fullPath = path.join(cliDir, relPath);
+      const fullPath = path.resolve(cliDir, relPath);
+      if (!fullPath.startsWith(resolvedOutDir + path.sep)) {
+        throw new Error(`Path traversal detected: generated path '${fullPath}' escapes output directory '${resolvedOutDir}'`);
+      }
       fs.mkdirSync(path.dirname(fullPath), { recursive: true });
       fs.writeFileSync(fullPath, content, "utf8");
       writtenFiles.push(fullPath);

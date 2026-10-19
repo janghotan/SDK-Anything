@@ -136,4 +136,49 @@ describe("Sandbox Security and Trust Mode Enforcement", () => {
     expect(report.isSecuritySandbox).toBe(false); // Explicitly NOT a security sandbox
     expect(report.staticChecksPassed).toBe(true);
   });
+
+  it("fails closed when destructive operation is invoked non-interactively without explicit authorization", async () => {
+    const mockModule = { deleteItem: () => ({ deleted: true }) };
+    const testManifest: any = {
+      schemaVersion: "sdk-anything/manifest/v1",
+      generatorVersion: "0.1.0",
+      source: { kind: "local", package: "test", version: "1.0.0", digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000" },
+      operations: [
+        {
+          id: "deleteItem",
+          name: "deleteItem",
+          summary: "Delete",
+          description: "Delete item",
+          invoke: { kind: "top-level-function", functionName: "deleteItem" },
+          inputSchema: { type: "object", properties: {} },
+          effect: "destructive",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+      ],
+      unresolved: [],
+    };
+
+    // Non-interactive without allowDestructive must fail closed
+    const resBlocked = await invokeOperation(testManifest, "deleteItem", {}, {
+      sdkModule: mockModule,
+      interactive: false,
+      allowedEffects: ["pure", "read", "destructive"],
+      allowDestructive: false,
+    });
+    expect(resBlocked.success).toBe(false);
+    expect(resBlocked.error?.code).toBe("POLICY_DENIED");
+    expect(resBlocked.error?.message).toMatch(/non-interactive environment without explicit authorization/i);
+
+    // Non-interactive WITH allowDestructive: true succeeds
+    const resAllowed = await invokeOperation(testManifest, "deleteItem", {}, {
+      sdkModule: mockModule,
+      interactive: false,
+      allowedEffects: ["pure", "read", "destructive"],
+      allowDestructive: true,
+    });
+    expect(resAllowed.success).toBe(true);
+    expect(resAllowed.data).toEqual({ deleted: true });
+  });
 });

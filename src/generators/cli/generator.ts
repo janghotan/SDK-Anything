@@ -109,8 +109,12 @@ export function createGeneratedCli(
         "--input <json>",
         "JSON string payload representing input arguments",
       )
+      .option(
+        "--allow-destructive",
+        "Explicitly authorize execution of destructive operations in non-interactive environments",
+      )
       .option("--json", "Output result in machine-readable JSON format")
-      .action(async (cmdOpts: { input?: string; json?: boolean }) => {
+      .action(async (cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
         try {
           let inputData: any = {};
           if (cmdOpts.input) {
@@ -127,7 +131,10 @@ export function createGeneratedCli(
             manifest,
             op.id,
             inputData,
-            context,
+            {
+              ...context,
+              allowDestructive: cmdOpts.allowDestructive ?? context.allowDestructive,
+            },
           );
 
           if (result.success) {
@@ -276,8 +283,9 @@ for (const op of enabledOperations) {
     .command(op.cmdName)
     .description(\`\${op.summary} [Effect: \${op.effect}]\`)
     .option('--input <json>', 'JSON string payload representing input arguments')
+    .option('--allow-destructive', 'Explicitly authorize execution of destructive operations in non-interactive environments')
     .option('--json', 'Output result in JSON format')
-    .action(async (cmdOpts: { input?: string; json?: boolean }) => {
+    .action(async (cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
       try {
         let input: any = {};
         if (cmdOpts.input) {
@@ -288,6 +296,7 @@ for (const op of enabledOperations) {
           sdkModule: targetSdk,
           env: process.env,
           interactive: process.stdout.isTTY,
+          allowDestructive: !!cmdOpts.allowDestructive,
         });
 
         if (result.success) {
