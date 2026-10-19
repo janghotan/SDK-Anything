@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use SDK-Anything in your work, please cite this repository."
+title: "SDK-Anything: Turn TypeScript/JavaScript SDKs into agent-native MCP tools and CLIs"
+abstract: >-
+  SDK-Anything statically inspects TypeScript and JavaScript SDKs and generates
+  inspectable, testable MCP servers, CLIs, and consumer skills for AI agents.
+type: software
+authors:
+  - family-names: Tan
+    given-names: Jangho
+    alias: janghotan
+repository-code: "https://github.com/janghotan/SDK-Anything"
+url: "https://github.com/janghotan/SDK-Anything"
+version: 0.1.0
+date-released: 2026-10-19
+license: Apache-2.0
+keywords:
+  - sdk
+  - mcp
+  - model-context-protocol
+  - cli
+  - ai-agents
+  - typescript

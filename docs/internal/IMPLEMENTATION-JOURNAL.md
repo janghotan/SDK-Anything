@@ -185,3 +185,18 @@ Append one entry per meaningful phase or implementation slice. Include date/time
 - **Remote result:** GitHub Actions briefly reported `degraded_performance`, which queued the backlog. After recovery, runs for `4d29f4b` (sandbox test fix) and `3dc3f29` completed successfully, confirming the fix remotely on supported Node versions.
 - **CI trigger cleanup:** Removed the duplicate `push: feat/*` trigger so feature-branch pushes are verified once via their pull request (`.github/workflows/ci.yml`).
 - **Next Action:** Confirm the tip run for `6efc876` (trigger change only) succeeds. Do not merge, tag, publish, or release.
+
+## 2026-10-19: v0.1.0 — First Public Release
+- **Release preparation:** PR #3 (`chore/release-v0.1.0`) added npm metadata (`repository`, `homepage`, `bugs`, `keywords`, `author`, `engines: >=20`, public publish config), packaged `CHANGELOG.md`, and install-first bilingual READMEs. Merge commit: `5534d16`.
+- **Release commit CI:** `5534d16` — GitHub Actions run `39290736468`, Node 20/22/24 all success.
+- **Gate results on the release tree:** `pnpm install --frozen-lockfile`, `format`, `typecheck`, `lint` (0 errors, 119 warnings), `pnpm test` 121/121 across 23 files, `build`, `npm pack --dry-run` all pass.
+- **npm:** `sdk-anything@0.1.0` published to the public registry and set as `latest`.
+  - Registry tarball: `https://registry.npmjs.org/sdk-anything/-/sdk-anything-0.1.0.tgz`
+  - `dist.shasum`: `7c934264b7904d1cace774668a58da38c9bb786d`
+  - `dist.integrity`: `sha512-i8Z9SKxjEWyhoAY0aylWl0cvqmS0sTVqIyKQYjK0UgzLFV/1jn9cZR4Ls/njGgb8gAEBqXPuGvltmEBg5l2kWw==`
+  - Local tarball SHA-256: `2072638afbbc3d611526773cbf074c0f53a93ddec5feabce5f3222fb53e8897b`
+- **Registry install verification:** fresh directory, `npm install sdk-anything@0.1.0`; CLI `--version` 0.1.0, `--help`, and `inspect` work; `npm audit --omit=dev` reports 0 vulnerabilities.
+- **Git tag:** annotated `v0.1.0`, pushed, pointing at `5534d16`.
+- **GitHub Release:** `https://github.com/janghotan/SDK-Anything/releases/tag/v0.1.0` with `sdk-anything-0.1.0.tgz` and `sdk-anything-0.1.0.checksums.txt` assets.
+- **Known limitations:** static inspection only; Docker/Podman required for container sandbox and not executed on the local host (fails closed); bounded best-effort dependency retrieval; AI verified against a mock OpenAI-compatible endpoint; Linux-only release verification.
+- **Next Action:** Optional repository polish. Do not publish another version without a new version number, changelog, green CI, and fresh acceptance evidence.

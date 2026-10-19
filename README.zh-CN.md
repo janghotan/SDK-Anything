@@ -8,6 +8,8 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/sdk-anything"><img src="https://img.shields.io/npm/v/sdk-anything?style=for-the-badge&logo=npm&color=cb3837" alt="npm 版本"></a>
+  <a href="https://github.com/janghotan/SDK-Anything/releases/tag/v0.1.0"><img src="https://img.shields.io/badge/发布-v0.1.0-blue?style=for-the-badge" alt="发布"></a>
   <a href="#-快速上手"><img src="https://img.shields.io/badge/快速上手-5_分钟-blue?style=for-the-badge" alt="快速上手"></a>
   <a href="#-测试结果"><img src="https://img.shields.io/badge/测试-121_项通过_(100%25)-brightgreen?style=for-the-badge" alt="测试"></a>
   <a href="#-为什么需要-sdk-anything"><img src="https://img.shields.io/badge/架构-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
@@ -24,6 +26,8 @@
 </p>
 
 **单命令流水线**：将任何 TypeScript 或 JavaScript SDK 一键转化为 Claude Desktop、Cursor、Claude Code、OpenClaw、Codex、Windsurf 及自定义智能体可直接调用的专属工具。
+
+<p align="center"><code>npm install -g sdk-anything</code></p>
 
 ---
 
@@ -391,7 +395,9 @@ sdk-anything/
 │   └── sdk-anything-banner-zh.png
 ├── docs/                                # 详尽设计文档
 │   ├── architecture.md                  # 系统底层架构与模块规范
-│   └── security.md                      # 安全模型、信任边界与沙箱策略
+│   ├── design.md                        # 产品与架构设计
+│   ├── security.md                      # 安全模型、信任边界与沙箱策略
+│   └── release-evidence.md              # 经验证的发布证据与已知边界
 ├── examples/                            # 经过真实测试的参考范例
 │   ├── turf/                            # 纯函数黄金范例
 │   └── client-sdk/                      # 有状态的网络客户端 SDK 范例
