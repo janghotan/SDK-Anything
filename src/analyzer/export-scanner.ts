@@ -18,6 +18,7 @@ import { lowerTypeToJsonSchema } from './type-lowering.js';
 export interface ScanOptions {
   sourceKind: string;
   sourceIdentifier: string;
+  sourcePackageName?: string;
   sourceVersion: string;
   sourceRevision?: string;
   sourceDigest: string;
@@ -308,6 +309,7 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
     source: {
       kind: options.sourceKind,
       identifier: options.sourceIdentifier,
+      packageName: options.sourcePackageName,
       version: options.sourceVersion,
       revision: options.sourceRevision,
       digest: options.sourceDigest,

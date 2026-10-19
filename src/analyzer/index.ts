@@ -20,6 +20,7 @@ export async function analyzeSourceSnapshot(
   return scanSource({
     sourceKind: snapshot.kind,
     sourceIdentifier: snapshot.identifier,
+    sourcePackageName: snapshot.packageName,
     sourceVersion: snapshot.version,
     sourceRevision: snapshot.revision,
     sourceDigest: snapshot.digest,

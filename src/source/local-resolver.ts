@@ -19,13 +19,17 @@ export async function resolveLocalSource(
     throw new Error(`Local source path is not a directory: ${locator.localPath}`);
   }
 
-  // Check package.json for version
+  // Check package.json for version and name
   let version = '0.0.0-local';
+  let packageName = path.basename(resolvedPath);
   let manifestPath: string | undefined;
   const pkgJsonPath = path.join(resolvedPath, 'package.json');
   if (fs.existsSync(pkgJsonPath)) {
     try {
       const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+      if (pkg.name) {
+        packageName = pkg.name;
+      }
       if (pkg.version) {
         version = pkg.version;
       }
@@ -51,6 +55,7 @@ export async function resolveLocalSource(
   return {
     kind: 'local',
     identifier: resolvedPath,
+    packageName,
     version,
     snapshotPath: snapshotDir,
     digest,

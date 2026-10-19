@@ -98,6 +98,7 @@ async function downloadAndExtractNpm(
   return {
     kind: 'npm',
     identifier: `npm:${locator.packageName}${locator.versionOrTag ? `@${locator.versionOrTag}` : ''}`,
+    packageName: locator.packageName,
     version: resolvedVersion,
     snapshotPath: snapshotDir,
     digest,

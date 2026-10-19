@@ -115,6 +115,7 @@ export interface EvidenceInventory {
   source: {
     kind: string;
     identifier: string;
+    packageName?: string;
     version: string;
     revision?: string;
     digest: string;

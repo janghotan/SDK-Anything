@@ -23,6 +23,7 @@ export type ParsedSourceLocator = NpmLocator | LocalLocator | GitHubLocator;
 export interface SourceSnapshot {
   kind: SourceKind;
   identifier: string;
+  packageName?: string;
   version: string;
   revision?: string;
   snapshotPath: string;

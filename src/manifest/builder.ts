@@ -176,7 +176,7 @@ export function buildManifest(
     generatorVersion,
     source: {
       kind: evidence.source.kind as any,
-      package: evidence.source.identifier,
+      package: evidence.source.packageName || evidence.source.identifier,
       version: evidence.source.version,
       revision: evidence.source.revision,
       digest: evidence.source.digest,

@@ -88,6 +88,7 @@ export async function resolveGitHubSource(
   return {
     kind: 'github',
     identifier: `https://github.com/${locator.owner}/${locator.repo}${locator.ref ? `/tree/${locator.ref}` : ''}`,
+    packageName: locator.repo,
     version: resolvedRef,
     revision: resolvedRef,
     snapshotPath: snapshotDir,
