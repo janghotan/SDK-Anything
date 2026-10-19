@@ -126,6 +126,14 @@ export function generateArtifacts(
 ): string[] {
   const resolvedOutDir = path.resolve(outputDir);
 
+  for (const target of targets) {
+    if (target.includes("..") || target.includes("/") || target.includes("\\")) {
+      throw new Error(
+        `Path traversal detected: invalid generation target '${target}' escapes output directory '${resolvedOutDir}'`,
+      );
+    }
+  }
+
   // Staging map of relativeFilePath -> fileContent
   const fileMap = new Map<string, string>();
 

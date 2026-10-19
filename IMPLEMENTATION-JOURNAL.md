@@ -106,3 +106,13 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/ai/ai-proposal.test.ts`: Added test verifying CLI `generate --ai` privacy disclosure and clean fallback on missing credentials (6/6 passing).
   - Full test suite: 83/83 tests passing across 17 test files.
 - **Next Action:** Move to Phase 07: Security, Trust Boundaries and Honest Sandbox Guarantees.
+
+## 2026-10-19: Phase 07 — Security, Trust Boundaries and Honest Sandbox Guarantees
+- **Delivered Changes:**
+  1. `src/runtime/errors.ts` & `src/generators/runtime-template.ts`: Strengthened secret redaction with regex for URL embedded credentials (`://user:pass@`) and URL query tokens (`?token=...`, `?key=...`, `?api_key=...`).
+  2. `src/generators/index.ts`: Added target path traversal validation (`..`, `/`, `\`) rejecting directory escape attempts in generation targets.
+  3. `docs/security/threat-model-and-hardening.md`: Published comprehensive security architecture, threat model, and verification matrix.
+- **Test Evidence:**
+  - `tests/security/adversarial.test.ts`: Added 9-part adversarial test suite covering archive traversal (`../`), symlink rejection, zip bomb decompression size limit, URL credential and query token redaction, pagination infinite loop detection, container sandbox fail-closed behavior, target path traversal rejection, and prompt injection defense (9/9 passing).
+  - Full test suite: 92/92 tests passing across 18 test files.
+- **Next Action:** Move to Phase 08: Installable Deliverables and Agent Integration Experience.

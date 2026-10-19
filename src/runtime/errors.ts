@@ -23,6 +23,18 @@ export function redactSecrets(
     "$1=[REDACTED]",
   );
 
+  // Redact URL embedded credentials (https://user:pass@host)
+  result = result.replace(
+    /:\/\/[^:\s]+:[^@\s]+@/g,
+    "://[REDACTED]:[REDACTED]@",
+  );
+
+  // Redact URL query parameter tokens (?token=..., &key=..., etc.)
+  result = result.replace(
+    /([?&](?:api[_-]?key|token|secret|password|access_token)=)[^&\s]+/gi,
+    "$1[REDACTED]",
+  );
+
   return result;
 }
 

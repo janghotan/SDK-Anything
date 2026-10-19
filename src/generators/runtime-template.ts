@@ -39,6 +39,8 @@ export function redactSecrets(text: string, knownSecrets: string[] = []): string
   }
   result = result.replace(/bearer\\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer [REDACTED]');
   result = result.replace(/(api[_-]?key|token|secret|password)\\s*[:=]\\s*['"]?[A-Za-z0-9._~+/-]{8,}['"]?/gi, '$1=[REDACTED]');
+  result = result.replace(/:\\/\\/[^:\\s]+:[^@\\s]+@/g, '://[REDACTED]:[REDACTED]@');
+  result = result.replace(/([?&](?:api[_-]?key|token|secret|password|access_token)=)[^&\\s]+/gi, '$1[REDACTED]');
   return result;
 }
 
