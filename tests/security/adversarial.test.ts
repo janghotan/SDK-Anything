@@ -13,7 +13,12 @@ import { runProjectTests } from "../../src/sandbox/runner.js";
 import { validateAiProposals } from "../../src/ai/proposal-parser.js";
 
 // Helper to construct a minimal raw TAR header
-function createTarHeader(name: string, size: number, typeflag = "0", linkname = ""): Buffer {
+function createTarHeader(
+  name: string,
+  size: number,
+  typeflag = "0",
+  linkname = "",
+): Buffer {
   const buf = Buffer.alloc(512);
   buf.write(name, 0, 100, "utf8");
   buf.write(size.toString(8).padStart(11, "0") + " ", 124, 12, "utf8");
@@ -38,7 +43,9 @@ function createTarHeader(name: string, size: number, typeflag = "0", linkname = 
 describe("Phase 07: Security & Adversarial Test Suite", () => {
   describe("1. Archive Traversal and Symlink Protections", () => {
     it("rejects archive entries containing directory traversal paths (../)", async () => {
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-adv-traversal-"));
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), "sdk-adv-traversal-"),
+      );
       try {
         const header = createTarHeader("package/../../../etc/passwd", 12);
         const content = Buffer.alloc(512);
@@ -46,24 +53,31 @@ describe("Phase 07: Security & Adversarial Test Suite", () => {
         const tar = Buffer.concat([header, content, Buffer.alloc(1024)]);
         const gzipped = zlib.gzipSync(tar);
 
-        await expect(
-          extractTarballSafely(gzipped, tempDir),
-        ).rejects.toThrow(/path traversal/i);
+        await expect(extractTarballSafely(gzipped, tempDir)).rejects.toThrow(
+          /path traversal/i,
+        );
       } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }
     });
 
     it("rejects archive entries specifying symlinks", async () => {
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-adv-symlink-"));
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), "sdk-adv-symlink-"),
+      );
       try {
-        const header = createTarHeader("package/symlink-escape", 0, "2", "/etc/shadow");
+        const header = createTarHeader(
+          "package/symlink-escape",
+          0,
+          "2",
+          "/etc/shadow",
+        );
         const tar = Buffer.concat([header, Buffer.alloc(1024)]);
         const gzipped = zlib.gzipSync(tar);
 
-        await expect(
-          extractTarballSafely(gzipped, tempDir),
-        ).rejects.toThrow(/symlink/i);
+        await expect(extractTarballSafely(gzipped, tempDir)).rejects.toThrow(
+          /symlink/i,
+        );
       } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }
@@ -73,7 +87,11 @@ describe("Phase 07: Security & Adversarial Test Suite", () => {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-adv-size-"));
       try {
         const header = createTarHeader("package/huge.txt", 1000);
-        const tar = Buffer.concat([header, Buffer.alloc(1000), Buffer.alloc(1024)]);
+        const tar = Buffer.concat([
+          header,
+          Buffer.alloc(1000),
+          Buffer.alloc(1024),
+        ]);
         const gzipped = zlib.gzipSync(tar);
 
         await expect(
@@ -127,7 +145,9 @@ describe("Phase 07: Security & Adversarial Test Suite", () => {
   describe("4. Generator Confinement and Sandbox Fail-Closed Behavior", () => {
     it("fails closed when --sandbox is requested without container engine", async () => {
       await expect(
-        runProjectTests("./tests/fixtures/sample-local-sdk", { mode: "sandbox" }),
+        runProjectTests("./tests/fixtures/sample-local-sdk", {
+          mode: "sandbox",
+        }),
       ).rejects.toThrow(/container runtime.*required/i);
     });
 
@@ -171,7 +191,9 @@ describe("Phase 07: Security & Adversarial Test Suite", () => {
       const result = validateAiProposals(mockEvidence, injectionPayload);
       expect(result.valid).toBe(false);
       expect(result.proposals).toHaveLength(0);
-      expect(result.errors.some((e) => e.includes("executeShellBackdoor"))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes("executeShellBackdoor")),
+      ).toBe(true);
     });
   });
 });

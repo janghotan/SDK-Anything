@@ -113,7 +113,9 @@ describe("Phase 03: Manifest Completeness and Safe Regeneration", () => {
   });
 
   it("preserves unowned user files during regeneration", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-unowned-preserve-"));
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-unowned-preserve-"),
+    );
 
     try {
       const evidence = await analyzeSourceSnapshot(turfSourceDir);
@@ -134,7 +136,9 @@ describe("Phase 03: Manifest Completeness and Safe Regeneration", () => {
 
       // Verify unowned user files are still intact
       expect(fs.existsSync(customFile)).toBe(true);
-      expect(fs.readFileSync(customFile, "utf8")).toBe("console.log('custom user code');");
+      expect(fs.readFileSync(customFile, "utf8")).toBe(
+        "console.log('custom user code');",
+      );
       expect(fs.existsSync(customSubFile)).toBe(true);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
@@ -142,7 +146,9 @@ describe("Phase 03: Manifest Completeness and Safe Regeneration", () => {
   });
 
   it("detects hand-edited generated files and prevents silent overwrite without force", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-conflict-detect-"));
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-conflict-detect-"),
+    );
 
     try {
       const evidence = await analyzeSourceSnapshot(turfSourceDir);
@@ -162,7 +168,9 @@ describe("Phase 03: Manifest Completeness and Safe Regeneration", () => {
 
       // Regenerate with force: true -> should succeed and overwrite
       generateArtifacts(manifest, ["mcp", "cli"], tempDir, { force: true });
-      expect(fs.readFileSync(cliTsPath, "utf8")).not.toBe("// user hand-edited this file\n");
+      expect(fs.readFileSync(cliTsPath, "utf8")).not.toBe(
+        "// user hand-edited this file\n",
+      );
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -176,7 +184,8 @@ describe("Phase 03: Manifest Completeness and Safe Regeneration", () => {
         kind: "local",
         package: "test-pkg",
         version: "1.0.0",
-        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       },
       operations: [],
       unresolved: [],
@@ -184,6 +193,8 @@ describe("Phase 03: Manifest Completeness and Safe Regeneration", () => {
 
     const result = validateManifest(invalidManifest);
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes("Unsupported schema version"))).toBe(true);
+    expect(
+      result.errors.some((e) => e.includes("Unsupported schema version")),
+    ).toBe(true);
   });
 });

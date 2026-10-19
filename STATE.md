@@ -16,7 +16,7 @@ Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to
   - `npm pack --dry-run`: exit 0 (206 files, 457.9 kB unpacked)
 
 ## Current phase
-Phase 11 — Release-Readiness Verification.
+Phase 12 — Continuous Gap Elimination and Final Product Acceptance.
 
 ## Product acceptance dashboard
 Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a precise external reason where appropriate; never quietly count blocked as pass.
@@ -38,7 +38,7 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 | Security hardening & adversarial tests | PASS | `tests/security/adversarial.test.ts` (9/9 pass) verifies traversal, symlinks, bombs, URL secret redaction, loop guards | Complete |
 | Clean package install & bundle deliverables | PASS | `tests/distribution/package-install.test.ts` (3/3 pass) verifies tarball contents, `doctor` command, and MCP client config | Complete |
 | Performance, determinism & operational reliability | PASS | `tests/performance/benchmarks.test.ts` (4/4 pass) verifies coarse budgets, byte-identical serialization, AbortSignal cancellation | Complete |
-| Multi-version CI and reproducible release evidence | IN PROGRESS | Phase 11 active: release evidence document, clean tarball verification, candidate tag | Phase 11 |
+| Multi-version CI and reproducible release evidence | PASS | `docs/implementation/release-evidence.md` compiles 19-gate evidence matrix, clean package whitelist, candidate tag | Complete |
 | README/demo accurately reflect actual product | PASS | Synchronized bilingual `README.md` & `README.zh-CN.md` with 99 tests, doctor, `--check`, and `CONTRIBUTING.md` | Complete |
 | No known P0/P1 defects | PASS | Fixed validator schema path, TS strict errors, policy enforcer bug | Keep clean |
 
@@ -46,7 +46,7 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 None currently blocking local progress. Docker/Podman is not installed on host; static mode and trusted-local mode are verified, and container sandbox requests fail closed with clear error as required.
 
 ## Next exact action
-Proceed to Phase 11 implementation:
-1. Run formatting, strict typecheck, lint, full unit/integration/e2e test suites.
-2. Compile and author `docs/implementation/release-evidence.md` with evidence matrix, exact commands/outcomes, environment, representative outputs, and candidate tag recommendations.
-3. Verify release boundaries (no publishing to npm or git push without explicit authorization).
+Proceed to Phase 12 final review:
+1. Conduct comprehensive review for any remaining TODO/FIXME stubs or unverified paths.
+2. Verify all quality gates one final time (`format`, `typecheck`, `lint`, `test`, `build`, `pack`).
+3. Compile final product acceptance report and update completion records.

@@ -184,7 +184,10 @@ describe("AI Proposal Layer", () => {
     });
 
     const tempDir = (await import("node:os")).tmpdir();
-    const outPath = (await import("node:path")).join(tempDir, `sdk-ai-test-${Date.now()}`);
+    const outPath = (await import("node:path")).join(
+      tempDir,
+      `sdk-ai-test-${Date.now()}`,
+    );
 
     try {
       await cli.parseAsync([
@@ -203,7 +206,10 @@ describe("AI Proposal Layer", () => {
       // Verify clean fallback since no OPENAI_API_KEY was provided
       expect(errOutput).toContain("Falling back to deterministic generation");
     } finally {
-      (await import("node:fs")).rmSync(outPath, { recursive: true, force: true });
+      (await import("node:fs")).rmSync(outPath, {
+        recursive: true,
+        force: true,
+      });
     }
   });
 });

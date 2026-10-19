@@ -11,10 +11,7 @@ import {
 } from "../manifest/index.js";
 import { generateArtifacts } from "../generators/index.js";
 import { runProjectTests } from "../sandbox/index.js";
-import {
-  checkAndRecordDisclosure,
-  requestAiProposals,
-} from "../ai/index.js";
+import { checkAndRecordDisclosure, requestAiProposals } from "../ai/index.js";
 import { runDoctorCheck } from "./doctor.js";
 
 export interface CreateCliOptions {
@@ -440,13 +437,12 @@ export function createCli(options: CreateCliOptions = {}): Command {
 
   program
     .command("doctor [path]")
-    .description("Verify environment, dependencies, and generated project health")
+    .description(
+      "Verify environment, dependencies, and generated project health",
+    )
     .option("--json", "Output results in JSON format")
     .action(
-      async (
-        targetPath: string = ".",
-        cmdOptions: { json?: boolean },
-      ) => {
+      async (targetPath: string = ".", cmdOptions: { json?: boolean }) => {
         try {
           const report = runDoctorCheck(targetPath);
           if (cmdOptions.json) {

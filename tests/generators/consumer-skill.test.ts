@@ -82,11 +82,15 @@ describe("Consumer SKILL.md Generator", () => {
     const markdown = generateConsumerSkill(sampleManifest);
 
     // Extract table rows from Available Atomic Tools
-    const toolsSectionMatch = markdown.match(/## Available Atomic Tools[\s\S]*?##/);
+    const toolsSectionMatch = markdown.match(
+      /## Available Atomic Tools[\s\S]*?##/,
+    );
     expect(toolsSectionMatch).not.toBeNull();
     const toolsSection = toolsSectionMatch![0];
 
-    for (const op of sampleManifest.operations.filter((o) => o.enabledByDefault)) {
+    for (const op of sampleManifest.operations.filter(
+      (o) => o.enabledByDefault,
+    )) {
       expect(toolsSection).toContain(op.summary);
     }
   });

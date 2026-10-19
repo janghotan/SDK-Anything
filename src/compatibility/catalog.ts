@@ -19,7 +19,8 @@ export const FIXTURE_CATALOG: FixtureCatalogEntry[] = [
     expectedOperationsCount: 2,
     expectedUnresolvedCount: 0,
     expectSuccess: true,
-    notes: "Class-based API client with auth credentials, pagination, and destructive operations",
+    notes:
+      "Class-based API client with auth credentials, pagination, and destructive operations",
   },
   {
     id: "analyzer-types",
@@ -29,7 +30,8 @@ export const FIXTURE_CATALOG: FixtureCatalogEntry[] = [
     expectedOperationsCount: 6,
     expectedUnresolvedCount: 4,
     expectSuccess: true,
-    notes: "Covers enums, partials, index signatures, circular references, and callbacks",
+    notes:
+      "Covers enums, partials, index signatures, circular references, and callbacks",
   },
   {
     id: "barrel-sdk",
@@ -57,6 +59,7 @@ export const FIXTURE_CATALOG: FixtureCatalogEntry[] = [
     relativePath: "tests/fixtures/empty-malformed-sdk",
     shape: "empty-malformed",
     expectSuccess: false,
-    notes: "Missing entry point / malformed package designed to verify error handling",
+    notes:
+      "Missing entry point / malformed package designed to verify error handling",
   },
 ];

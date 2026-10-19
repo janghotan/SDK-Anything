@@ -34,7 +34,8 @@ export async function runFixtureTest(
         manifestValid: false,
         generatedArtifactsCount: 0,
         durationMs: Date.now() - startTime,
-        error: "Expected failure on malformed fixture, but resolution succeeded",
+        error:
+          "Expected failure on malformed fixture, but resolution succeeded",
       };
     } catch {
       // Expected failure
@@ -68,7 +69,8 @@ export async function runFixtureTest(
         shape: entry.shape,
         status: "FAIL",
         operationsDiscovered: manifest.operations.length,
-        operationsEnabled: manifest.operations.filter((o) => o.enabledByDefault).length,
+        operationsEnabled: manifest.operations.filter((o) => o.enabledByDefault)
+          .length,
         operationsUnresolved: manifest.unresolved.length,
         manifestValid: false,
         generatedArtifactsCount: 0,
@@ -80,7 +82,9 @@ export async function runFixtureTest(
     const files = generateArtifacts(manifest, ["mcp", "cli"], tempOutDir);
 
     const operationsDiscovered = manifest.operations.length;
-    const operationsEnabled = manifest.operations.filter((o) => o.enabledByDefault).length;
+    const operationsEnabled = manifest.operations.filter(
+      (o) => o.enabledByDefault,
+    ).length;
     const operationsUnresolved = manifest.unresolved.length;
 
     let status: "PASS" | "FAIL" = "PASS";

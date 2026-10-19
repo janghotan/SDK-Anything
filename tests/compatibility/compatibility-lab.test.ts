@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { runCompatibilityLab, FIXTURE_CATALOG } from "../../src/compatibility/index.js";
+import {
+  runCompatibilityLab,
+  FIXTURE_CATALOG,
+} from "../../src/compatibility/index.js";
 
 describe("Phase 05: SDK Compatibility Lab", () => {
   it("has a declared fixture catalog covering required SDK shapes", () => {

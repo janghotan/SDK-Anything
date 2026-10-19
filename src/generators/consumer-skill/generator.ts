@@ -94,7 +94,9 @@ export function generateConsumerSkill(manifest: CapabilityManifest): string {
   lines.push("```markdown");
   lines.push("1. Query data using a safe read tool: inspect return structure.");
   lines.push("2. Extract verified identifiers and values.");
-  lines.push("3. If a destructive step is necessary, ask for user confirmation before passing --allow-destructive.");
+  lines.push(
+    "3. If a destructive step is necessary, ask for user confirmation before passing --allow-destructive.",
+  );
   lines.push("4. Execute final step and confirm success in response.");
   lines.push("```");
   lines.push("");

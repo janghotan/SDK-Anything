@@ -95,7 +95,12 @@ export function lowerTypeToJsonSchema(
       if (enumVals.length > 0) {
         return {
           schema: {
-            type: isStr && !isNum ? "string" : isNum && !isStr ? "number" : "string",
+            type:
+              isStr && !isNum
+                ? "string"
+                : isNum && !isStr
+                  ? "number"
+                  : "string",
             enum: enumVals,
           },
         };
@@ -110,7 +115,7 @@ export function lowerTypeToJsonSchema(
     const allStringLiterals = types.every(
       (t) =>
         (t.getFlags() & ts.TypeFlags.StringLiteral) !== 0 ||
-        (typeof (t as any).value === "string"),
+        typeof (t as any).value === "string",
     );
     if (allStringLiterals) {
       const enumVals = types.map(
@@ -123,7 +128,7 @@ export function lowerTypeToJsonSchema(
     const allNumberLiterals = types.every(
       (t) =>
         (t.getFlags() & ts.TypeFlags.NumberLiteral) !== 0 ||
-        (typeof (t as any).value === "number"),
+        typeof (t as any).value === "number",
     );
     if (allNumberLiterals) {
       const enumVals = types.map(

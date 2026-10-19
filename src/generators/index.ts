@@ -6,10 +6,7 @@ import type { CapabilityManifest } from "../manifest/types.js";
 import { generateMcpProject } from "./mcp/generator.js";
 import { generateCliProject } from "./cli/generator.js";
 import { generateConsumerSkill } from "./consumer-skill/generator.js";
-import {
-  createArtifactInventory,
-  checkDrift,
-} from "./inventory.js";
+import { createArtifactInventory, checkDrift } from "./inventory.js";
 
 export * from "./mcp/index.js";
 export * from "./cli/index.js";
@@ -58,7 +55,9 @@ export function generateProjectReadme(
     lines.push("- `cli/`: Standalone command-line interface project.");
   }
   if (targets.includes("mcp")) {
-    lines.push("- `mcp/`: Standalone Model Context Protocol (MCP) server project.");
+    lines.push(
+      "- `mcp/`: Standalone Model Context Protocol (MCP) server project.",
+    );
   }
   lines.push("");
   lines.push("## Quickstart");
@@ -87,7 +86,9 @@ export function generateProjectReadme(
     lines.push("node dist/server.js");
     lines.push("```");
     lines.push("");
-    lines.push("To configure an MCP client (such as Claude Desktop or Cursor), add:");
+    lines.push(
+      "To configure an MCP client (such as Claude Desktop or Cursor), add:",
+    );
     lines.push("");
     lines.push("```json");
     lines.push("{");
@@ -127,7 +128,11 @@ export function generateArtifacts(
   const resolvedOutDir = path.resolve(outputDir);
 
   for (const target of targets) {
-    if (target.includes("..") || target.includes("/") || target.includes("\\")) {
+    if (
+      target.includes("..") ||
+      target.includes("/") ||
+      target.includes("\\")
+    ) {
       throw new Error(
         `Path traversal detected: invalid generation target '${target}' escapes output directory '${resolvedOutDir}'`,
       );

@@ -145,7 +145,8 @@ describe("MCP Server Generator", () => {
         kind: "local",
         package: "colliding-tools-sdk",
         version: "1.0.0",
-        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       },
       operations: [
         {
@@ -154,7 +155,10 @@ describe("MCP Server Generator", () => {
           summary: "Charge billing",
           description: "Charge billing account",
           invoke: { kind: "top-level-function", functionName: "charge" },
-          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          inputSchema: {
+            type: "object",
+            properties: { amount: { type: "number" } },
+          },
           effect: "pure",
           enabledByDefault: true,
           result: { mode: "direct" },
@@ -166,7 +170,10 @@ describe("MCP Server Generator", () => {
           summary: "Charge shipping",
           description: "Charge shipping fee",
           invoke: { kind: "top-level-function", functionName: "charge" },
-          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          inputSchema: {
+            type: "object",
+            properties: { amount: { type: "number" } },
+          },
           effect: "pure",
           enabledByDefault: true,
           result: { mode: "direct" },

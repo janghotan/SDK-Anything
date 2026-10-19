@@ -103,7 +103,11 @@ export function createGeneratedCli(
 
   // Helper for stdin reading
   async function readStdin(): Promise<string> {
-    if (typeof process === "undefined" || !process.stdin || process.stdin.isTTY) {
+    if (
+      typeof process === "undefined" ||
+      !process.stdin ||
+      process.stdin.isTTY
+    ) {
       return "";
     }
     return new Promise((resolve) => {

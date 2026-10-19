@@ -9,7 +9,9 @@ import { analyzeSourceSnapshot } from "../../src/analyzer/index.js";
 
 describe("Phase 00 & 01 Acceptance: Core User Journey Outside Repo", () => {
   it("validates manifest when run from a working directory outside the repository root", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-validate-external-"));
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-validate-external-"),
+    );
     const originalCwd = process.cwd();
 
     try {
@@ -45,7 +47,9 @@ describe("Phase 00 & 01 Acceptance: Core User Journey Outside Repo", () => {
   });
 
   it("generates TypeScript code for CLI and MCP server that compiles with zero type errors under strict mode", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-compile-check-"));
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-compile-check-"),
+    );
 
     try {
       const turfFixture = path.resolve("examples/turf");
@@ -66,8 +70,12 @@ describe("Phase 00 & 01 Acceptance: Core User Journey Outside Repo", () => {
       expect(serverSource).not.toMatch(/async\s*\(\s*request\s*\)\s*=>/);
 
       // Verify generated projects have a test script in package.json
-      const cliPkg = JSON.parse(fs.readFileSync(path.join(tempDir, "cli/package.json"), "utf8"));
-      const mcpPkg = JSON.parse(fs.readFileSync(path.join(tempDir, "mcp/package.json"), "utf8"));
+      const cliPkg = JSON.parse(
+        fs.readFileSync(path.join(tempDir, "cli/package.json"), "utf8"),
+      );
+      const mcpPkg = JSON.parse(
+        fs.readFileSync(path.join(tempDir, "mcp/package.json"), "utf8"),
+      );
       expect(cliPkg.scripts).toHaveProperty("test");
       expect(mcpPkg.scripts).toHaveProperty("test");
     } finally {

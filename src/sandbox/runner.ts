@@ -188,7 +188,9 @@ export async function runProjectTests(
           });
 
           if (proc.status !== 0) {
-            logs.push(`Test command output (${targetLabel}): ${proc.stdout}\n${proc.stderr}`);
+            logs.push(
+              `Test command output (${targetLabel}): ${proc.stdout}\n${proc.stderr}`,
+            );
             testPassed = false;
           } else {
             logs.push(`Test command passed for ${targetLabel}.`);

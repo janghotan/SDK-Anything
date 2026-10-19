@@ -5,7 +5,10 @@ import * as os from "node:os";
 import { resolveSource } from "../../src/source/index.js";
 import { analyzeSourceSnapshot } from "../../src/analyzer/index.js";
 import { buildManifest } from "../../src/manifest/index.js";
-import { serializeCanonicalManifest, computeManifestDigest } from "../../src/manifest/serializer.js";
+import {
+  serializeCanonicalManifest,
+  computeManifestDigest,
+} from "../../src/manifest/serializer.js";
 import { generateArtifacts } from "../../src/generators/index.js";
 import { invokeOperation } from "../../src/runtime/invoker.js";
 
@@ -59,7 +62,8 @@ describe("Phase 10: Performance, Determinism and Operational Reliability", () =>
 
   it("enforces operation timeouts and handles cancellation via AbortSignal", async () => {
     const slowModule = {
-      slowFn: async () => new Promise((resolve) => setTimeout(() => resolve("done"), 2000)),
+      slowFn: async () =>
+        new Promise((resolve) => setTimeout(() => resolve("done"), 2000)),
     };
 
     const slowManifest: any = {
@@ -69,7 +73,8 @@ describe("Phase 10: Performance, Determinism and Operational Reliability", () =>
         kind: "local",
         package: "slow-sdk",
         version: "1.0.0",
-        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       },
       operations: [
         {
@@ -89,10 +94,15 @@ describe("Phase 10: Performance, Determinism and Operational Reliability", () =>
     };
 
     // 1. Timeout test: timeoutMs: 50ms on a 2000ms operation
-    const timeoutRes = await invokeOperation(slowManifest, "slowFn", {}, {
-      sdkModule: slowModule,
-      timeoutMs: 50,
-    });
+    const timeoutRes = await invokeOperation(
+      slowManifest,
+      "slowFn",
+      {},
+      {
+        sdkModule: slowModule,
+        timeoutMs: 50,
+      },
+    );
     expect(timeoutRes.success).toBe(false);
     expect(timeoutRes.error?.code).toBe("TIMEOUT");
     expect(timeoutRes.error?.message).toMatch(/timed out after 50ms/i);
@@ -101,18 +111,27 @@ describe("Phase 10: Performance, Determinism and Operational Reliability", () =>
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 20);
 
-    const abortRes = await invokeOperation(slowManifest, "slowFn", {}, {
-      sdkModule: slowModule,
-      timeoutMs: 5000,
-      signal: controller.signal,
-    });
+    const abortRes = await invokeOperation(
+      slowManifest,
+      "slowFn",
+      {},
+      {
+        sdkModule: slowModule,
+        timeoutMs: 5000,
+        signal: controller.signal,
+      },
+    );
     expect(abortRes.success).toBe(false);
     expect(abortRes.error?.message).toMatch(/cancelled/i);
   });
 
   it("supports concurrent generation across multiple target directories without collision", async () => {
-    const tempDirA = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-concurrent-a-"));
-    const tempDirB = fs.mkdtempSync(path.join(os.tmpdir(), "sdk-concurrent-b-"));
+    const tempDirA = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-concurrent-a-"),
+    );
+    const tempDirB = fs.mkdtempSync(
+      path.join(os.tmpdir(), "sdk-concurrent-b-"),
+    );
 
     try {
       const [snapshotA, snapshotB] = await Promise.all([

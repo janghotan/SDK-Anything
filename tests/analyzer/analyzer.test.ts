@@ -108,7 +108,9 @@ describe("TypeScript Analyzer and Evidence Inventory", () => {
     expect(statusParam.enum).toEqual([0, 1, 2]);
 
     // Record / Index signature
-    const lookupFn = evidence.functions.find((f) => f.name === "lookupMetadata");
+    const lookupFn = evidence.functions.find(
+      (f) => f.name === "lookupMetadata",
+    );
     expect(lookupFn).toBeDefined();
     const mapParam = lookupFn?.inputSchema.properties.map as any;
     expect(mapParam.type).toBe("object");
@@ -124,7 +126,9 @@ describe("TypeScript Analyzer and Evidence Inventory", () => {
     expect(patchParam.required).toBeUndefined();
 
     // Overloads
-    const formatFn = evidence.functions.find((f) => f.name === "formatCoordinate");
+    const formatFn = evidence.functions.find(
+      (f) => f.name === "formatCoordinate",
+    );
     expect(formatFn).toBeDefined();
     expect(formatFn?.overloadsCount).toBe(2);
   });

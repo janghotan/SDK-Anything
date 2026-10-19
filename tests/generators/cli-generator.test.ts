@@ -169,7 +169,8 @@ describe("CLI Generator and MCP/CLI Parity", () => {
         kind: "local",
         package: "colliding-sdk",
         version: "1.0.0",
-        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        digest:
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       },
       operations: [
         {
@@ -178,7 +179,10 @@ describe("CLI Generator and MCP/CLI Parity", () => {
           summary: "Charge billing",
           description: "Charge billing account",
           invoke: { kind: "top-level-function", functionName: "charge" },
-          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          inputSchema: {
+            type: "object",
+            properties: { amount: { type: "number" } },
+          },
           effect: "pure",
           enabledByDefault: true,
           result: { mode: "direct" },
@@ -190,7 +194,10 @@ describe("CLI Generator and MCP/CLI Parity", () => {
           summary: "Charge shipping",
           description: "Charge shipping fee",
           invoke: { kind: "top-level-function", functionName: "charge" },
-          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          inputSchema: {
+            type: "object",
+            properties: { amount: { type: "number" } },
+          },
           effect: "pure",
           enabledByDefault: true,
           result: { mode: "direct" },
@@ -202,7 +209,9 @@ describe("CLI Generator and MCP/CLI Parity", () => {
 
     let stdout = "";
     const mockModule = {
-      charge: vi.fn((amount: any) => ({ charged: typeof amount === "object" ? amount.amount : amount })),
+      charge: vi.fn((amount: any) => ({
+        charged: typeof amount === "object" ? amount.amount : amount,
+      })),
     };
 
     const cli = createGeneratedCli(collidingManifest, {

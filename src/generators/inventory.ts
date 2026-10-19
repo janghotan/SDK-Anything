@@ -126,7 +126,11 @@ export function checkDrift(
     for (const e of entries) {
       const full = path.join(current, e.name);
       const rel = path.relative(resolvedDir, full).replace(/\\/g, "/");
-      if (e.name === ".sdk-anything-inventory.json" || e.name === "node_modules" || e.name === ".git") {
+      if (
+        e.name === ".sdk-anything-inventory.json" ||
+        e.name === "node_modules" ||
+        e.name === ".git"
+      ) {
         continue;
       }
       if (e.isDirectory()) {

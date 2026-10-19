@@ -6,7 +6,11 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { resolveSource } from "../../src/source/index.js";
 import { analyzeSourceSnapshot } from "../../src/analyzer/index.js";
-import { buildManifest, validateManifest, applyOverrides } from "../../src/manifest/index.js";
+import {
+  buildManifest,
+  validateManifest,
+  applyOverrides,
+} from "../../src/manifest/index.js";
 import { generateArtifacts } from "../../src/generators/index.js";
 import { createMcpServer } from "../../src/generators/mcp/index.js";
 import { createGeneratedCli } from "../../src/generators/cli/index.js";
@@ -44,13 +48,18 @@ describe("Phase 01: Core User Journeys End-to-End Harness", () => {
       const writtenFiles = generateArtifacts(manifest, ["mcp", "cli"], tempDir);
       expect(writtenFiles.length).toBeGreaterThanOrEqual(10);
       expect(fs.existsSync(path.join(tempDir, "README.md"))).toBe(true);
-      expect(fs.existsSync(path.join(tempDir, "capability-manifest.json"))).toBe(true);
+      expect(
+        fs.existsSync(path.join(tempDir, "capability-manifest.json")),
+      ).toBe(true);
       expect(fs.existsSync(path.join(tempDir, "SKILL.md"))).toBe(true);
       expect(fs.existsSync(path.join(tempDir, "cli/cli.ts"))).toBe(true);
       expect(fs.existsSync(path.join(tempDir, "mcp/server.ts"))).toBe(true);
 
       // Verify README contains accurate quickstart and safety summary
-      const readmeText = fs.readFileSync(path.join(tempDir, "README.md"), "utf8");
+      const readmeText = fs.readFileSync(
+        path.join(tempDir, "README.md"),
+        "utf8",
+      );
       expect(readmeText).toContain("Generated Agent Capabilities");
       expect(readmeText).toContain("node dist/cli.js --help");
       expect(readmeText).toContain("Safety & Policy Defaults");
@@ -101,7 +110,8 @@ describe("Phase 01: Core User Journeys End-to-End Harness", () => {
         { name: "test-turf-e2e-mcp-client", version: "0.1.0" },
         { capabilities: {} },
       );
-      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+      const [clientTransport, serverTransport] =
+        InMemoryTransport.createLinkedPair();
 
       await Promise.all([
         mcpServer.connect(serverTransport),

@@ -83,10 +83,14 @@ export function runDoctorCheck(targetPath: string): DoctorCheckResult {
       }
       inventoryValid = missingFiles.length === 0 && corruptedFiles.length === 0;
     } catch (err: any) {
-      warnings.push(`Could not read .sdk-anything-inventory.json: ${err.message}`);
+      warnings.push(
+        `Could not read .sdk-anything-inventory.json: ${err.message}`,
+      );
     }
   } else {
-    warnings.push("No .sdk-anything-inventory.json found; skipping checksum integrity verification");
+    warnings.push(
+      "No .sdk-anything-inventory.json found; skipping checksum integrity verification",
+    );
   }
 
   // 3. Check CLI and MCP project files

@@ -21,7 +21,10 @@ describe("Phase 08: Installable Deliverables & Package Distribution", () => {
 
       generateArtifacts(manifest, ["mcp", "cli"], tempDir);
 
-      const mcpConfigPath = path.join(tempDir, "mcp/claude_desktop_config.json");
+      const mcpConfigPath = path.join(
+        tempDir,
+        "mcp/claude_desktop_config.json",
+      );
       expect(fs.existsSync(mcpConfigPath)).toBe(true);
 
       const config = JSON.parse(fs.readFileSync(mcpConfigPath, "utf8"));
@@ -62,7 +65,13 @@ describe("Phase 08: Installable Deliverables & Package Distribution", () => {
         exitOverride: true,
       });
 
-      await cli.parseAsync(["node", "sdk-anything", "doctor", tempDir, "--json"]);
+      await cli.parseAsync([
+        "node",
+        "sdk-anything",
+        "doctor",
+        tempDir,
+        "--json",
+      ]);
       const parsed = JSON.parse(output);
       expect(parsed.healthy).toBe(true);
       expect(parsed.inventoryValid).toBe(true);
