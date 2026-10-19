@@ -14,6 +14,22 @@
 
 ---
 
+## Phase 08 — AI Proposal Layer and Generator Skill
+
+- **Date**: 2026-10-18
+- **Goal**: Add optional OpenAI-compatible AI assistance plus a Skill that allows a host coding agent to orchestrate the deterministic generator.
+- **Status**: completed
+- **Commit**: `cd94a96` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented `checkAndRecordDisclosure` in `src/ai/privacy-disclosure.ts` providing explicit disclosure of minimal transmitted source metadata before transmission.
+  - Implemented `requestAiProposals` in `src/ai/client.ts` connecting to OpenAI-compatible endpoints with JSON response format, strict prompt-injection isolation (treating docs and comments as untrusted data), and graceful fallback to deterministic output on missing keys or network failure.
+  - Implemented `validateAiProposals` in `src/ai/proposal-parser.ts` rejecting hallucinated operation IDs, schema inventions, or policy alterations.
+  - Created generator orchestration skill at `skills/sdk-anything/SKILL.md`.
+  - Added unit tests in `tests/ai/ai-proposal.test.ts`.
+  - Verified 54/54 tests pass across all test suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 07 — CLI Generator and Adapter Parity
 
 - **Date**: 2026-10-18

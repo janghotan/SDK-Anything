@@ -2,12 +2,12 @@
 
 - Project: SDK-Anything
 - Spec: `spec/SDK-Anything-Design-Revised.md` (canonical repository copy at `docs/superpowers/specs/2026-10-18-sdk-anything-design-revised.md`)
-- Current phase: Phase 08 — AI Assistance and Generator Skill
-- Current plan task: Task 8 — Optional AI Proposal Layer and Generator Skill
+- Current phase: Phase 09 — Client Fixture, Sandbox, and Security Hardening
+- Current plan task: Task 9 — Client-SDK Fixture, Sandbox Execution, and Security Hardening
 - Current branch: feat/sdk-anything-v0.1
 - Remote push target: none (push blocked: no remote configured)
-- Last known green commit: eeb041d
-- Last verification command/result: pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build (49 tests passed)
+- Last known green commit: cd94a96
+- Last verification command/result: pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build (54 tests passed)
 - Pending blocker: none (local execution proceeding autonomously)
 
 ## Phase ledger
@@ -22,7 +22,8 @@
 | 05 Shared runtime and policy | completed | 2390d37 | 41 tests passed (7 runtime tests + 34 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Client lifecycle, credential refs, policy enforcement, pagination bounds, error normalization |
 | 06 MCP generator | completed | 108252e | 44 tests passed (3 mcp tests + 41 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Official MCP TypeScript SDK integration, stdio and in-memory transport, tool dispatch |
 | 07 CLI generator | completed | eeb041d | 49 tests passed (4 cli tests + 1 skill test + 44 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | CLI code generator, command parity, generateArtifacts, consumer SKILL.md |
-| 08 AI assistance and Skill | in_progress | pending | — | — | — |
+| 08 AI assistance and Skill | completed | cd94a96 | 54 tests passed (5 ai tests + 49 existing) | COMMITTED LOCALLY — PUSH BLOCKED (no remote) | Optional OpenAI-compatible proposal adapter, prompt-injection defense, generator SKILL.md |
+| 09 Client fixture, sandbox, security | in_progress | pending | — | — | — |
 | 02 Source resolution | pending | — | — | — | — |
 | 03 Static analyzer and evidence | pending | — | — | — | — |
 | 04 Manifest and overrides | pending | — | — | — | — |
