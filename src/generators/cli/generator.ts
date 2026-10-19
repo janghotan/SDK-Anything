@@ -3,6 +3,7 @@ import type { CapabilityManifest } from "../../manifest/types.js";
 import { serializeCanonicalManifest } from "../../manifest/serializer.js";
 import { invokeOperation } from "../../runtime/invoker.js";
 import type { InvocationContext } from "../../runtime/types.js";
+import { getStandaloneRuntimeSource } from "../runtime-template.js";
 
 export function toCliCommandName(operationId: string): string {
   return operationId
@@ -41,6 +42,60 @@ export function createGeneratedCli(
   if (context.exitOverride) {
     program.exitOverride();
   }
+
+  // 1. Introspection command: info
+  program
+    .command("info")
+    .description(
+      "Inspect target SDK metadata, client requirements, and available operations",
+    )
+    .option("--json", "Output result in machine-readable JSON format")
+    .action((cmdOpts: { json?: boolean }) => {
+      const infoObj = {
+        package: manifest.source.package,
+        version: manifest.source.version,
+        digest: manifest.source.digest,
+        client: manifest.client ?? null,
+        operationsCount: manifest.operations.length,
+        enabledOperationsCount: manifest.operations.filter(
+          (o) => o.enabledByDefault,
+        ).length,
+      };
+
+      const out = cmdOpts.json
+        ? JSON.stringify(infoObj, null, 2)
+        : `SDK Package: ${manifest.source.package} v${manifest.source.version}\nDigest: ${manifest.source.digest}\nOperations: ${manifest.operations.length} (${manifest.operations.filter((o) => o.enabledByDefault).length} enabled)`;
+
+      if (context.writeOut) context.writeOut(out + "\n");
+      else console.log(out);
+    });
+
+  // 2. Introspection command: list
+  program
+    .command("list")
+    .description("List all available operations and their effect tiers")
+    .option("--json", "Output result in machine-readable JSON format")
+    .action((cmdOpts: { json?: boolean }) => {
+      const ops = manifest.operations.map((o) => ({
+        id: o.id,
+        name: o.name,
+        effect: o.effect,
+        enabled: o.enabledByDefault,
+        summary: o.summary,
+      }));
+
+      const out = cmdOpts.json
+        ? JSON.stringify(ops, null, 2)
+        : ops
+            .map(
+              (o) =>
+                `[${o.enabled ? "ENABLED" : "DISABLED"}] ${o.id} (${o.effect}) - ${o.summary}`,
+            )
+            .join("\n");
+
+      if (context.writeOut) context.writeOut(out + "\n");
+      else console.log(out);
+    });
 
   // Register commands for enabled operations
   const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
@@ -147,6 +202,7 @@ export function generateCliProject(
 import { Command } from 'commander';
 import * as targetSdk from '${sdkPkgName}';
 import manifestData from './capability-manifest.json' with { type: 'json' };
+import { invokeOperation } from './runtime.js';
 
 const manifest = manifestData as any;
 
@@ -174,6 +230,47 @@ program
   .description('CLI for ${manifest.source.package} v${manifest.source.version}')
   .version('${manifest.source.version}');
 
+// Introspection: info
+program
+  .command('info')
+  .description('Inspect target SDK metadata, client requirements, and available operations')
+  .option('--json', 'Output result in machine-readable JSON format')
+  .action((cmdOpts: { json?: boolean }) => {
+    const infoObj = {
+      package: manifest.source.package,
+      version: manifest.source.version,
+      digest: manifest.source.digest,
+      client: manifest.client ?? null,
+      operationsCount: manifest.operations.length,
+      enabledOperationsCount: manifest.operations.filter((o: any) => o.enabledByDefault).length,
+    };
+    if (cmdOpts.json) {
+      console.log(JSON.stringify(infoObj, null, 2));
+    } else {
+      console.log(\`SDK Package: \${manifest.source.package} v\${manifest.source.version}\\nDigest: \${manifest.source.digest}\\nOperations: \${manifest.operations.length}\`);
+    }
+  });
+
+// Introspection: list
+program
+  .command('list')
+  .description('List all available operations and their effect tiers')
+  .option('--json', 'Output result in machine-readable JSON format')
+  .action((cmdOpts: { json?: boolean }) => {
+    const ops = manifest.operations.map((o: any) => ({
+      id: o.id,
+      name: o.name,
+      effect: o.effect,
+      enabled: o.enabledByDefault,
+      summary: o.summary,
+    }));
+    if (cmdOpts.json) {
+      console.log(JSON.stringify(ops, null, 2));
+    } else {
+      console.log(ops.map((o: any) => \`[\${o.enabled ? 'ENABLED' : 'DISABLED'}] \${o.id} (\${o.effect}) - \${o.summary}\`).join('\\n'));
+    }
+  });
+
 for (const op of enabledOperations) {
   program
     .command(op.cmdName)
@@ -187,16 +284,21 @@ for (const op of enabledOperations) {
           input = JSON.parse(cmdOpts.input);
         }
 
-        const targetFn = (targetSdk as any)[op.name] ?? (targetSdk as any).default?.[op.name];
-        if (typeof targetFn !== 'function') {
-          throw new Error(\`Target function '\${op.name}' not found on SDK module\`);
-        }
+        const result = await invokeOperation(manifest, op.id, input, {
+          sdkModule: targetSdk,
+          env: process.env,
+          interactive: process.stdout.isTTY,
+        });
 
-        const result = await targetFn(input);
-        if (cmdOpts.json) {
-          console.log(JSON.stringify(result, null, 2));
+        if (result.success) {
+          if (cmdOpts.json) {
+            console.log(JSON.stringify(result.data, null, 2));
+          } else {
+            console.log(typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2));
+          }
         } else {
-          console.log(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+          console.error(\`Error [\${result.error?.code}]: \${result.error?.message}\`);
+          process.exit(1);
         }
       } catch (err: any) {
         console.error(\`Error: \${err?.message || String(err)}\`);
@@ -251,7 +353,7 @@ program.parseAsync(process.argv).catch(err => {
         rootDir: "./",
         resolveJsonModule: true,
       },
-      include: ["cli.ts"],
+      include: ["cli.ts", "runtime.ts"],
     },
     null,
     2,
@@ -259,6 +361,7 @@ program.parseAsync(process.argv).catch(err => {
 
   return {
     "cli.ts": cliTs,
+    "runtime.ts": getStandaloneRuntimeSource(),
     "package.json": packageJson,
     "tsconfig.json": tsconfigJson,
     "capability-manifest.json": canonicalManifestJson,

@@ -89,6 +89,20 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
 
       const doc = ts.displayPartsToString(exp.getDocumentationComment(checker));
 
+      // If it's purely an interface or type alias, skip (it's a type definition, not an operation)
+      if (
+        (targetSymbol.flags &
+          (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias)) !==
+          0 &&
+        (targetSymbol.flags &
+          (ts.SymbolFlags.Function |
+            ts.SymbolFlags.Method |
+            ts.SymbolFlags.Value)) ===
+          0
+      ) {
+        continue;
+      }
+
       // 1. Is it a class?
       if (
         targetSymbol.flags & ts.SymbolFlags.Class ||
@@ -339,6 +353,15 @@ export function scanSource(options: ScanOptions): EvidenceInventory {
             confidence: "high",
           });
         }
+      } else if (!discoveredClasses.some((c) => c.name === name)) {
+        unresolvedSymbols.push({
+          symbolName: name,
+          sourceLocation,
+          reason:
+            "Exported symbol could not be resolved to a local callable signature",
+          suggestedAction:
+            "Provide reviewed schema in sdk-anything.overrides.json",
+        });
       }
     }
   }

@@ -10,6 +10,7 @@ import type {
 import { serializeCanonicalManifest } from "../../manifest/serializer.js";
 import { invokeOperation } from "../../runtime/invoker.js";
 import type { InvocationContext } from "../../runtime/types.js";
+import { getStandaloneRuntimeSource } from "../runtime-template.js";
 
 export function toMcpToolName(operationId: string): string {
   return operationId
@@ -135,12 +136,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import * as targetSdk from '${sdkPkgName}';
 import manifestData from './capability-manifest.json' with { type: 'json' };
+import { invokeOperation } from './runtime.js';
 
 const manifest = manifestData as any;
 
 // Helper to sanitize tool names
 function toMcpToolName(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+  return id.replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
 }
 
 // Available enabled operations
@@ -195,28 +197,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 
-  try {
-    const input = request.params.arguments ?? {};
-    // Invocation through target SDK
-    let result: any;
-    const targetCallable = (targetSdk as any)[op.name] ?? (targetSdk as any).default?.[op.name];
-    if (typeof targetCallable === 'function') {
-      result = await targetCallable(input);
-    } else {
-      result = { executed: true, tool: op.name, input };
-    }
+  const input = request.params.arguments ?? {};
+  const result = await invokeOperation(manifest, op.id, input, {
+    sdkModule: targetSdk,
+    env: process.env,
+  });
 
-    const text = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+  if (result.success) {
+    const text = typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2);
     return {
       content: [{ type: 'text', text }],
     };
-  } catch (err: any) {
+  } else {
     return {
       isError: true,
       content: [
         {
           type: 'text',
-          text: \`SDK_ERROR: \${err?.message || String(err)}\`,
+          text: \`\${result.error?.code ?? 'SDK_ERROR'}: \${result.error?.message ?? 'Operation failed'}\`,
         },
       ],
     };
@@ -277,7 +275,7 @@ main().catch(err => {
         rootDir: "./",
         resolveJsonModule: true,
       },
-      include: ["server.ts"],
+      include: ["server.ts", "runtime.ts"],
     },
     null,
     2,
@@ -285,6 +283,7 @@ main().catch(err => {
 
   return {
     "server.ts": serverTs,
+    "runtime.ts": getStandaloneRuntimeSource(),
     "package.json": packageJson,
     "tsconfig.json": tsconfigJson,
     "capability-manifest.json": canonicalManifestJson,

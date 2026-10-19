@@ -74,6 +74,7 @@ describe("MCP Server Generator", () => {
     const files = generateMcpProject(sampleManifest);
 
     expect(files).toHaveProperty("server.ts");
+    expect(files).toHaveProperty("runtime.ts");
     expect(files).toHaveProperty("package.json");
     expect(files).toHaveProperty("tsconfig.json");
     expect(files).toHaveProperty("capability-manifest.json");

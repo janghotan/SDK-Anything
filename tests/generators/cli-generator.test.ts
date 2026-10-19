@@ -72,6 +72,7 @@ describe("CLI Generator and MCP/CLI Parity", () => {
     const files = generateCliProject(sampleManifest);
 
     expect(files).toHaveProperty("cli.ts");
+    expect(files).toHaveProperty("runtime.ts");
     expect(files).toHaveProperty("package.json");
     expect(files).toHaveProperty("tsconfig.json");
     expect(files).toHaveProperty("capability-manifest.json");
@@ -81,6 +82,29 @@ describe("CLI Generator and MCP/CLI Parity", () => {
     expect(cliCode).toContain("math-add");
     expect(cliCode).not.toContain("records-delete"); // disabled by default
     expect(cliCode).toContain("--json");
+  });
+
+  it("supports introspection commands info and list", async () => {
+    let stdout = "";
+    const cli = createGeneratedCli(sampleManifest, {
+      sdkModule: mockSdk,
+      writeOut: (str: string) => {
+        stdout += str;
+      },
+      writeErr: () => {},
+      exitOverride: true,
+    });
+
+    await cli.parseAsync(["node", "cli", "info", "--json"]);
+    const info = JSON.parse(stdout);
+    expect(info.package).toBe("@turf/turf");
+    expect(info.operationsCount).toBe(2);
+
+    stdout = "";
+    await cli.parseAsync(["node", "cli", "list", "--json"]);
+    const list = JSON.parse(stdout);
+    expect(Array.isArray(list)).toBe(true);
+    expect(list.some((o: any) => o.id === "math.add")).toBe(true);
   });
 
   it("executes generated CLI command with valid input and outputs JSON", async () => {
