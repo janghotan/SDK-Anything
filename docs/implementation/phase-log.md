@@ -14,6 +14,24 @@
 
 ---
 
+## Phase 09 — Client SDK Fixture, Sandbox, and Security Hardening
+
+- **Date**: 2026-10-18
+- **Goal**: Prove client-style SDK behavior and enforce safe inspection and opt-in test execution modes.
+- **Status**: completed
+- **Commit**: `45081ee` (feat/sdk-anything-v0.1)
+- **Push status**: COMMITTED LOCALLY — PUSH BLOCKED (no configured remote)
+- **Key Actions**:
+  - Implemented synthetic client-SDK fixture in `tests/fixtures/client-sdk/` with `TestApiClient` and `createTestApiClient`.
+  - Implemented loopback test HTTP server in `tests/fixtures/client-sdk/test-server.ts` supporting health check, Bearer token auth, paginated `/v1/items`, create item, delete item, and HTTP error simulation.
+  - Implemented sandbox detection and runner in `src/sandbox/runner.ts`:
+    - Evaluated container runtimes (`docker`/`podman`).
+    - Enforced fail-closed security: `--sandbox` throws an explicit error when no container runtime is available and refuses silent fallback to `--trusted-local`.
+    - Implemented `--trusted-local` running in a sanitized child process, explicitly marking `isSecuritySandbox: false`.
+  - Integrated `test` command into CLI with `--sandbox`, `--trusted-local`, and `--json`.
+  - Verified 58/58 tests pass across all test suites; typecheck, lint, and build all pass cleanly.
+
+
 ## Phase 08 — AI Proposal Layer and Generator Skill
 
 - **Date**: 2026-10-18
