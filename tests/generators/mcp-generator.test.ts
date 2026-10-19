@@ -136,4 +136,66 @@ describe("MCP Server Generator", () => {
 
     await Promise.all([client.close(), server.close()]);
   });
+
+  it("disambiguates colliding MCP tool names and embeds server instructions", async () => {
+    const collidingManifest: CapabilityManifest = {
+      schemaVersion: "sdk-anything/manifest/v1",
+      generatorVersion: "0.1.0",
+      source: {
+        kind: "local",
+        package: "colliding-tools-sdk",
+        version: "1.0.0",
+        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      },
+      operations: [
+        {
+          id: "billing.charge",
+          name: "charge",
+          summary: "Charge billing",
+          description: "Charge billing account",
+          invoke: { kind: "top-level-function", functionName: "charge" },
+          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          effect: "pure",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+        {
+          id: "shipping.charge",
+          name: "charge",
+          summary: "Charge shipping",
+          description: "Charge shipping fee",
+          invoke: { kind: "top-level-function", functionName: "charge" },
+          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          effect: "pure",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+      ],
+      unresolved: [],
+    };
+
+    const server = createMcpServer(collidingManifest, { sdkModule: mockSdk });
+    const client = new Client(
+      { name: "test-mcp-collision-client", version: "0.1.0" },
+      { capabilities: {} },
+    );
+
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+
+    const toolsResult = await client.listTools();
+    const toolNames = toolsResult.tools.map((t) => t.name);
+    // Must contain 2 distinct tool names
+    expect(toolNames.length).toBe(2);
+    expect(new Set(toolNames).size).toBe(2);
+
+    await Promise.all([client.close(), server.close()]);
+  });
 });

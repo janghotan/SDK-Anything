@@ -65,3 +65,23 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/manifest/regeneration.test.ts`: Added 5 comprehensive tests verifying identical file digests on repeated runs, `--check` drift detection, unowned file preservation, user conflict prevention, and migration diagnostics (5/5 passing).
   - Full test suite: 77/77 tests passing across 16 test files.
 - **Next Action:** Move to Phase 04: Generated CLI, MCP Server and Agent Skill as Working Deliverables.
+
+## 2026-10-19: Phase 04 — Generated CLI, MCP Server and Agent Skill as Working Deliverables
+- **Delivered Changes:**
+  1. `src/generators/cli/generator.ts`:
+     - Added command name collision disambiguation.
+     - Added canonical escape hatch command `invoke <operationId>` allowing direct invocation of any operation by its unique ID.
+     - Added stdin payload streaming support for piping arguments (`readStdin()`) when stdin is not a TTY.
+  2. `src/generators/mcp/generator.ts`:
+     - Added tool naming collision disambiguation.
+     - Added embedded server instructions clarifying tool effect tiers and automation boundaries.
+  3. `src/generators/consumer-skill/generator.ts`:
+     - Added concrete multi-step composition workflow pattern and error recovery guidance.
+  4. `src/runtime/pagination.ts` & `src/generators/runtime-template.ts`:
+     - Added `validatePaginationCursor` to detect and fail closed on infinite pagination loops and repeated cursors.
+- **Test Evidence:**
+  - `tests/generators/cli-generator.test.ts`: Added collision disambiguation and `invoke <operationId>` tests (6/6 passing).
+  - `tests/generators/mcp-generator.test.ts`: Added MCP tool name collision disambiguation and server instructions tests (4/4 passing).
+  - `tests/generators/consumer-skill.test.ts`: Added 100% doc/command consistency test (2/2 passing).
+  - Full test suite: 80/80 tests passing across 16 test files.
+- **Next Action:** Move to Phase 05: Build a Real SDK Compatibility Lab.

@@ -72,7 +72,7 @@ export function generateConsumerSkill(manifest: CapabilityManifest): string {
   lines.push("## Atomic Operation Composition");
   lines.push("");
   lines.push(
-    "In SDK-Anything v0.1, all generated operations are atomic. To achieve composite goals:",
+    "All generated operations are atomic. To achieve composite goals:",
   );
   lines.push(
     "1. **Discover:** Check the tools table above for the relevant atomic capabilities.",
@@ -87,8 +87,16 @@ export function generateConsumerSkill(manifest: CapabilityManifest): string {
     "4. **Chain:** Pass the required output fields into subsequent atomic tools.",
   );
   lines.push(
-    "5. **Handle Errors:** If an operation returns an error code (such as `NOT_FOUND` or `RATE_LIMITED`), apply appropriate fallback or retry strategies.",
+    "5. **Handle Errors:** If an operation returns an error code (such as `NOT_FOUND`, `AUTH_REQUIRED`, or `POLICY_DENIED`), do not fabricate credentials or force destructive execution. Check error envelope and suggested action.",
   );
+  lines.push("");
+  lines.push("### Concrete Multi-Step Agent Pattern");
+  lines.push("```markdown");
+  lines.push("1. Query data using a safe read tool: inspect return structure.");
+  lines.push("2. Extract verified identifiers and values.");
+  lines.push("3. If a destructive step is necessary, ask for user confirmation before passing --allow-destructive.");
+  lines.push("4. Execute final step and confirm success in response.");
+  lines.push("```");
   lines.push("");
 
   // Disabled and Destructive Operations

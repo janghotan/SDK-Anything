@@ -160,4 +160,78 @@ describe("CLI Generator and MCP/CLI Parity", () => {
 
     expect(stderr).toContain("INVALID_INPUT");
   });
+
+  it("disambiguates colliding command names deterministically and provides invoke escape hatch", async () => {
+    const collidingManifest: CapabilityManifest = {
+      schemaVersion: "sdk-anything/manifest/v1",
+      generatorVersion: "0.1.0",
+      source: {
+        kind: "local",
+        package: "colliding-sdk",
+        version: "1.0.0",
+        digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      },
+      operations: [
+        {
+          id: "billing.charge",
+          name: "charge",
+          summary: "Charge billing",
+          description: "Charge billing account",
+          invoke: { kind: "top-level-function", functionName: "charge" },
+          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          effect: "pure",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+        {
+          id: "shipping.charge",
+          name: "charge",
+          summary: "Charge shipping",
+          description: "Charge shipping fee",
+          invoke: { kind: "top-level-function", functionName: "charge" },
+          inputSchema: { type: "object", properties: { amount: { type: "number" } } },
+          effect: "pure",
+          enabledByDefault: true,
+          result: { mode: "direct" },
+          provenance: { sourceFile: "index.ts", confidence: "high" },
+        },
+      ],
+      unresolved: [],
+    };
+
+    let stdout = "";
+    const mockModule = {
+      charge: vi.fn((amount: any) => ({ charged: typeof amount === "object" ? amount.amount : amount })),
+    };
+
+    const cli = createGeneratedCli(collidingManifest, {
+      sdkModule: mockModule,
+      writeOut: (str: string) => {
+        stdout += str;
+      },
+      writeErr: () => {},
+      exitOverride: true,
+    });
+
+    // Test list command to verify both operations exist with disambiguated command names
+    await cli.parseAsync(["node", "cli", "list", "--json"]);
+    const list = JSON.parse(stdout);
+    expect(list.length).toBe(2);
+
+    // Test canonical escape hatch invoke <operationId>
+    stdout = "";
+    await cli.parseAsync([
+      "node",
+      "cli",
+      "invoke",
+      "shipping.charge",
+      "--input",
+      JSON.stringify({ amount: 15 }),
+      "--json",
+    ]);
+
+    const result = JSON.parse(stdout);
+    expect(result).toEqual({ charged: 15 });
+  });
 });

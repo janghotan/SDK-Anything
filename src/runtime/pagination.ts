@@ -73,3 +73,16 @@ export function boundResult(
     truncated,
   };
 }
+
+export function validatePaginationCursor(
+  cursor: string | undefined,
+  seenCursors: Set<string>,
+): void {
+  if (!cursor) return;
+  if (seenCursors.has(cursor)) {
+    throw new Error(
+      `Infinite pagination loop detected: cursor '${cursor}' was already seen`,
+    );
+  }
+  seenCursors.add(cursor);
+}

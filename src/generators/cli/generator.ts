@@ -99,9 +99,38 @@ export function createGeneratedCli(
 
   // Register commands for enabled operations
   const enabledOps = manifest.operations.filter((op) => op.enabledByDefault);
+  const seenCmdNames = new Set<string>(["info", "list", "invoke"]);
+
+  // Helper for stdin reading
+  async function readStdin(): Promise<string> {
+    if (typeof process === "undefined" || !process.stdin || process.stdin.isTTY) {
+      return "";
+    }
+    return new Promise((resolve) => {
+      let data = "";
+      process.stdin.setEncoding("utf8");
+      process.stdin.on("data", (chunk) => {
+        data += chunk;
+      });
+      process.stdin.on("end", () => {
+        resolve(data.trim());
+      });
+      process.stdin.on("error", () => {
+        resolve("");
+      });
+    });
+  }
 
   for (const op of enabledOps) {
-    const cmdName = toCliCommandName(op.id);
+    let cmdName = toCliCommandName(op.id);
+    if (seenCmdNames.has(cmdName)) {
+      cmdName = op.id
+        .replace(/[^a-zA-Z0-9_-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+    seenCmdNames.add(cmdName);
+
     program
       .command(cmdName)
       .description(`${op.summary} [Effect: ${op.effect}]`)
@@ -121,13 +150,17 @@ export function createGeneratedCli(
           allowDestructive?: boolean;
         }) => {
           try {
+            let rawInput = cmdOpts.input;
+            if (!rawInput) {
+              rawInput = await readStdin();
+            }
             let inputData: any = {};
-            if (cmdOpts.input) {
+            if (rawInput) {
               try {
-                inputData = JSON.parse(cmdOpts.input);
+                inputData = JSON.parse(rawInput);
               } catch (err: any) {
                 throw new Error(
-                  `INVALID_INPUT: Failed to parse --input JSON: ${err.message}`,
+                  `INVALID_INPUT: Failed to parse input JSON: ${err.message}`,
                 );
               }
             }
@@ -183,6 +216,99 @@ export function createGeneratedCli(
       );
   }
 
+  // Canonical escape hatch command: invoke <operationId>
+  program
+    .command("invoke <operationId>")
+    .description("Invoke any operation by its unique canonical ID")
+    .option(
+      "--input <json>",
+      "JSON string payload representing input arguments",
+    )
+    .option(
+      "--allow-destructive",
+      "Explicitly authorize execution of destructive operations in non-interactive environments",
+    )
+    .option("--json", "Output result in machine-readable JSON format")
+    .action(
+      async (
+        operationId: string,
+        cmdOpts: {
+          input?: string;
+          json?: boolean;
+          allowDestructive?: boolean;
+        },
+      ) => {
+        try {
+          let rawInput = cmdOpts.input;
+          if (!rawInput) {
+            rawInput = await readStdin();
+          }
+          let inputData: any = {};
+          if (rawInput) {
+            try {
+              inputData = JSON.parse(rawInput);
+            } catch (err: any) {
+              throw new Error(
+                `INVALID_INPUT: Failed to parse input JSON: ${err.message}`,
+              );
+            }
+          }
+
+          const result = await invokeOperation(
+            manifest,
+            operationId,
+            inputData,
+            {
+              ...context,
+              allowDestructive:
+                cmdOpts.allowDestructive ?? context.allowDestructive,
+            },
+          );
+
+          if (result.success) {
+            const outText = cmdOpts.json
+              ? JSON.stringify(result.data, null, 2)
+              : typeof result.data === "string"
+                ? result.data
+                : JSON.stringify(result.data, null, 2);
+
+            if (context.writeOut) context.writeOut(outText + "\n");
+            else console.log(outText);
+          } else {
+            const errEnvelope = {
+              error: {
+                code: result.error?.code ?? "RUNTIME_ERROR",
+                message: result.error?.message ?? "Operation failed",
+                suggestedAction: result.error?.suggestedAction,
+              },
+            };
+            const errText = cmdOpts.json
+              ? JSON.stringify(errEnvelope, null, 2)
+              : `Error [${errEnvelope.error.code}]: ${errEnvelope.error.message}`;
+
+            if (context.writeErr) context.writeErr(errText + "\n");
+            else console.error(errText);
+
+            if (context.exitOverride) {
+              throw new Error(errText);
+            } else {
+              process.exit(1);
+            }
+          }
+        } catch (err: unknown) {
+          const errMsg = `Error: ${err instanceof Error ? err.message : String(err)}`;
+          if (context.writeErr) context.writeErr(errMsg + "\n");
+          else console.error(errMsg);
+
+          if (context.exitOverride) {
+            throw err;
+          } else {
+            process.exit(1);
+          }
+        }
+      },
+    );
+
   return program;
 }
 
@@ -203,6 +329,27 @@ export function generateCliProject(
     .replace(/[^a-zA-Z0-9_-]/g, "-")
     .toLowerCase();
 
+  const seenTemplateCmdNames = new Set<string>(["info", "list", "invoke"]);
+  const mappedTemplateOps = enabledOps.map((op) => {
+    let cmdName = toCliCommandName(op.id);
+    if (seenTemplateCmdNames.has(cmdName)) {
+      cmdName = op.id
+        .replace(/[^a-zA-Z0-9_-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+    seenTemplateCmdNames.add(cmdName);
+    return {
+      id: op.id,
+      cmdName,
+      name: op.name,
+      summary: op.summary,
+      description: op.description,
+      effect: op.effect,
+      inputSchema: op.inputSchema,
+    };
+  });
+
   const cliTs = `// Generated by SDK-Anything v${manifest.generatorVersion}
 // Manifest schema: ${manifest.schemaVersion}
 // Target: ${manifest.source.package}@${manifest.source.version}
@@ -215,23 +362,26 @@ import { invokeOperation } from './runtime.js';
 
 const manifest = manifestData as any;
 
-function toCliCommandName(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+async function readStdin(): Promise<string> {
+  if (typeof process === 'undefined' || !process.stdin || process.stdin.isTTY) {
+    return '';
+  }
+  return new Promise((resolve) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => {
+      data += chunk;
+    });
+    process.stdin.on('end', () => {
+      resolve(data.trim());
+    });
+    process.stdin.on('error', () => {
+      resolve('');
+    });
+  });
 }
 
-const enabledOperations = ${JSON.stringify(
-    enabledOps.map((op) => ({
-      id: op.id,
-      cmdName: toCliCommandName(op.id),
-      name: op.name,
-      summary: op.summary,
-      description: op.description,
-      effect: op.effect,
-      inputSchema: op.inputSchema,
-    })),
-    null,
-    2,
-  )};
+const enabledOperations = ${JSON.stringify(mappedTemplateOps, null, 2)};
 
 const program = new Command();
 program
@@ -289,9 +439,18 @@ for (const op of enabledOperations) {
     .option('--json', 'Output result in JSON format')
     .action(async (cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
       try {
+        let rawInput = cmdOpts.input;
+        if (!rawInput) {
+          rawInput = await readStdin();
+        }
         let input: any = {};
-        if (cmdOpts.input) {
-          input = JSON.parse(cmdOpts.input);
+        if (rawInput) {
+          try {
+            input = JSON.parse(rawInput);
+          } catch (err: any) {
+            console.error(\`INVALID_INPUT: Failed to parse input JSON: \${err.message}\`);
+            process.exit(1);
+          }
         }
 
         const result = await invokeOperation(manifest, op.id, input, {
@@ -317,6 +476,52 @@ for (const op of enabledOperations) {
       }
     });
 }
+
+// Canonical escape hatch command: invoke <operationId>
+program
+  .command('invoke <operationId>')
+  .description('Direct invocation of any operation by its unique canonical ID')
+  .option('--input <json>', 'JSON string payload representing input arguments')
+  .option('--allow-destructive', 'Explicitly authorize execution of destructive operations in non-interactive environments')
+  .option('--json', 'Output result in JSON format')
+  .action(async (operationId: string, cmdOpts: { input?: string; json?: boolean; allowDestructive?: boolean }) => {
+    try {
+      let rawInput = cmdOpts.input;
+      if (!rawInput) {
+        rawInput = await readStdin();
+      }
+      let input: any = {};
+      if (rawInput) {
+        try {
+          input = JSON.parse(rawInput);
+        } catch (err: any) {
+          console.error(\`INVALID_INPUT: Failed to parse input JSON: \${err.message}\`);
+          process.exit(1);
+        }
+      }
+
+      const result = await invokeOperation(manifest, operationId, input, {
+        sdkModule: targetSdk,
+        env: process.env,
+        interactive: process.stdout.isTTY,
+        allowDestructive: !!cmdOpts.allowDestructive,
+      });
+
+      if (result.success) {
+        if (cmdOpts.json) {
+          console.log(JSON.stringify(result.data, null, 2));
+        } else {
+          console.log(typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2));
+        }
+      } else {
+        console.error(\`Error [\${result.error?.code}]: \${result.error?.message}\`);
+        process.exit(1);
+      }
+    } catch (err: any) {
+      console.error(\`Error: \${err?.message || String(err)}\`);
+      process.exit(1);
+    }
+  });
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   console.error('Fatal CLI error:', err);

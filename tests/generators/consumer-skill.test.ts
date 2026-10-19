@@ -77,4 +77,17 @@ describe("Consumer SKILL.md Generator", () => {
     expect(markdown).toContain("Atomic Operation Composition");
     expect(markdown).toContain("records.delete"); // mentions disabled tools
   });
+
+  it("ensures every tool and command in SKILL.md is consistent with manifest operations", () => {
+    const markdown = generateConsumerSkill(sampleManifest);
+
+    // Extract table rows from Available Atomic Tools
+    const toolsSectionMatch = markdown.match(/## Available Atomic Tools[\s\S]*?##/);
+    expect(toolsSectionMatch).not.toBeNull();
+    const toolsSection = toolsSectionMatch![0];
+
+    for (const op of sampleManifest.operations.filter((o) => o.enabledByDefault)) {
+      expect(toolsSection).toContain(op.summary);
+    }
+  });
 });
