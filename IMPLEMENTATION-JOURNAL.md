@@ -182,5 +182,6 @@ Append one entry per meaningful phase or implementation slice. Include date/time
 - **Trigger:** Pushing `feat/product-completion` started remote CI. The first run failed only at `tests/security/adversarial.test.ts` — the "fails closed without container engine" test assumed no Docker, but GitHub runners provide Docker, so sandbox mode legitimately executed in a container.
 - **Change:** `tests/security/adversarial.test.ts` now detects the container engine and skips the missing-engine assertion when one is present. No container execution is required by the suite, keeping CI deterministic and independent of image pulls.
 - **Verification:** Local focused run `pnpm vitest run tests/security/adversarial.test.ts` passes; full suite remains PASS across Node 20/22/24; `format`, `typecheck`, `lint` (0 errors, 119 warnings), `build`, `npm pack --dry-run` all PASS.
-- **Limitation:** Subsequent remote runs stayed queued because GitHub Actions reported `degraded_performance` (githubstatus.com). No green remote run is claimed; `STATE.md` records `BLOCKED`.
-- **Next Action:** Re-run remote CI when GitHub Actions recovers and record the real conclusion. Do not merge, tag, publish, or release.
+- **Remote result:** GitHub Actions briefly reported `degraded_performance`, which queued the backlog. After recovery, runs for `4d29f4b` (sandbox test fix) and `3dc3f29` completed successfully, confirming the fix remotely on supported Node versions.
+- **CI trigger cleanup:** Removed the duplicate `push: feat/*` trigger so feature-branch pushes are verified once via their pull request (`.github/workflows/ci.yml`).
+- **Next Action:** Confirm the tip run for `6efc876` (trigger change only) succeeds. Do not merge, tag, publish, or release.

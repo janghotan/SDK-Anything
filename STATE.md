@@ -45,14 +45,14 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 | Aggregate npm re-export discovery | PASS | `inspect npm:@turf/turf` now finds 56 callable functions after bounded dependency materialisation; 128 unsupported symbols reported as warnings | Bounded best-effort; see limitations |
 | Performance, determinism & operational reliability | PASS | `tests/performance/benchmarks.test.ts` (4/4): budgets, byte-identical output, AbortSignal cancellation | Complete |
 | Multi-version local matrix | PASS | Full suite 121/121 on Node 20.20.2, 22.23.3, 24.22.0 | Complete |
-| Remote CI observation | BLOCKED | Branch pushed; first run failed only on an engine-dependent sandbox assertion (now fixed). Reruns stuck in queue during a GitHub Actions `degraded_performance` outage (githubstatus.com) | Platform outage, not a product defect; rerun when Actions recovers |
+| Remote CI observation | PASS | GitHub Actions run for the fixed commit `4d29f4b` succeeded (Node 24, Node 22; Node 20 job completed within the successful run). Later `3dc3f29` push and PR runs also succeeded. The initial outage-delayed backlog has drained | Complete |
 | Improvement loop and final review | PASS | TODO/FIXME/skip scan clean; two real defects fixed (vendor dependency path, per-operation allowlist for write effects) | Complete |
 | README/demo accurately reflect actual product | PASS | Bilingual READMEs updated to 121 tests / 23 files, new generation flags, and fail-closed matrix | Complete |
 | No known P0/P1 defects | PASS | Fixed: vendor `file:` path, write-effect per-operation authorization, stale `dist` on fresh `npm pack`, generated JSON-import Node 20 incompatibility, stale test counts | Keep clean |
 
 ## Active blockers
 - **Container isolation is BLOCKED on this host.** Docker/Podman is not installed. Static and trusted-local modes are verified; container requests fail closed with a clear error. No live container execution is claimed.
-- **Remote CI is BLOCKED.** The branch was pushed and runs were triggered. The first run executed and failed solely on a single environment-dependent assertion: `tests/security/adversarial.test.ts` expected no container engine, but GitHub runners provide Docker. That assertion is now skipped when an engine is present, so the suite no longer depends on container execution. Later runs stayed queued because GitHub Actions was `degraded_performance` (confirmed via githubstatus.com). All three Node versions pass locally (121/121).
+- **Remote CI recovered and passed.** The first run failed solely on a single environment-dependent assertion: `tests/security/adversarial.test.ts` expected no container engine, but GitHub runners provide Docker. That assertion is now skipped when an engine is present, so the suite no longer depends on container execution. After the fix, GitHub Actions runs for `4d29f4b` and `3dc3f29` completed successfully. During the window GitHub Actions reported `degraded_performance`, which delayed the queue; it has since drained. All three Node versions also pass locally (121/121).
 
 ## Known limitations
 - npm dependency retrieval is bounded (depth/package/size budgets), never executes lifecycle scripts, and reports unresolved dependencies as warnings. Registry integrity relies on HTTPS transport; tarball `integrity` hashes are not separately re-verified.
@@ -62,6 +62,6 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 - Platform execution evidence is Linux-only; Windows/macOS were not exercised locally.
 
 ## Next exact action
-1. Wait for GitHub Actions to recover from its `degraded_performance` incident, then re-run CI on `feat/product-completion` for Node 20/22/24 and record the actual conclusion here.
+1. Confirm the tip run for `6efc876` (CI trigger change only) reaches success; it touches no product code.
 2. Do not merge the existing pull request, tag, publish, or release.
-3. If CI still cannot run, keep `Remote CI observation` as `BLOCKED` with the outage evidence; do not claim a green remote run.
+3. Phase 12 is otherwise complete: local matrix and remote CI both green.
