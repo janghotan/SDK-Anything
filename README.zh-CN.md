@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="#-快速上手"><img src="https://img.shields.io/badge/快速上手-5_分钟-blue?style=for-the-badge" alt="快速上手"></a>
-  <a href="#-测试结果"><img src="https://img.shields.io/badge/测试-59_项通过_(100%25)-brightgreen?style=for-the-badge" alt="测试"></a>
+  <a href="#-测试结果"><img src="https://img.shields.io/badge/测试-95_项通过_(100%25)-brightgreen?style=for-the-badge" alt="测试"></a>
   <a href="#-为什么需要-sdk-anything"><img src="https://img.shields.io/badge/架构-Agent--Native-ff69b4?style=for-the-badge" alt="Agent-Native"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-Apache_2.0-yellow?style=for-the-badge" alt="许可证"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Docs-English-blue?style=for-the-badge" alt="English"></a>
@@ -162,11 +162,14 @@ sdk-anything generate npm:@turf/turf \
   --output ./generated/turf-tools
 ```
 
-### 5. 静态验证与测试
+### 5. 静态验证、测试与健康诊断 (Doctor)
 
 ```bash
 # 静态校验清单格式与命令一致性（无需任何容器）
 sdk-anything validate ./generated/turf-tools
+
+# 验证生成包的完整性、校验和及运行环境就绪度
+sdk-anything doctor ./generated/turf-tools
 
 # 本地受信代码：在净化的本地子进程中快速测试
 sdk-anything test ./generated/turf-tools --trusted-local
@@ -175,17 +178,38 @@ sdk-anything test ./generated/turf-tools --trusted-local
 sdk-anything test ./generated/turf-tools --sandbox
 ```
 
+### 6. 安全重新生成与漂移检测
+
+```bash
+# 检查生成产物是否与 SDK 源代码发生漂移（只读，不修改磁盘）
+sdk-anything generate npm:@turf/turf --output ./generated/turf-tools --check
+
+# 安全重新生成：自动保护已被用户手工编辑的代码文件，防止意外覆盖
+sdk-anything generate npm:@turf/turf --output ./generated/turf-tools
+
+# 如需强制覆盖用户手工修改：
+sdk-anything generate npm:@turf/turf --output ./generated/turf-tools --force
+```
+
 ---
 
 ## 🎮 交互式演示
 
-### 演示 A：通过生成的 CLI 调用并输出结构化 JSON
+### 演示 A：通过生成的 CLI 调用并输出结构化 JSON 或管道输入
 
 ```bash
 # 计算两个地理坐标点之间的测地线距离
 $ sdk-cli-turf distance \
     --input '{"from":[-75.343, 39.984],"to":[-75.534, 39.123],"options":{"units":"miles"}}' \
     --json
+60.37
+
+# 支持通过标准输入 stdin 管道传递参数
+$ echo '{"from":[-75.343, 39.984],"to":[-75.534, 39.123],"options":{"units":"miles"}}' | sdk-cli-turf distance --json
+60.37
+
+# 规范逃生舱口：通过全局唯一规范 ID 直接调用任何底层操作
+$ sdk-cli-turf invoke distance --input '{"from":[-75.343, 39.984],"to":[-75.534, 39.123]}' --json
 60.37
 
 # 尝试调用未授权的写操作或破坏性操作会在执行前被立即拦截
@@ -201,13 +225,13 @@ $ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 
 ### 演示 B：在 Claude Desktop 或 Cursor 中调用 MCP 工具
 
-在 `claude_desktop_config.json` 中配置：
+每个生成的 MCP 项目均自带预生成的 `claude_desktop_config.json`：
 ```json
 {
   "mcpServers": {
     "turf-tools": {
       "command": "node",
-      "args": ["/absolute/path/to/generated/turf-tools/mcp/dist/server.js"]
+      "args": ["./dist/server.js"]
     }
   }
 }
@@ -240,22 +264,28 @@ $ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 
 ## 📊 测试结果
 
-每个子系统在发布前均通过严格的多层级自动化测试：
+每个子系统在发布前均通过覆盖 19 个套件的严格自动化测试：
 
 | 测试层级 | 验证目标 | 测试项 | 状态 |
 |---|---|:---:|:---:|
 | **CLI 核心入口** | 帮助文档、版本信息、退出码、分层配置解析 | 8 | ✅ 通过 |
 | **安全源解析器** | npm 下载、本地目录、GitHub 归档、路径穿越 (`../`)、软链接逃逸 | 13 | ✅ 通过 |
-| **TypeScript 静态分析** | TS 编译器 AST、类型降级为 JSON Schema 2020-12、循环引用侦测 | 5 | ✅ 通过 |
-| **能力清单规范** | v1 Schema 校验、Ajv 语义检查、规范化字节稳定序列化 | 8 | ✅ 通过 |
+| **TypeScript 静态分析** | TS 编译器 AST、类型降级、枚举、索引签名、实用类型 | 6 | ✅ 通过 |
+| **能力清单规范** | v1 Schema 校验、Ajv 语义检查、规范化字节稳定序列化、人工覆写 | 8 | ✅ 通过 |
 | **通用调用运行时** | 执行流水线、副作用安全拦截、敏感 Token 脱敏、请求超时控制 | 7 | ✅ 通过 |
-| **MCP 代码生成器** | 官方 `@modelcontextprotocol/sdk` 集成、Stdio 与内存传输通道 | 3 | ✅ 通过 |
-| **CLI 命令行生成器** | Commander.js 命令集、输入校验、`--json` 机器可读输出 | 4 | ✅ 通过 |
-| **代理技能生成器** | 生成 `SKILL.md` 格式、参数依赖、原子工具编排指导 | 1 | ✅ 通过 |
-| **AI 提案辅助层** | OpenAI 兼容接口 Mock、提示词注入隔离、隐私告知弹窗、优雅降级 | 5 | ✅ 通过 |
-| **安全与执行沙箱** | 有状态客户端生命周期、回环测试服务、故障闭锁沙箱检测 | 4 | ✅ 通过 |
-| **Turf 黄金端到端测试** | 完整闭环：检查 → 生成 → MCP 工具调用与 CLI 命令执行 | 1 | ✅ 通过 |
-| **总计** | **11 个自动化测试套件 100% 通过（0 项类型或 Lint 错误）** | **59** | **✅ 全部绿灯** |
+| **MCP 代码生成器** | 官方 `@modelcontextprotocol/sdk`、系统指引嵌入、重名消歧 | 4 | ✅ 通过 |
+| **CLI 命令行生成器** | Commander.js 命令集、输入校验、stdin 流式管道、`invoke` 逃生舱 | 6 | ✅ 通过 |
+| **代理技能生成器** | 生成 `SKILL.md` 格式、参数依赖、命令一致性、原子工具编排指导 | 2 | ✅ 通过 |
+| **AI 提案辅助层** | OpenAI 兼容接口 Mock、提示词注入隔离、隐私告知弹窗、优雅降级 | 6 | ✅ 通过 |
+| **安全与执行沙箱** | 有状态客户端生命周期、回环测试服务、故障闭锁沙箱检测 | 5 | ✅ 通过 |
+| **对抗性安全测试** | 压缩包穿越攻击、恶意软链接、解压炸弹、URL 凭据脱敏、循环游标拦截 | 9 | ✅ 通过 |
+| **清单安全重新生成** | 文件校验和清单、`--check` 漂移检测、用户修改保护 | 5 | ✅ 通过 |
+| **SDK 兼容性实验室** | 覆盖 6 种 SDK 架构形态的自动化验证（纯计算、认证客户端、Barrel、复杂类型、工厂、格式错误） | 2 | ✅ 通过 |
+| **核心流程端到端测试** | 完整闭环：检查 → 清单 → 原子生成 → 进程级 CLI 与 MCP 工具执行 | 4 | ✅ 通过 |
+| **安装包分发校验** | Tarball 内容白名单机制、`doctor` 命令、重定向零外部依赖 | 3 | ✅ 通过 |
+| **独立性与黄金用例** | 零仓库反向引用、独立编译运行、Turf 黄金测试 | 3 | ✅ 通过 |
+| **依赖与重导出** | Re-exports 链条、Default 导出、未解析符号提升 | 4 | ✅ 通过 |
+| **总计** | **19 个自动化测试套件 100% 通过（0 项类型或 Lint 错误）** | **95** | **✅ 全部绿灯** |
 
 ---
 

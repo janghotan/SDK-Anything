@@ -16,7 +16,7 @@ Move SDK-Anything from its reported v0.1 release-candidate baseline to an end-to
   - `npm pack --dry-run`: exit 0 (206 files, 452.3 kB unpacked)
 
 ## Current phase
-Phase 09 — CLI UX, Documentation, Demos and Open-Source Adoption.
+Phase 10 — Performance, Determinism and Operational Reliability.
 
 ## Product acceptance dashboard
 Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a precise external reason where appropriate; never quietly count blocked as pass.
@@ -38,14 +38,14 @@ Mark `PASS` only with a path to reproducible evidence. Use `BLOCKED` with a prec
 | Security hardening & adversarial tests | PASS | `tests/security/adversarial.test.ts` (9/9 pass) verifies traversal, symlinks, bombs, URL secret redaction, loop guards | Complete |
 | Clean package install & bundle deliverables | PASS | `tests/distribution/package-install.test.ts` (3/3 pass) verifies tarball contents, `doctor` command, and MCP client config | Complete |
 | Multi-version CI and reproducible release evidence | NOT STARTED | | Phase 11 |
-| README/demo accurately reflect actual product | IN PROGRESS | Phase 09 active: docs update, bilingual README sync, runnable demo scripts | Phase 09 |
+| README/demo accurately reflect actual product | PASS | Synchronized bilingual `README.md` & `README.zh-CN.md` with 95 tests, doctor, `--check`, and `CONTRIBUTING.md` | Complete |
 | No known P0/P1 defects | PASS | Fixed validator schema path, TS strict errors, policy enforcer bug | Keep clean |
 
 ## Active blockers
 None currently blocking local progress. Docker/Podman is not installed on host; static mode and trusted-local mode are verified, and container sandbox requests fail closed with clear error as required.
 
 ## Next exact action
-Proceed to Phase 09 implementation:
-1. Update `README.md` and `README.zh-CN.md` with accurate CLI reference, commands, safety defaults, and runnable quickstart.
-2. Create dedicated demo scripts in `examples/` for pure functions, authenticated clients, and override promotion.
-3. Add contributor documentation (`CONTRIBUTING.md`).
+Proceed to Phase 10 implementation:
+1. Performance, determinism, and operational reliability benchmarks (`tests/performance/benchmarks.test.ts`).
+2. Operation timeouts, resource disposal, cancellation handling, and memory bounds.
+3. Verification of deterministic byte-stable serialization and generation across all fixtures.

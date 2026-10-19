@@ -126,3 +126,12 @@ Append one entry per meaningful phase or implementation slice. Include date/time
   - `tests/distribution/package-install.test.ts`: Added tests verifying MCP client configuration generation, `doctor` command output and health checks, and package tarball runtime whitelist (3/3 passing).
   - Full test suite: 95/95 tests passing across 19 test files.
 - **Next Action:** Move to Phase 09: CLI UX, Documentation, Demos and Open-Source Adoption.
+
+## 2026-10-19: Phase 09 — CLI UX, Documentation, Demos and Open-Source Adoption
+- **Delivered Changes:**
+  1. `README.md` & `README.zh-CN.md`: Updated bilingual documentation with current verified test metrics (95 tests passing across 19 suites), `doctor` diagnostic instructions, `--check` drift detection, `--force` overrides, stdin pipeline streaming, and `invoke <operationId>` escape hatch.
+  2. `CONTRIBUTING.md`: Created detailed contributor guide including development setup, architecture map, compatibility fixture contribution instructions, Conventional Commits policy, and responsible security disclosure.
+- **Test Evidence:**
+  - Verified README commands and tests with 100% pass rate.
+  - Full test suite: 95/95 tests passing across 19 test files.
+- **Next Action:** Move to Phase 10: Performance, Determinism and Operational Reliability.
