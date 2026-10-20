@@ -43,7 +43,7 @@ Traditional SDKs are crafted for human programmers navigating IDE auto-complete.
 | **Memory Exhaustion**<br>Unbounded pagination iterators crash agent processes. | **Strict Bounded Caps**<br>Enforces per-call item limits (default 100) and payload byte ceilings (1 MB). |
 | **Fragile Black-Box Proxies**<br>Magic dynamic wrappers or unsafe `eval` executors. | **Inspectable TypeScript**<br>Generates clean, auditable, standard TypeScript code ready to review and commit. |
 
-[![Before and after: an ordinary TypeScript SDK client becomes typed atomic operations with explicit read, write, or destructive effect labels; diagnostics and overrides recover unresolved types.](assets/diagrams/transformation-en.svg)](assets/diagrams/transformation-en.svg)
+[See the before/after transformation diagram](assets/diagrams/transformation-en.svg) — diagnostics and overrides are the recovery path for unresolved types.
 
 ---
 

@@ -18,8 +18,11 @@ const diagramNames = [
   "ecosystem",
   "features",
 ];
-// The feature map is linked from the asset index, not embedded in the READMEs.
-const readmeDiagramNames = diagramNames.filter((name) => name !== "features");
+// The feature map is linked from the asset index, and the transformation
+// diagram is linked from the READMEs to keep the quick-start path lighter.
+const readmeDiagramNames = diagramNames.filter(
+  (name) => name !== "features" && name !== "transformation",
+);
 const languages = ["en", "zh"];
 const iconNames = [
   "source",
@@ -148,6 +151,9 @@ function checkReadme(path, expectedLang, forbiddenLang) {
   }
   if (!assets.some((ref) => ref.includes(`/banners/sdk-anything-banner-${expectedLang}.svg`))) {
     errors.push(`${path}: missing ${expectedLang} banner`);
+  }
+  if (!source.includes(`assets/diagrams/transformation-${expectedLang}.svg`)) {
+    errors.push(`${path}: missing link to transformation-${expectedLang}.svg`);
   }
 }
 

@@ -43,7 +43,7 @@
 | **内存溢出与死循环**<br>无界的分页迭代器可能拉取数万条数据并导致进程崩溃。 | **强制有界截断**<br>严格限制单次调用的最大条目数（默认 100）和响应体积上限（1 MB）。 |
 | **黑盒与不可审查的代码**<br>动态运行时代理或不安全的 `eval` 执行器。 | **透明可审查的 TypeScript**<br>生成干净、规范、无隐藏黑盒的标准 TypeScript 源代码。 |
 
-[![前后对比图：普通 TypeScript SDK 客户端转化为带强类型输入与 read、write、destructive 副作用标签的原子操作；未解析类型通过诊断与人工覆盖恢复。](assets/diagrams/transformation-zh.svg)](assets/diagrams/transformation-zh.svg)
+[查看改造前后对比图](assets/diagrams/transformation-zh.svg) —— 未解析类型通过诊断与人工覆盖恢复。
 
 ---
 
