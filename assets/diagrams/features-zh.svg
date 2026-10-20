@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" role="img" aria-labelledby="title desc" xml:lang="zh">
+<title id="title">工具面包含哪些能力</title>
+<desc id="desc">功能卡片：静态分析、能力清单、生成的 CLI、生成的 MCP 服务、智能体技能、安全控制、诊断与人工覆盖、校验与 Doctor，以及可选 AI 辅助。</desc>
+<defs><marker id="arrowCyan" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#18B6D9"/></marker><marker id="arrowInk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0B1220"/></marker><marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#BDB6A7"/></marker><marker id="arrowViolet" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7C6CF0"/></marker><marker id="arrowRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B3453F"/></marker></defs>
+<rect width="1200" height="820" fill="#F7F5EF"/>
+<text x="48" y="34" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="700" fill="#087F9C" text-anchor="start" letter-spacing="1.8" opacity="1">能力</text><text x="48" y="66" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="31" font-weight="700" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">工具面包含哪些能力</text><text x="48" y="94" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="15.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">仅列出已实现能力，并明确可选功能或依赖环境的边界。</text><path d="M 48 112 L 1152 112" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<rect x="48" y="150" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="150" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="72" y="176" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="90" y="200" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">01</text>
+<text x="122" y="200" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">静态分析</text>
+<text x="72" y="242" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="72" dy="0">TypeScript AST 与类型检查；不导入、不执行 SD</tspan><tspan x="72" dy="19">K。</tspan></text>
+<rect x="424" y="150" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="424" y="150" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="448" y="176" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="466" y="200" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">02</text>
+<text x="498" y="200" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">能力清单</text>
+<text x="448" y="242" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="448" dy="0">带版本号的 JSON 唯一事实来源，描述强类型操作。</tspan></text>
+<rect x="800" y="150" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="800" y="150" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="824" y="176" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="842" y="200" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">03</text>
+<text x="874" y="200" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">生成的 CLI</text>
+<text x="824" y="242" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="824" dy="0">Commander.js CLI，支持 JSON 输出、stdin 与</tspan><tspan x="824" dy="19">原子命令。</tspan></text>
+<rect x="48" y="348" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="348" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="72" y="374" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="90" y="398" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">04</text>
+<text x="122" y="398" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">生成的 MCP</text>
+<text x="72" y="440" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="72" dy="0">官方 MCP SDK，stdio 传输与强类型工具。</tspan></text>
+<rect x="424" y="348" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="424" y="348" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="448" y="374" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="466" y="398" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">05</text>
+<text x="498" y="398" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">智能体技能</text>
+<text x="448" y="440" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="448" dy="0">由同一份清单与工具面生成 SKILL.md。</tspan></text>
+<rect x="800" y="348" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="800" y="348" width="352" height="4" rx="2" fill="#B3453F"/>
+<rect x="824" y="374" width="36" height="36" rx="10" fill="#F7E3E1" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="842" y="398" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#B3453F" text-anchor="middle" letter-spacing="0" opacity="1">06</text>
+<text x="874" y="398" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">安全控制</text>
+<text x="824" y="440" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="824" dy="0">pure/read 默认允许；write/destructive/unkno</tspan><tspan x="824" dy="19">wn 默认拒绝。</tspan></text>
+<rect x="48" y="546" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="546" width="352" height="4" rx="2" fill="#7C6CF0"/>
+<rect x="72" y="572" width="36" height="36" rx="10" fill="#ECE9FD" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="90" y="596" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#5B4CD6" text-anchor="middle" letter-spacing="0" opacity="1">07</text>
+<text x="122" y="596" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">诊断 + 人工覆盖</text>
+<text x="72" y="638" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="72" dy="0">暴露未解析类型；经复核覆盖后晋升为可用操作。</tspan></text>
+<rect x="424" y="546" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="424" y="546" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="448" y="572" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="466" y="596" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">08</text>
+<text x="498" y="596" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">校验 + Doctor</text>
+<text x="448" y="638" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="448" dy="0">检查模式、适配器一致性、校验和与环境健康。</tspan></text>
+<rect x="800" y="546" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="800" y="546" width="352" height="4" rx="2" fill="#7C6CF0"/>
+<rect x="824" y="572" width="36" height="36" rx="10" fill="#ECE9FD" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="842" y="596" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#5B4CD6" text-anchor="middle" letter-spacing="0" opacity="1">09</text>
+<text x="874" y="596" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">可选 AI</text>
+<text x="824" y="638" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="824" dy="0">兼容 OpenAI 的描述增强；失败时确定性回退。</tspan></text>
+<text x="48" y="786" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">容器沙箱测试需要 Docker 或 Podman，环境缺失时故障闭锁。</text>
+</svg>

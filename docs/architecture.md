@@ -4,43 +4,9 @@
 
 SDK-Anything converts TypeScript/JavaScript SDKs into inspectable, testable, agent-friendly atomic MCP servers, CLIs, and consumer skills from a single versioned capability manifest.
 
-\`\`\`text
-Source Locator (npm:pkg, local dir, github repo)
-       │
-       ▼
-Source Resolver (Safe tarball extraction, tree SHA-256 digest)
-       │
-       ▼
-TypeScript Analyzer (TS Compiler API, AST/TypeChecker with noEmit)
-       │
-       ▼
-Evidence Inventory (Deterministic symbol facts, parameters, types, docs)
-       │
-       ├────────────────────────────────────────┐
-       │ (Optional)                             │ (Deterministic)
-       ▼                                        ▼
-AI Proposal Layer (OpenAI-compatible)    Capability Manifest Builder (v1)
-(descriptions, groups, examples)                │
-       │                                        │
-       └───────────────────┬────────────────────┘
-                           ▼
-                  Human Overrides Engine
-               (sdk-anything.overrides.json)
-                           │
-                           ▼
-              Validated Capability Manifest
-         (schema: sdk-anything/manifest/v1)
-                           │
-             ┌─────────────┴─────────────┐
-             ▼                           ▼
-       MCP Generator                CLI Generator
-      (Stdio Server)             (Commander.js CLI)
-             │                           │
-             └─────────────┬─────────────┘
-                           ▼
-                  Shared Runtime Layer
-     (Input Validation, Policy Checks, Secrets, Caps)
-\`\`\`
+![Architecture diagram: npm, local, or GitHub SDK sources pass through a safe resolver and static analyzer, then optional AI proposals and human overrides produce one capability manifest that feeds an MCP server, a CLI, and an agent skill.](../assets/diagrams/architecture-en.svg)
+
+The capability manifest is the single source of truth. Inspection is static: target SDK code is never imported or executed. Generated MCP servers and CLIs share the runtime policy layer described in [security.md](security.md). The diagram source and regeneration instructions live in [`assets/README.md`](../assets/README.md).
 
 ## 2. Logical Modules
 
