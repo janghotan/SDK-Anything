@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" role="img" aria-labelledby="title desc" xml:lang="en">
+<title id="title">From source to usable tools</title>
+<desc id="desc">Workflow diagram: inspect, review overrides, generate, and validate statically; then optionally test with trusted-local execution or a container sandbox; finally use the generated MCP server, CLI, or agent skill.</desc>
+<defs><marker id="arrowCyan" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#18B6D9"/></marker><marker id="arrowInk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0B1220"/></marker><marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#BDB6A7"/></marker><marker id="arrowViolet" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7C6CF0"/></marker><marker id="arrowRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B3453F"/></marker></defs>
+<rect width="1200" height="780" fill="#F7F5EF"/>
+<text x="48" y="34" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="700" fill="#087F9C" text-anchor="start" letter-spacing="1.8" opacity="1">WORKFLOW</text><text x="48" y="66" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="31" font-weight="700" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">From source to usable tools</text><text x="48" y="94" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="15.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">Static checks come first. Execution tests are explicit about their isolation boundary.</text><path d="M 48 112 L 1152 112" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<rect x="48" y="140" width="1104" height="226" rx="18" fill="#DDF4F9" stroke="#18B6D9" stroke-width="1.5" opacity="0.55"/>
+<text x="72" y="170" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="700" fill="#087F9C" text-anchor="start" letter-spacing="1.6" opacity="1">STATIC VERIFICATION</text>
+<text x="1128" y="170" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#087F9C" text-anchor="end" letter-spacing="0" opacity="1">target code is not executed</text>
+<rect x="72" y="190" width="246" height="128" rx="14" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="92" y="208" width="26" height="26" rx="8" fill="#0B1220" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="105" y="226" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="12.5" font-weight="700" fill="#F7F5EF" text-anchor="middle" letter-spacing="0" opacity="1">1</text>
+<text x="130" y="227" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="16.5" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Inspect</text>
+<text x="92" y="260" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">evidence inventory + diagnostics</text>
+<text x="92" y="286" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">npm · local · GitHub</text>
+<path d="M 320 254 L 340 254" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="342" y="190" width="246" height="128" rx="14" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="362" y="208" width="26" height="26" rx="8" fill="#0B1220" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="375" y="226" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="12.5" font-weight="700" fill="#F7F5EF" text-anchor="middle" letter-spacing="0" opacity="1">2</text>
+<text x="400" y="227" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="16.5" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Review</text>
+<text x="362" y="260" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">client · effects · secret refs</text>
+<text x="362" y="286" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">optional when inference is ambiguous</text>
+<path d="M 590 254 L 610 254" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="612" y="190" width="246" height="128" rx="14" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="632" y="208" width="26" height="26" rx="8" fill="#0B1220" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="645" y="226" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="12.5" font-weight="700" fill="#F7F5EF" text-anchor="middle" letter-spacing="0" opacity="1">3</text>
+<text x="670" y="227" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="16.5" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Generate</text>
+<text x="632" y="260" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">manifest + MCP + CLI + skill</text>
+<text x="632" y="286" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">one manifest, three surfaces</text>
+<path d="M 860 254 L 880 254" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="882" y="190" width="246" height="128" rx="14" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="902" y="208" width="26" height="26" rx="8" fill="#18B6D9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="915" y="226" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="12.5" font-weight="700" fill="#0B1220" text-anchor="middle" letter-spacing="0" opacity="1">4</text>
+<text x="940" y="227" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="16.5" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Validate</text>
+<text x="902" y="260" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">schema · parity · checksums</text>
+<text x="902" y="286" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">no containers required</text>
+<path d="M 600 366 L 600 394" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<text x="72" y="412" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="700" fill="#5B4CD6" text-anchor="start" letter-spacing="1.6" opacity="1">EXECUTION TESTS · OPTIONAL</text>
+<rect x="48" y="428" width="540" height="152" rx="16" fill="#FFFFFF" stroke="#7C6CF0" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="428" width="540" height="4" rx="2" fill="#7C6CF0"/>
+<text x="72" y="462" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Trusted-local execution</text>
+<rect x="72" y="476" width="147" height="26" rx="13" fill="#ECE9FD" stroke="none" stroke-width="1.2" opacity="1"/><text x="145.5" y="493.025" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11.5" font-weight="600" fill="#5B4CD6" text-anchor="middle" letter-spacing="0" opacity="1">test --trusted-local</text>
+<text x="72" y="532" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">sanitized child process</text>
+<text x="72" y="552" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">code you own and trust</text>
+<text x="72" y="572" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="650" fill="#5B4CD6" text-anchor="start" letter-spacing="0" opacity="1">NOT a security sandbox</text>
+<rect x="612" y="428" width="540" height="152" rx="16" fill="#FFFFFF" stroke="#18B6D9" stroke-width="1.5" opacity="1"/>
+<rect x="612" y="428" width="540" height="4" rx="2" fill="#18B6D9"/>
+<text x="636" y="462" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Container isolation</text>
+<rect x="636" y="476" width="108" height="26" rx="13" fill="#DDF4F9" stroke="none" stroke-width="1.2" opacity="1"/><text x="690" y="493.025" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11.5" font-weight="600" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">test --sandbox</text>
+<text x="636" y="532" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">Docker or Podman required</text>
+<text x="636" y="552" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">network none · read-only source</text>
+<text x="636" y="572" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="650" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">no host credentials · fails closed</text>
+<path d="M 318 580 L 318 596" stroke="#BDB6A7" stroke-width="1.5" stroke-opacity="1" fill="none" opacity="1"/>
+<path d="M 882 580 L 882 596" stroke="#BDB6A7" stroke-width="1.5" stroke-opacity="1" fill="none" opacity="1"/>
+<path d="M 318 596 L 882 596" stroke="#BDB6A7" stroke-width="1.5" stroke-opacity="1" fill="none" opacity="1"/>
+<path d="M 600 596 L 600 610" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="48" y="610" width="1104" height="90" rx="16" fill="#0B1220" stroke="#0B1220" stroke-width="1.5" opacity="1"/>
+<text x="72" y="644" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="18" font-weight="700" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">Use</text>
+<text x="152" y="644" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="14" font-weight="400" fill="#18B6D9" text-anchor="start" letter-spacing="0" opacity="1">MCP client · terminal automation · agent skill</text>
+<text x="72" y="674" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="400" fill="#9DA9BE" text-anchor="start" letter-spacing="0" opacity="1">Generated MCP servers and CLIs enforce the same runtime policy.</text>
+<path d="M 48 732 L 82 732" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" opacity="1"/><text x="92" y="736" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">primary flow</text><path d="M 238 732 L 272 732" stroke="#BDB6A7" stroke-width="2.5" stroke-dasharray="5 4" stroke-opacity="1" fill="none" opacity="1"/><text x="282" y="736" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">optional path</text>
+</svg>

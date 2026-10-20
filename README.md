@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/sdk-anything-banner-en.png" alt="SDK-Anything Banner" width="100%">
+  <img src="assets/banners/sdk-anything-banner-en.svg" alt="SDK-Anything: TypeScript or JavaScript SDKs become agent-native MCP tools, CLIs, and skills through a capability manifest." width="100%">
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
   <img src="https://img.shields.io/badge/Vitest-100%25_pass-brightgreen" alt="Vitest">
 </p>
 
-**One Command Pipeline**: Turn any TypeScript or JavaScript SDK into agent-ready tools for Claude Desktop, Cursor, Claude Code, OpenClaw, Codex, Windsurf, and custom autonomous agents.
+**One Command Pipeline**: Turn TypeScript or JavaScript SDKs into agent-ready tools for Claude Desktop, Cursor, Claude Code, OpenClaw, Codex, Windsurf, and custom autonomous agents.
 
 <p align="center"><code>npm install -g sdk-anything</code></p>
 
@@ -43,27 +43,15 @@ Traditional SDKs are crafted for human programmers navigating IDE auto-complete.
 | **Memory Exhaustion**<br>Unbounded pagination iterators crash agent processes. | **Strict Bounded Caps**<br>Enforces per-call item limits (default 100) and payload byte ceilings (1 MB). |
 | **Fragile Black-Box Proxies**<br>Magic dynamic wrappers or unsafe `eval` executors. | **Inspectable TypeScript**<br>Generates clean, auditable, standard TypeScript code ready to review and commit. |
 
+[See the before/after transformation diagram](assets/diagrams/transformation-en.svg) — diagnostics and overrides are the recovery path for unresolved types.
+
 ---
 
 ## 🤖 Agent Ecosystem Compatibility
 
 From a single capability manifest (`sdk-anything/manifest/v1`), SDK-Anything simultaneously emits triple-interface support:
 
-```text
-                           ┌──────────────────────────┐
-                           │       SDK-Anything       │
-                           │ Capability Manifest (v1) │
-                           └────────────┬─────────────┘
-                                        │
-         ┌──────────────────────────────┼──────────────────────────────┐
-         ▼                              ▼                              ▼
-  🔌 MCP Server                  ⌨️ Developer CLI               🤖 Consumer Skill
-┌────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
-│ Claude Desktop         │     │ Terminal Automation    │     │ Claude Code            │
-│ Cursor                 │     │ Shell Pipelines        │     │ Codex                  │
-│ Windsurf               │     │ CI / CD Scripts        │     │ OpenClaw / Nanobot     │
-└────────────────────────┘     └────────────────────────┘     └────────────────────────┘
-```
+[![Manifest-centered ecosystem: one generated project contains capability-manifest.json, mcp/, cli/, SKILL.md, and an integrity inventory; it serves MCP clients, terminal and CI workflows, and agent skill hosts.](assets/diagrams/ecosystem-en.svg)](assets/diagrams/ecosystem-en.svg)
 
 | Agent Platform | Integration Protocol | How to Connect |
 |---|---|---|
@@ -118,7 +106,7 @@ pnpm link --global
 
 </details>
 
-### 2. Inspect Any SDK in Seconds
+### 2. Inspect an SDK in Seconds
 
 Analyze public npm packages, local source folders, or public GitHub repositories **without executing any target package code or lifecycle scripts**:
 
@@ -239,6 +227,12 @@ sdk-anything generate npm:@turf/turf --output ./generated/turf-tools
 sdk-anything generate npm:@turf/turf --output ./generated/turf-tools --force
 ```
 
+### Workflow at a glance
+
+Static verification runs first. Execution tests are optional and must choose an explicit boundary:
+
+[![Workflow diagram: inspect, review overrides, generate, and validate statically; then optionally test with trusted-local execution or a container sandbox; finally use the generated MCP server, CLI, or agent skill.](assets/diagrams/workflow-en.svg)](assets/diagrams/workflow-en.svg)
+
 ---
 
 ## 🎮 Interactive Demos
@@ -343,44 +337,15 @@ Every subsystem undergoes rigorous multi-layer testing across 21 groups (23 Vite
 
 ## 🏗️ Architecture & Pipeline
 
-```text
-Source Locator (npm:pkg, local dir, public GitHub)
-       │
-       ▼
-Deterministic Static Analyzer (TS Compiler AST & TypeChecker, noEmit)
-       │
-       ▼
-Evidence Inventory (Function signatures, parameters, types, unresolved diagnostics)
-       │
-       ├─────────────────────────────────────────┐
-       │ (Optional)                              │ (Deterministic)
-       ▼                                         ▼
-AI Proposal Layer (OpenAI-compatible)     Capability Manifest Builder (v1)
-(descriptions, groups, examples)                 │
-       │                                         │
-       └────────────────────┬────────────────────┘
-                            ▼
-                   Human Overrides Engine
-                (sdk-anything.overrides.json)
-                            │
-                            ▼
-               Validated Capability Manifest
-             (schema: sdk-anything/manifest/v1)
-                            │
-              ┌─────────────┴─────────────┐
-              ▼                           ▼
-        MCP Generator               CLI Generator
-       (Stdio Server)            (Commander.js CLI)
-              │                           │
-              └─────────────┬─────────────┘
-                            ▼
-                   Shared Runtime Layer
-     (Input validation, policy enforcer, secrets, pagination caps)
-```
+[![Architecture diagram: npm, local, or GitHub SDK sources pass through a safe resolver and static analyzer, then optional AI proposals and human overrides produce one capability manifest that feeds an MCP server, a CLI, and an agent skill.](assets/diagrams/architecture-en.svg)](assets/diagrams/architecture-en.svg)
+
+The capability manifest is the single source of truth. Static analysis never imports or executes target SDK code; generated MCP servers and CLIs share the same runtime policy layer.
 
 ---
 
 ## 🔒 Security & Sandboxing Principles
+
+[![Security diagram: inspection never imports target code or runs lifecycle scripts; pure and read effects are allowed by default, while write, destructive, and unknown effects require explicit authorization; runtime protections include env secret references, redaction, pagination caps, and fail-closed container behavior.](assets/diagrams/security-en.svg)](assets/diagrams/security-en.svg)
 
 1. **Zero Target Code Execution During Inspection:** Target SDKs are never imported or executed during inspection. Installation lifecycle scripts are permanently skipped.
 2. **Reference-Only Secrets:** No credentials exist in static files or manifests. Tokens are fetched solely at runtime from `process.env`.
@@ -395,19 +360,30 @@ AI Proposal Layer (OpenAI-compatible)     Capability Manifest Builder (v1)
 ```text
 sdk-anything/
 ├── .github/workflows/ci.yml             # GitHub Actions CI workflow
-├── assets/                              # Banners and brand assets
-│   ├── sdk-anything-banner-en.png
-│   └── sdk-anything-banner-zh.png
+├── assets/                              # Visual identity and documentation graphics
+│   ├── banners/                         # Generated EN / zh-CN SVG banners
+│   ├── diagrams/                        # Architecture, workflow, security, ecosystem...
+│   ├── icons/                           # Project mark and 9-icon set
+│   ├── social/                          # 1200x630 social preview sources and exports
+│   ├── templates/                       # Editable release announcement template
+│   ├── sdk-anything-banner-en.png       # Preserved legacy banner
+│   ├── sdk-anything-banner-zh.png       # Preserved legacy banner
+│   └── README.md                        # Asset index and regeneration guide
 ├── docs/                                # Comprehensive documentation
 │   ├── architecture.md                  # Deep pipeline & subsystem specification
 │   ├── design.md                        # Product and architecture design
 │   ├── security.md                      # Security model, trust boundaries, sandboxing
-│   └── release-evidence.md              # Verified release evidence and known limits
+│   ├── security/                        # Threat model and hardening notes
+│   ├── release-evidence.md              # Verified release evidence and known limits
+│   └── internal/                        # Maintainer state and implementation journal
 ├── examples/                            # Tested reference implementations
 │   ├── turf/                            # Pure-function golden example
 │   └── client-sdk/                      # Stateful network client fixture
 ├── schema/
 │   └── capability-manifest.schema.json  # Canonical Manifest v1 JSON Schema
+├── scripts/
+│   ├── generate-visuals.mjs             # Deterministic bilingual SVG generator
+│   └── visuals/                         # Diagram layout and localized copy
 ├── skills/
 │   └── sdk-anything/SKILL.md            # Orchestration skill for host coding agents
 ├── src/
@@ -422,6 +398,8 @@ sdk-anything/
 └── tests/                               # 23 comprehensive Vitest test suites (121 tests)
 ```
 
+See [`assets/README.md`](assets/README.md) for the visual asset index, bilingual sources, feature map, social previews, project mark, and regeneration commands.
+
 ---
 
 ## 🤝 Contributing & Community
@@ -434,6 +412,6 @@ We welcome contributions to expand SDK-Anything!
 ---
 
 <p align="center">
-  <strong>SDK-Anything</strong> — <em>Make Any Software Library Agent-Native.</em><br>
+  <strong>SDK-Anything</strong> — <em>Make Software Libraries Agent-Native.</em><br>
   <sub>Built for the age of autonomous AI agents • 121 Passing Tests • 100% Deterministic</sub>
 </p>

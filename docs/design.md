@@ -14,6 +14,8 @@ SDK-Anything turns supported TypeScript/JavaScript SDKs into inspectable, testab
 
 It also emits a generated `SKILL.md` that explains how a consuming agent should discover and use the resulting capabilities. The generator itself can be orchestrated by an agent Skill or run directly through a standalone CLI.
 
+![Manifest-centered ecosystem: one generated project contains capability-manifest.json, mcp/, cli/, SKILL.md, and an integrity inventory; it serves MCP clients, terminal and CI workflows, and agent skill hosts.](../assets/diagrams/ecosystem-en.svg)
+
 The product is not “expose every function as an LLM tool.” It combines deterministic API extraction with optional AI-assisted descriptions and operation selection, then validates the manifest and generated artifacts before reporting them as ready. In v0.1, generated capabilities are atomic operations, not multi-step executable composites; the generated Skill can teach the consuming agent how to combine atomic tools.
 
 ## 2. Intended users and first use case

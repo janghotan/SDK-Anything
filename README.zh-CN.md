@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/sdk-anything-banner-zh.png" alt="SDK-Anything 横幅" width="100%">
+  <img src="assets/banners/sdk-anything-banner-zh.svg" alt="SDK-Anything：TypeScript 或 JavaScript SDK 经能力清单转化为 MCP 工具、CLI 与智能体技能。" width="100%">
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
   <img src="https://img.shields.io/badge/Vitest-100%25_通过-brightgreen" alt="Vitest">
 </p>
 
-**单命令流水线**：将任何 TypeScript 或 JavaScript SDK 一键转化为 Claude Desktop、Cursor、Claude Code、OpenClaw、Codex、Windsurf 及自定义智能体可直接调用的专属工具。
+**单命令流水线**：将 TypeScript 或 JavaScript SDK 转化为 Claude Desktop、Cursor、Claude Code、OpenClaw、Codex、Windsurf 及自定义智能体可直接调用的专属工具。
 
 <p align="center"><code>npm install -g sdk-anything</code></p>
 
@@ -43,27 +43,15 @@
 | **内存溢出与死循环**<br>无界的分页迭代器可能拉取数万条数据并导致进程崩溃。 | **强制有界截断**<br>严格限制单次调用的最大条目数（默认 100）和响应体积上限（1 MB）。 |
 | **黑盒与不可审查的代码**<br>动态运行时代理或不安全的 `eval` 执行器。 | **透明可审查的 TypeScript**<br>生成干净、规范、无隐藏黑盒的标准 TypeScript 源代码。 |
 
+[查看改造前后对比图](assets/diagrams/transformation-zh.svg) —— 未解析类型通过诊断与人工覆盖恢复。
+
 ---
 
 ## 🤖 智能体生态全面兼容
 
 基于同一份能力清单（`sdk-anything/manifest/v1`），SDK-Anything 可同步生成三种维度的接入适配器：
 
-```text
-                           ┌──────────────────────────┐
-                           │       SDK-Anything       │
-                           │   统一能力清单 (v1 规范)    │
-                           └────────────┬─────────────┘
-                                        │
-         ┌──────────────────────────────┼──────────────────────────────┐
-         ▼                              ▼                              ▼
-  🔌 官方 MCP 服务器             ⌨️ 开发者 CLI 命令              🤖 智能体专属技能
-┌────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
-│ Claude Desktop         │     │ 终端自动化脚本         │     │ Claude Code            │
-│ Cursor                 │     │ Shell 管道工作流       │     │ Codex                  │
-│ Windsurf               │     │ CI / CD 自动化         │     │ OpenClaw / Nanobot     │
-└────────────────────────┘     └────────────────────────┘     └────────────────────────┘
-```
+[![以能力清单为中心的生态图：一个生成项目包含 capability-manifest.json、mcp/、cli/、SKILL.md 与完整性记录，服务于 MCP 客户端、终端与 CI 工作流以及智能体技能宿主。](assets/diagrams/ecosystem-zh.svg)](assets/diagrams/ecosystem-zh.svg)
 
 | 智能体平台 | 集成协议 | 如何接入 |
 |---|---|---|
@@ -118,7 +106,7 @@ pnpm link --global
 
 </details>
 
-### 2. 秒级静态分析任意 SDK
+### 2. 秒级静态分析 SDK
 
 对公开 npm 包、本地工程目录或 GitHub 公开仓库进行静态审查，**绝不导入或执行目标包代码，严格跳过 npm 安装生命周期脚本**：
 
@@ -234,6 +222,12 @@ sdk-anything generate npm:@turf/turf --output ./generated/turf-tools
 sdk-anything generate npm:@turf/turf --output ./generated/turf-tools --force
 ```
 
+### 工作流一览
+
+先执行静态校验；执行测试是可选项，并且必须明确选择运行边界：
+
+[![流程图：先静态审查、人工复核覆盖、生成并校验；随后可选择本地受信执行或容器沙箱测试；最后使用生成的 MCP 服务、CLI 或智能体技能。](assets/diagrams/workflow-zh.svg)](assets/diagrams/workflow-zh.svg)
+
 ---
 
 ## 🎮 交互式演示
@@ -338,44 +332,15 @@ $ sdk-cli-client deleteRecord --input '{"id":"item-123"}' --json
 
 ## 🏗️ 系统架构流水线
 
-```text
-源定位符 (npm:包名, 本地目录, GitHub 公开仓库)
-       │
-       ▼
-确定性静态分析器 (TypeScript Compiler AST & TypeChecker, noEmit)
-       │
-       ▼
-证据清单 (函数签名、参数类型、文档注释、未解决项诊断)
-       │
-       ├─────────────────────────────────────────┐
-       │ (可选)                                  │ (确定性)
-       ▼                                         ▼
-AI 提案辅助层 (OpenAI 兼容接口)             能力清单构建器 (v1 规范)
-(自动生成摘要、分组、示例)                       │
-       │                                         │
-       └────────────────────┬────────────────────┘
-                            ▼
-                   人工审查覆盖引擎
-                (sdk-anything.overrides.json)
-                            │
-                            ▼
-                 已验证的标准能力清单
-             (schema: sdk-anything/manifest/v1)
-                            │
-              ┌─────────────┴─────────────┐
-              ▼                           ▼
-        MCP 服务生成器              CLI 命令行生成器
-       (Stdio 协议服务)            (Commander.js 命令行)
-              │                           │
-              └─────────────┬─────────────┘
-                            ▼
-                     通用运行时层
-     (参数模式校验、副作用策略拦截、凭据管理、分页上限控制)
-```
+[![架构图：npm、本地或 GitHub 的 SDK 来源经过安全来源解析器与静态分析器，再结合可选 AI 提案与人工覆盖，生成一份能力清单，并输出 MCP 服务、CLI 与智能体技能。](assets/diagrams/architecture-zh.svg)](assets/diagrams/architecture-zh.svg)
+
+能力清单是唯一事实来源。静态分析绝不导入或执行目标 SDK 代码；生成的 MCP 服务与 CLI 共享同一套运行时策略层。
 
 ---
 
 ## 🔒 安全与沙箱设计原则
+
+[![安全图：静态审查绝不导入目标代码或执行安装脚本；pure 与 read 副作用默认允许，write、destructive 与 unknown 需要显式授权；运行时保护包括环境密钥引用、敏感信息脱敏、分页上限与容器故障闭锁。](assets/diagrams/security-zh.svg)](assets/diagrams/security-zh.svg)
 
 1. **静态审查阶段零执行保证：** 目标 SDK 在静态分析时绝不被导入或执行，严格规避安装钩子脚本。
 2. **凭据仅引用模型：** 清单与代码中绝不写入明文密码或 Token，仅通过 `env:VARIABLE_NAME` 引用。
@@ -390,19 +355,30 @@ AI 提案辅助层 (OpenAI 兼容接口)             能力清单构建器 (v1 �
 ```text
 sdk-anything/
 ├── .github/workflows/ci.yml             # GitHub Actions 持续集成工作流
-├── assets/                              # 项目横幅与视觉素材
-│   ├── sdk-anything-banner-en.png
-│   └── sdk-anything-banner-zh.png
+├── assets/                              # 视觉识别与文档图形
+│   ├── banners/                         # 生成的 EN / zh-CN SVG 横幅
+│   ├── diagrams/                        # 架构、工作流、安全、生态等图示
+│   ├── icons/                           # 项目标识与 9 枚图标
+│   ├── social/                          # 1200x630 社交预览源文件与导出
+│   ├── templates/                       # 可编辑的发布公告模板
+│   ├── sdk-anything-banner-en.png       # 保留的旧版横幅
+│   ├── sdk-anything-banner-zh.png       # 保留的旧版横幅
+│   └── README.md                        # 素材索引与再生成指南
 ├── docs/                                # 详尽设计文档
 │   ├── architecture.md                  # 系统底层架构与模块规范
 │   ├── design.md                        # 产品与架构设计
 │   ├── security.md                      # 安全模型、信任边界与沙箱策略
-│   └── release-evidence.md              # 经验证的发布证据与已知边界
+│   ├── security/                        # 威胁模型与加固说明
+│   ├── release-evidence.md              # 经验证的发布证据与已知边界
+│   └── internal/                        # 维护者状态与实现日志
 ├── examples/                            # 经过真实测试的参考范例
 │   ├── turf/                            # 纯函数黄金范例
 │   └── client-sdk/                      # 有状态的网络客户端 SDK 范例
 ├── schema/
 │   └── capability-manifest.schema.json  # Manifest v1 JSON Schema 定义
+├── scripts/
+│   ├── generate-visuals.mjs             # 确定性双语 SVG 生成器
+│   └── visuals/                         # 图形布局与本地化文案
 ├── skills/
 │   └── sdk-anything/SKILL.md            # 宿主编码智能体编排技能
 ├── src/
@@ -417,6 +393,8 @@ sdk-anything/
 └── tests/                               # 23 组 Vitest 自动化测试套件 (121 项测试)
 ```
 
+视觉素材索引、双语源文件、能力总览图、社交预览、项目标识与再生成命令见 [`assets/README.md`](assets/README.md)。
+
 ---
 
 ## 🤝 社区贡献
@@ -429,6 +407,6 @@ sdk-anything/
 ---
 
 <p align="center">
-  <strong>SDK-Anything</strong> — <em>让全球所有软件库皆可 Agent-Native 化。</em><br>
+  <strong>SDK-Anything</strong> — <em>让软件库可 Agent-Native 化。</em><br>
   <sub>专为自主 AI 智能体时代打造 • 121 项自动化测试通过 • 100% 确定性保证</sub>
 </p>

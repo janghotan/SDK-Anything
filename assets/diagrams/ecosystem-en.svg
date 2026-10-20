@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="740" viewBox="0 0 1200 740" role="img" aria-labelledby="title desc" xml:lang="en">
+<title id="title">A manifest-centered ecosystem</title>
+<desc id="desc">Manifest-centered ecosystem diagram: one generated project contains capability-manifest.json, mcp/, cli/, SKILL.md, and an integrity inventory; it serves MCP clients, terminal and CI workflows, and agent skill hosts.</desc>
+<defs><marker id="arrowCyan" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#18B6D9"/></marker><marker id="arrowInk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0B1220"/></marker><marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#BDB6A7"/></marker><marker id="arrowViolet" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7C6CF0"/></marker><marker id="arrowRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B3453F"/></marker></defs>
+<rect width="1200" height="740" fill="#F7F5EF"/>
+<text x="48" y="34" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="700" fill="#087F9C" text-anchor="start" letter-spacing="1.8" opacity="1">ECOSYSTEM</text><text x="48" y="66" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="31" font-weight="700" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">A manifest-centered ecosystem</text><text x="48" y="94" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="15.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">One generated project carries the manifest, adapters, skill, and integrity inventory.</text><path d="M 48 112 L 1152 112" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<rect x="432" y="150" width="336" height="220" rx="18" fill="#0B1220" stroke="#0B1220" stroke-width="1.5" opacity="1"/>
+<text x="456" y="180" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="10.5" font-weight="700" fill="#18B6D9" text-anchor="start" letter-spacing="1.5" opacity="1">GENERATED PROJECT</text>
+<text x="456" y="216" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="17" font-weight="700" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">capability-manifest.json</text>
+<text x="456" y="240" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="400" fill="#9DA9BE" text-anchor="start" letter-spacing="0" opacity="1">sdk-anything/manifest/v1</text>
+<circle cx="461" cy="270" r="3" fill="#18B6D9"/>
+<text x="474" y="274" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">typed operations</text>
+<circle cx="461" cy="292" r="3" fill="#18B6D9"/>
+<text x="474" y="296" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">effect policy</text>
+<circle cx="461" cy="314" r="3" fill="#18B6D9"/>
+<text x="474" y="318" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">client + secrets</text>
+<circle cx="461" cy="336" r="3" fill="#18B6D9"/>
+<text x="474" y="340" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">provenance</text>
+<rect x="48" y="172" width="320" height="106" rx="14" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<text x="72" y="204" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="15.5" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Review inputs</text>
+<text x="72" y="230" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">analyzer diagnostics</text>
+<text x="72" y="250" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">sdk-anything.overrides.json</text>
+<path d="M 368 212 L 432 212" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="832" y="172" width="320" height="106" rx="14" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<text x="856" y="204" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="15.5" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Static checks</text>
+<text x="856" y="230" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">validate: schema + parity</text>
+<text x="856" y="250" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">doctor: files + environment</text>
+<path d="M 768 212 L 832 212" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<path d="M 600 370 L 600 394" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" opacity="1"/>
+<path d="M 216 394 L 984 394" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" opacity="1"/>
+<path d="M 216 394 L 216 420" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<path d="M 600 394 L 600 420" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<path d="M 984 394 L 984 420" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="48" y="420" width="336" height="170" rx="16" fill="#FFFFFF" stroke="#18B6D9" stroke-width="1.5" opacity="1"/>
+<text x="72" y="454" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">MCP server</text>
+<text x="72" y="482" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">official MCP SDK</text>
+<text x="72" y="502" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">stdio transport</text>
+<text x="72" y="522" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">typed tools</text>
+<path d="M 72 532 L 360 532" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<text x="72" y="558" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">Claude Desktop · Cursor · Windsurf</text>
+<rect x="432" y="420" width="336" height="170" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<text x="456" y="454" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Developer CLI</text>
+<text x="456" y="482" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">Commander.js</text>
+<text x="456" y="502" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">JSON + stdin</text>
+<text x="456" y="522" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">atomic commands</text>
+<path d="M 456 532 L 744 532" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<text x="456" y="558" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">Terminal · shell pipelines · CI</text>
+<rect x="816" y="420" width="336" height="170" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<text x="840" y="454" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Agent skill</text>
+<text x="840" y="482" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">SKILL.md</text>
+<text x="840" y="502" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">usage + workflows</text>
+<text x="840" y="522" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">same tool surface</text>
+<path d="M 840 532 L 1128 532" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<text x="840" y="558" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11" font-weight="600" fill="#087F9C" text-anchor="start" letter-spacing="0" opacity="1">Claude Code · Codex · OpenClaw</text>
+<rect x="48" y="626" width="1104" height="82" rx="14" fill="#EFEBE1" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<text x="72" y="656" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="11.5" font-weight="700" fill="#5C6576" text-anchor="start" letter-spacing="1.4" opacity="1">GENERATED FILES</text>
+<rect x="230" y="646" width="172" height="26" rx="13" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.2" opacity="1"/><text x="316" y="662.85" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="600" fill="#0B1220" text-anchor="middle" letter-spacing="0" opacity="1">capability-manifest.json</text>
+<rect x="412" y="646" width="48" height="26" rx="13" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.2" opacity="1"/><text x="436" y="662.85" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="600" fill="#0B1220" text-anchor="middle" letter-spacing="0" opacity="1">mcp/</text>
+<rect x="470" y="646" width="45" height="26" rx="13" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.2" opacity="1"/><text x="492.5" y="662.85" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="600" fill="#0B1220" text-anchor="middle" letter-spacing="0" opacity="1">cli/</text>
+<rect x="525" y="646" width="79" height="26" rx="13" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.2" opacity="1"/><text x="564.5" y="662.85" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="600" fill="#0B1220" text-anchor="middle" letter-spacing="0" opacity="1">SKILL.md</text>
+<rect x="614" y="646" width="193" height="26" rx="13" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.2" opacity="1"/><text x="710.5" y="662.85" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="600" fill="#0B1220" text-anchor="middle" letter-spacing="0" opacity="1">.sdk-anything-inventory.json</text>
+<text x="72" y="684" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="10.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">Platform names describe documented connection paths, not endorsements.</text>
+</svg>

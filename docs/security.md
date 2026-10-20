@@ -1,5 +1,7 @@
 # SDK-Anything v0.1 Security Model
 
+![Security diagram: inspection never imports target code or runs lifecycle scripts; pure and read effects are allowed by default, while write, destructive, and unknown effects require explicit authorization; runtime protections include env secret references, redaction, pagination caps, and fail-closed container behavior.](../assets/diagrams/security-en.svg)
+
 ## 1. Trust Boundaries
 
 SDK-Anything treats third-party SDK packages, source code, documentation, and external AI model outputs as untrusted inputs.

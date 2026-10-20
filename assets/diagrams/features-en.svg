@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" role="img" aria-labelledby="title desc" xml:lang="en">
+<title id="title">What the tool surface includes</title>
+<desc id="desc">Feature cards: static analysis, capability manifest, generated CLI, generated MCP server, agent skill, safety controls, diagnostics and overrides, validate and doctor, and optional AI assistance.</desc>
+<defs><marker id="arrowCyan" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#18B6D9"/></marker><marker id="arrowInk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0B1220"/></marker><marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#BDB6A7"/></marker><marker id="arrowViolet" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7C6CF0"/></marker><marker id="arrowRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B3453F"/></marker></defs>
+<rect width="1200" height="820" fill="#F7F5EF"/>
+<text x="48" y="34" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12" font-weight="700" fill="#087F9C" text-anchor="start" letter-spacing="1.8" opacity="1">CAPABILITIES</text><text x="48" y="66" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="31" font-weight="700" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">What the tool surface includes</text><text x="48" y="94" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="15.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">Implemented capabilities, with explicit boundaries where behavior is optional or environment-dependent.</text><path d="M 48 112 L 1152 112" stroke="#D9D3C6" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<rect x="48" y="150" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="150" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="72" y="176" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="90" y="200" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">01</text>
+<text x="122" y="200" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Static analysis</text>
+<text x="72" y="242" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="72" dy="0">TypeScript AST + type checker. No SDK</tspan><tspan x="72" dy="19">import or execution.</tspan></text>
+<rect x="424" y="150" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="424" y="150" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="448" y="176" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="466" y="200" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">02</text>
+<text x="498" y="200" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Capability manifest</text>
+<text x="448" y="242" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="448" dy="0">One versioned JSON source of truth for typed</tspan><tspan x="448" dy="19">operations.</tspan></text>
+<rect x="800" y="150" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="800" y="150" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="824" y="176" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="842" y="200" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">03</text>
+<text x="874" y="200" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Generated CLI</text>
+<text x="824" y="242" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="824" dy="0">Commander.js CLI with JSON output, stdin,</tspan><tspan x="824" dy="19">and atomic commands.</tspan></text>
+<rect x="48" y="348" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="348" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="72" y="374" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="90" y="398" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">04</text>
+<text x="122" y="398" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Generated MCP</text>
+<text x="72" y="440" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="72" dy="0">Official MCP SDK, stdio transport, and</tspan><tspan x="72" dy="19">typed tools.</tspan></text>
+<rect x="424" y="348" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="424" y="348" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="448" y="374" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="466" y="398" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">05</text>
+<text x="498" y="398" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Agent skill</text>
+<text x="448" y="440" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="448" dy="0">SKILL.md generated from the same manifest</tspan><tspan x="448" dy="19">and tool surface.</tspan></text>
+<rect x="800" y="348" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="800" y="348" width="352" height="4" rx="2" fill="#B3453F"/>
+<rect x="824" y="374" width="36" height="36" rx="10" fill="#F7E3E1" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="842" y="398" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#B3453F" text-anchor="middle" letter-spacing="0" opacity="1">06</text>
+<text x="874" y="398" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Safety controls</text>
+<text x="824" y="440" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="824" dy="0">pure/read allowed;</tspan><tspan x="824" dy="19">write/destructive/unknown denied by</tspan><tspan x="824" dy="19">default.</tspan></text>
+<rect x="48" y="546" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="48" y="546" width="352" height="4" rx="2" fill="#7C6CF0"/>
+<rect x="72" y="572" width="36" height="36" rx="10" fill="#ECE9FD" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="90" y="596" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#5B4CD6" text-anchor="middle" letter-spacing="0" opacity="1">07</text>
+<text x="122" y="596" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Diagnostics + overrides</text>
+<text x="72" y="638" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="72" dy="0">Unresolved types surfaced; reviewed</tspan><tspan x="72" dy="19">overrides promote them.</tspan></text>
+<rect x="424" y="546" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="424" y="546" width="352" height="4" rx="2" fill="#18B6D9"/>
+<rect x="448" y="572" width="36" height="36" rx="10" fill="#DDF4F9" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="466" y="596" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#087F9C" text-anchor="middle" letter-spacing="0" opacity="1">08</text>
+<text x="498" y="596" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Validate + doctor</text>
+<text x="448" y="638" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="448" dy="0">Schema, adapter parity, checksums, and</tspan><tspan x="448" dy="19">environment health.</tspan></text>
+<rect x="800" y="546" width="352" height="178" rx="16" fill="#FFFFFF" stroke="#D9D3C6" stroke-width="1.5" opacity="1"/>
+<rect x="800" y="546" width="352" height="4" rx="2" fill="#7C6CF0"/>
+<rect x="824" y="572" width="36" height="36" rx="10" fill="#ECE9FD" stroke="none" stroke-width="1.5" opacity="1"/>
+<text x="842" y="596" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="11" font-weight="700" fill="#5B4CD6" text-anchor="middle" letter-spacing="0" opacity="1">09</text>
+<text x="874" y="596" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="17" font-weight="650" fill="#0B1220" text-anchor="start" letter-spacing="0" opacity="1">Optional AI</text>
+<text x="824" y="638" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="13" font-weight="400" fill="#5C6576" text-anchor="start"><tspan x="824" dy="0">OpenAI-compatible descriptions;</tspan><tspan x="824" dy="19">deterministic fallback.</tspan></text>
+<text x="48" y="786" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="12.5" font-weight="400" fill="#5C6576" text-anchor="start" letter-spacing="0" opacity="1">Container sandbox testing requires Docker or Podman and fails closed when unavailable.</text>
+</svg>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="360" viewBox="0 0 1600 360" role="img" aria-labelledby="title desc" xml:lang="zh">
+<title id="title">SDK-Anything</title>
+<desc id="desc">SDK-Anything 横幅：TypeScript 或 JavaScript SDK 经能力清单转化为 MCP 工具、CLI 与智能体技能。</desc>
+<defs><marker id="arrowCyan" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#18B6D9"/></marker><marker id="arrowInk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0B1220"/></marker><marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#BDB6A7"/></marker><marker id="arrowViolet" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7C6CF0"/></marker><marker id="arrowRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B3453F"/></marker><pattern id="gridDark" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="#26344D" stroke-width="1"/></pattern></defs>
+<rect width="1600" height="360" fill="#0A1424"/>
+<rect width="1600" height="360" fill="url(#gridDark)" opacity="0.55"/>
+<rect x="0" y="0" width="8" height="360" fill="#18B6D9"/>
+<g transform="translate(64 76) scale(0.390625)"><path d="M 95 204 L 205 268 L 205 404 L 95 340 Z" fill="#122036" stroke="#F7F5EF" stroke-width="16" stroke-linejoin="round"/><path d="M 315 204 L 205 268 L 205 404 L 315 340 Z" fill="#101D33" stroke="#F7F5EF" stroke-width="16" stroke-linejoin="round"/><path d="M 205 140 L 315 204 L 205 268 L 95 204 Z" fill="#18B6D9" stroke="#F7F5EF" stroke-width="16" stroke-linejoin="round"/><path d="M 342 256 L 436 256" stroke="#18B6D9" stroke-width="24" stroke-linecap="round" stroke-opacity="1" fill="none"/><path d="M 414 232 L 456 256 L 414 280 Z" fill="#18B6D9"/></g>
+<text x="304" y="142" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="58" font-weight="700" fill="#F7F5EF" text-anchor="start" letter-spacing="0" opacity="1">SDK-Anything</text>
+<text x="304" y="190" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="21" font-weight="400" fill="#F7F5EF" text-anchor="start"><tspan x="304" dy="0">将 TypeScript/JavaScript SDK 转化为智能体可用</tspan><tspan x="304" dy="29">的 MCP 工具、CLI 与技能。</tspan></text>
+<text x="304" y="262" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="14" font-weight="400" fill="#9DA9BE" text-anchor="start" letter-spacing="0" opacity="1">静态审查 · 可复核清单 · 显式副作用</text>
+<text x="880" y="108" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="10.5" font-weight="700" fill="#18B6D9" text-anchor="start" letter-spacing="1.7" opacity="1">流水线</text>
+<rect x="880" y="124" width="176" height="82" rx="14" fill="#0A1424" stroke="#26344D" stroke-width="1.5" opacity="1"/>
+<text x="968" y="172" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="14" font-weight="600" fill="#F7F5EF" text-anchor="middle" letter-spacing="0" opacity="1">SDK 源码</text>
+<path d="M 1058 165 L 1076 165" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="1080" y="124" width="176" height="82" rx="14" fill="#101D33" stroke="#18B6D9" stroke-width="2" opacity="1"/>
+<text x="1168" y="172" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="14" font-weight="700" fill="#18B6D9" text-anchor="middle" letter-spacing="0" opacity="1">能力清单</text>
+<path d="M 1258 165 L 1276 165" stroke="#18B6D9" stroke-width="2.5" stroke-opacity="1" fill="none" marker-end="url(#arrowCyan)"/>
+<rect x="1280" y="124" width="176" height="82" rx="14" fill="#0A1424" stroke="#26344D" stroke-width="1.5" opacity="1"/>
+<text x="1368" y="172" font-family="'Noto Sans CJK SC', 'Noto Sans', sans-serif" font-size="14" font-weight="600" fill="#F7F5EF" text-anchor="middle" letter-spacing="0" opacity="1">MCP · CLI · 技能</text>
+<path d="M 64 306 L 824 306" stroke="#26344D" stroke-width="1" stroke-opacity="1" fill="none" opacity="1"/>
+<text x="64" y="334" font-family="'JetBrains Mono', 'Noto Sans Mono CJK SC', monospace" font-size="12.5" font-weight="400" fill="#9DA9BE" text-anchor="start" letter-spacing="0" opacity="1">github.com/janghotan/SDK-Anything</text>
+</svg>
